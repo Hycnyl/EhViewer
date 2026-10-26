@@ -656,4 +656,5 @@
     <string name="cached_export_metadata_preserved">Existing metadata %1$s needs review and was kept unchanged.</string>
     <string name="cached_export_not_registered">Files were saved, but native page copies or download registration could not be completed. Use Restore downloads after checking the saved files. No completed state was assigned.</string>
     <string name="cached_export_save_failed">No page could be safely saved. Check storage space and download-directory access.</string>
+    <string name="cached_export_success_unknown">Exported %1$d pages. The gallery total is unknown; original page numbers are preserved.</string>
 </resources>

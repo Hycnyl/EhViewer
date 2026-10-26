@@ -54,6 +54,7 @@ internal data class RescueResult(
     val indices: List<Int>,
     val failedIndices: List<Int>,
     val totalPages: Int,
+    val knownTotal: Boolean,
     val destinations: List<String>,
     val downloadRegistered: Boolean,
     val warnings: List<String>,
@@ -250,7 +251,7 @@ internal suspend fun exportCachedPages(info: GalleryInfo, format: RescueFormat, 
                 }.onFailure { warn(inventory.dirname, it) }
             }
             if (!registered) warnings += appCtx.getString(R.string.cached_export_not_registered)
-            RescueResult(saved.sorted(), inventory.indices - saved, inventory.totalPages, destinations.distinct(), registered, warnings)
+            RescueResult(saved.sorted(), inventory.indices - saved, inventory.totalPages, inventory.knownTotal, destinations.distinct(), registered, warnings)
         } finally {
             // Only this invocation's private staging directory is removed. All sources and
             // already verified destination files survive errors and cancellation.

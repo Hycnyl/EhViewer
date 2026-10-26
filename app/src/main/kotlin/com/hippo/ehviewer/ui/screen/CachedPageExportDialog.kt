@@ -74,7 +74,13 @@ internal fun CachedPageExportDialog(info: GalleryInfo, onDismiss: () -> Unit) {
                 when {
                     error != null -> Text(stringResource(R.string.cached_export_error, error.orEmpty()))
                     report != null -> {
-                        Text(stringResource(R.string.cached_export_success, report.indices.size, report.totalPages))
+                        Text(
+                            if (report.knownTotal) {
+                                stringResource(R.string.cached_export_success, report.indices.size, report.totalPages)
+                            } else {
+                                stringResource(R.string.cached_export_success_unknown, report.indices.size)
+                            },
+                        )
                         Text(stringResource(R.string.cached_export_page_numbers, report.indices.take(100).joinToString { (it + 1).toString() }))
                         report.destinations.forEach { Text(it) }
                         if (report.downloadRegistered) Text(stringResource(R.string.cached_export_registered))
