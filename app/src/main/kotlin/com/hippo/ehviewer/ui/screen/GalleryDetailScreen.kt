@@ -119,6 +119,8 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
     }
 
     var getDetailError by rememberSaveable { mutableStateOf("") }
+    var cachedExportInfo by remember { mutableStateOf<GalleryInfo?>(null) }
+    cachedExportInfo?.let { info -> CachedPageExportDialog(info) { cachedExportInfo = null } }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     (galleryInfo as? GalleryDetail)?.apply {
@@ -169,6 +171,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
     val cacheCleared = stringResource(R.string.image_cache_cleared)
     val openInBrowser = stringResource(id = R.string.open_in_other_app)
     val exportArchive = stringResource(id = R.string.export_as_archive)
+    val exportCachedPages = stringResource(R.string.cached_export)
     val exportSuccess = stringResource(id = R.string.export_as_archive_success)
     val exportFailed = stringResource(id = R.string.export_as_archive_failed)
     val windowSizeClass = LocalWindowSizeClass.current
@@ -266,6 +269,11 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                             },
                             icon = {},
                             label = openInBrowser,
+                        )
+                        clickableItem(
+                            onClick = { cachedExportInfo = galleryInfo ?: BaseGalleryInfo(gid = gid, token = token) },
+                            icon = {},
+                            label = exportCachedPages,
                         )
                         clickableItem(
                             onClick = {

@@ -632,4 +632,28 @@
     <string name="blocked_image">Blocked image</string>
     <string name="show_blocked_image">Show blocked image</string>
     <!-- Tachiyomi Reader End-->
+    <string name="cached_export">Export cached pages</string>
+    <string name="cached_export_loose">Export images</string>
+    <string name="cached_export_cbz">Export CBZ</string>
+    <string name="cached_export_scanning">Scanning local files only…</string>
+    <string name="cached_export_empty">No complete local pages were found. No download entry or empty archive will be created.</string>
+    <string name="cached_export_inventory">Found %1$d pages, from page %2$d to %3$d. Gaps are preserved.</string>
+    <string name="cached_export_total">Gallery page-count estimate: %1$d.</string>
+    <string name="cached_export_unknown">Total page count is unknown. Cache indices up to page %1$d were scanned; higher pages may be missed. The highest observed page is only a lower bound.</string>
+    <string name="cached_export_help">This export uses local files only and may be incomplete. Existing files are kept. CBZ snapshots keep additional images in the persistent temporary directory for reading and resuming; extra storage is needed. Later normal downloads follow the global “Save as CBZ” setting.</string>
+    <string name="cached_export_progress">Preparing %1$d / %2$d image files; packaging and verifying output may take longer. Cancel keeps sources and any already saved files.</string>
+    <string name="cached_export_success">Exported %1$d pages / estimated %2$d gallery pages. This is a local snapshot and may be incomplete.</string>
+    <string name="cached_export_page_numbers">Saved page numbers (first 100): %1$s</string>
+    <string name="cached_export_failed_pages">%1$d discovered pages could not be saved.</string>
+    <string name="cached_export_registered">Available in downloads. Existing download status is preserved; newly restored entries remain unfinished. Missing pages are not downloaded by this action.</string>
+    <string name="cached_export_error">Export failed: %1$s</string>
+    <string name="cached_export_active">Pause this gallery in the download queue before exporting cached pages.</string>
+    <string name="cached_export_token_conflict">Local token records disagree. Only page tokens matching this gallery identity are retained; no online refresh is attempted.</string>
+    <string name="cached_export_conflicts">Multiple image formats exist for the same page. A deterministic primary is used for reading; additional versions go into the snapshot or a conflict backup.</string>
+    <string name="cached_export_conflict_saved">Preserved %1$s in cached-page-conflicts; existing page files were kept.</string>
+    <string name="cached_export_page_failed">%1$s: %2$s</string>
+    <string name="cached_export_source_gone">%1$s disappeared or became unreadable during export; other pages are still processed.</string>
+    <string name="cached_export_metadata_preserved">Existing metadata %1$s needs review and was kept unchanged.</string>
+    <string name="cached_export_not_registered">Files were saved, but native page copies or download registration could not be completed. Use Restore downloads after checking the saved files. No completed state was assigned.</string>
+    <string name="cached_export_save_failed">No page could be safely saved. Check storage space and download-directory access.</string>
 </resources>

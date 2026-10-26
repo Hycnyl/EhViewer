@@ -100,6 +100,20 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
 
     private val mutex = Mutex()
 
+    // Queue creation and local rescue output share this lock. An unrelated running download
+    // can still finish; only new queue requests wait while a rescue commits its files.
+    private val localOutputMutex = Mutex()
+
+    internal suspend fun <T> withCachedPageExport(gid: Long, activeMessage: String, action: suspend () -> T): T = localOutputMutex.withLock {
+        mutex.withLock {
+            check(
+                mCurrentTask?.gid != gid && mWaitList.none { it.gid == gid } &&
+                    getDownloadState(gid) != DownloadInfo.STATE_WAIT && getDownloadState(gid) != DownloadInfo.STATE_DOWNLOAD,
+            ) { activeMessage }
+        }
+        action()
+    }
+
     private val sortMutex = Mutex()
     private val sortMode
         get() = SortMode.from(Settings.downloadSortMode.value)
@@ -174,6 +188,10 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
     }
 
     suspend fun startDownload(galleryInfo: BaseGalleryInfo, label: String?) {
+        localOutputMutex.withLock { startDownloadInternal(galleryInfo, label) }
+    }
+
+    private suspend fun startDownloadInternal(galleryInfo: BaseGalleryInfo, label: String?) {
         if (mCurrentTask?.gid == galleryInfo.gid) {
             // It is current task
             return
@@ -222,6 +240,10 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
     }
 
     suspend fun startRangeDownload(gidList: LongArray) {
+        localOutputMutex.withLock { startRangeDownloadInternal(gidList) }
+    }
+
+    private suspend fun startRangeDownloadInternal(gidList: LongArray) {
         val updateList = gidList.mapNotNull { mAllInfoMap[it] }
             .filter {
                 when (it.state) {
@@ -259,6 +281,10 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
     }.collectAsState(transform(info)).value
 
     suspend fun startAllDownload() {
+        localOutputMutex.withLock { startAllDownloadInternal() }
+    }
+
+    private suspend fun startAllDownloadInternal() {
         val updateList = sortMutex.withLock {
             allInfoList.filter {
                 when (it.state) {
@@ -309,19 +335,16 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
     }
 
     suspend fun restoreDownload(galleryInfo: BaseGalleryInfo, dirname: String) {
-        val info = DownloadInfo(galleryInfo.asEntity(), dirname)
-        info.state = DownloadInfo.STATE_NONE
-
-        // Add to all download list and map
-        sortMutex.withLock {
-            allInfoList.insertWith(info, sortMode.comparator())
-        }
-        mAllInfoMap[galleryInfo.gid] = info
-
-        // Save to
-        EhDB.putDownloadInfo(info)
-
-        // Notify
+        val info = sortMutex.withLock {
+            if (containDownloadInfo(galleryInfo.gid)) return@withLock null
+            DownloadInfo(galleryInfo.asEntity(), dirname).also {
+                it.state = DownloadInfo.STATE_NONE
+                // Persist before publishing. A failed restore remains retryable.
+                EhDB.putDownloadInfo(it)
+                allInfoList.insertWith(it, sortMode.comparator())
+                mAllInfoMap[galleryInfo.gid] = it
+            }
+        } ?: return
         mutableNotifyFlow.emit(info)
     }
 
