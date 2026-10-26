@@ -638,4 +638,5 @@
     <string name="cached_export_metadata_preserved">已有元数据 %1$s 需要检查，已保留原件。</string>
     <string name="cached_export_not_registered">文件已保存，但原生散图副本或下载登记尚未全部完成。检查文件后可使用“恢复下载项”，未标记为完整下载。</string>
     <string name="cached_export_save_failed">未能安全保存任何页面，请检查存储空间及下载目录访问权限。</string>
+    <string name="cached_export_success_unknown">已导出 %1$d 页；画廊总页数未知，已保留原页号。</string>
 </resources>
