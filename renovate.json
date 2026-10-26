@@ -1,0 +1,113 @@
+{
+  "automerge": true,
+  "extends": [
+    "config:recommended"
+  ],
+  "ignorePaths": [
+    "app/build.gradle.kts"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/(^|/)CMakeLists\\.txt$/"
+      ],
+      "matchStrings": [
+        "(?<depName>\\S*)\\s*GIT_REPOSITORY https://(?<datasource>.*?)\\.com/(?<packageName>.*?)\\.git\\s*GIT_TAG (?<currentValue>\\S*)"
+      ],
+      "datasourceTemplate": "{{datasource}}-tags"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/(^|/)CMakeLists\\.txt$/"
+      ],
+      "matchStrings": [
+        "(/(?<depName>[^/]+)){2}-(?<currentValue>.+)\\.tar\\.gz"
+      ],
+      "datasourceTemplate": "custom.gnu",
+      "extractVersionTemplate": "{{depName}}-(?<version>.+)\\.tar\\.gz$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "rust-toolchain.toml"
+      ],
+      "matchStrings": [
+        "channel = \"nightly-(?<currentValue>[^\"]+)\""
+      ],
+      "versioningTemplate": "regex:^(?<major>\\d{4})-(?<minor>\\d{2})-(?<patch>\\d{2})$",
+      "datasourceTemplate": "custom.rust-nightly",
+      "depNameTemplate": "rust-nightly"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "settings.gradle.kts"
+      ],
+      "matchStrings": [
+        "ndkVersion = \"(?<currentValue>[^\"]+)\""
+      ],
+      "depNameTemplate": "NDK",
+      "datasourceTemplate": "custom.ndk"
+    }
+  ],
+  "customDatasources": {
+    "rust-nightly": {
+      "defaultRegistryUrlTemplate": "https://rust-lang.github.io/rustup-components-history/aarch64-linux-android/rust-std",
+      "format": "plain"
+    },
+    "ndk": {
+      "defaultRegistryUrlTemplate": "https://api.github.com/repos/android/ndk/releases/latest",
+      "transformTemplates": [
+        "{\"releases\":[{\"version\":$match(body,/ndkVersion \"([^\"]+)\"/).groups[0]}],\"changelogUrl\":html_url}"
+      ]
+    },
+    "gnu": {
+      "defaultRegistryUrlTemplate": "https://ftpmirror.gnu.org/{{packageName}}/",
+      "format": "html"
+    }
+  },
+  "packageRules": [
+    {
+      "description": "Disable updates for SNAPSHOTs",
+      "matchDatasources": [
+        "maven"
+      ],
+      "allowedVersions": "!/SNAPSHOT$/"
+    },
+    {
+      "groupName": "AGP",
+      "matchDepNames": [
+        "com.android.application",
+        "com.android.settings",
+        "com.android.test"
+      ],
+      "allowedVersions": "/^[\\d.]+(-alpha\\d+)?$/"
+    },
+    {
+      "matchDepNames": [
+        "org.jetbrains.kotlinx:kotlinx-datetime"
+      ],
+      "allowedVersions": "!/compat$/"
+    },
+    {
+      "matchDepNames": [
+        "rust-nightly"
+      ],
+      // Rustup components history updates at 2:00 UTC
+      // https://github.com/rust-lang/rustup-components-history/blob/7f196546c6b982e937b41f5d782bdbfcf06eb019/.github/workflows/rust.yml#L10
+      "schedule": [
+        "* 4-23 1 */3 *",
+        "* 4-23 15 2-11/3 *"
+      ]
+    }
+  ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": [
+      "* 0-3 1,15 * *"
+    ]
+  },
+  "rangeStrategy": "replace"
+}
