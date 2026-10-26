@@ -1,0 +1,21 @@
+name: Import verified upstream
+on:
+  push:
+    paths: ['.github/workflows/import-source.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Import FooIbar 1.14.6 source tree
+        run: |
+          git fetch --depth=1 https://codeberg.org/EhViewer/EhViewer.git refs/tags/1.14.6
+          test "$(git rev-parse FETCH_HEAD)" = "0195f1c9b8f9397e635c84ce14735ba2a2aae4c8"
+          git restore --source=FETCH_HEAD --staged --worktree -- . ':!.github/workflows'
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Import FooIbar EhViewer 1.14.6 (0195f1c) from Codeberg"
+          git push origin HEAD:main
