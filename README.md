@@ -1,3 +1,5 @@
+> **Hycnyl 1.15.0 缓存救援 fork**：基于 FooIbar 1.14.6 (`0195f1c`)，包名 `moe.hycnyl.ehviewer`。支持纯离线导出缓存散图/CBZ，允许缺页。新包无法直接读取旧包私有缓存；请勿卸载旧版或清空缓存。详见 [实现、安装与验证说明](docs/CACHE_RESCUE.md) 和 [预发布 APK](https://github.com/Hycnyl/EhViewer/releases)。
+
 <p align="right">
   <strong>English</strong>
   <span> | </span>

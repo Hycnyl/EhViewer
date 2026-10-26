@@ -14,7 +14,7 @@ plugins {
     alias(libs.plugins.baselineprofile)
 }
 
-val supportedAbis = arrayOf("arm64-v8a", "x86_64", "armeabi-v7a")
+val supportedAbis = arrayOf("arm64-v8a", "x86_64", "armeabi-v7a", "x86")
 
 android {
     splits {
@@ -53,9 +53,9 @@ android {
         .removeSuffix(".git")
 
     defaultConfig {
-        applicationId = "moe.tarsin.ehviewer"
-        versionCode = 180063
-        versionName = "1.14.6"
+        applicationId = "moe.hycnyl.ehviewer"
+        versionCode = 180064
+        versionName = "1.15.0"
         // versionNameSuffix = "-SNAPSHOT"
         buildConfigField("String", "RAW_VERSION_NAME", "\"$versionName${versionNameSuffix.orEmpty()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"$commitSha\"")
@@ -167,6 +167,7 @@ baselineProfile {
 }
 
 dependencies {
+    testImplementation("junit:junit:4.13.2")
     implementation(projects.core.data)
     implementation(projects.core.i18n)
     implementation(projects.core.ui)
