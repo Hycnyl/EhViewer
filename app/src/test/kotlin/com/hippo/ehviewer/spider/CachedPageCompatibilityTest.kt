@@ -29,11 +29,9 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.job
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
-import kotlinx.coroutines.yield
 import okio.Path
 import okio.Path.Companion.toOkioPath
 import org.junit.After
@@ -389,13 +387,13 @@ class CachedPageCompatibilityTest {
     private suspend fun setDownloadLocation(path: Path) {
         downloadLocation = path
         // Preferences commit asynchronously; wait before resolving fixture directories.
-        withTimeout(1500) { while (downloadLocation != path) yield() }
+        withTimeout(10_000) { while (downloadLocation != path) delay(10) }
     }
 
     private suspend fun setModePreference(value: Boolean) {
-        Settings.saveAsCbz.value = value
-        withTimeout(1500) { Settings.saveAsCbz.valueFlow().first { it == value } }
-        withTimeout(1500) { while (Settings.saveAsCbz.value != value) yield() }
+        // Commit the fixture directly instead of racing the UI's asynchronous setter.
+        withTimeout(10_000) { Settings.withMutableSnapshot { it[Settings.saveAsCbz] = value } }
+        assertEquals(value, Settings.saveAsCbz.value)
     }
 
     @Test
