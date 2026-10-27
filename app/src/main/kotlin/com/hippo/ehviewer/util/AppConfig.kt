@@ -39,13 +39,14 @@ object AppConfig {
     private const val CRASH = "crash"
     private const val TAG_TRANSLATIONS = "tag-translations"
 
-    private val abi = Build.SUPPORTED_ABIS[0].takeIf {
-        it in setOf("arm64-v8a", "x86_64", "armeabi-v7a")
+    internal val abi = Build.SUPPORTED_ABIS.firstOrNull {
+        it in setOf("arm64-v8a", "x86_64", "armeabi-v7a", "x86")
     } ?: "universal"
 
     val isBenchmark = "nonMinified" in BuildConfig.BUILD_TYPE || "benchmark" in BuildConfig.BUILD_TYPE
 
-    fun matchVariant(name: String) = name.contains(BuildConfig.FLAVOR) && name.contains(abi)
+    fun matchVariant(name: String) = com.hippo.ehviewer.updater.matchesUpdateApk(name, abi, BuildConfig.FLAVOR)
+    fun matchUniversalVariant(name: String) = com.hippo.ehviewer.updater.matchesUpdateApk(name, "universal", BuildConfig.FLAVOR)
 
     val commitTime = ParserUtils.formatDate(BuildConfig.COMMIT_TIME * 1000)
 

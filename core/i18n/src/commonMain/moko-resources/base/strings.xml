@@ -396,7 +396,7 @@
     <string name="settings_about_declaration" translatable="false">EhViewer</string>
     <string name="settings_about_declaration_summary">EhViewer is not affiliated with E-Hentai.org in any way</string>
     <string name="settings_about_author">Author</string>
-    <string name="settings_about_author_summary" translatable="false">&lt;del&gt;Hippo &amp;lt;ehviewersu$gmail.com&amp;gt;&lt;/del&gt;&lt;br&gt;&lt;del&gt;NekoInverter&lt;/del&gt;&lt;br&gt;&lt;del&gt;飛鳥澪&lt;/del&gt;&lt;br&gt;Foolbar</string>
+    <string name="settings_about_author_summary" translatable="false">&lt;del&gt;Hippo &amp;lt;ehviewersu$gmail.com&amp;gt;&lt;/del&gt;&lt;br&gt;&lt;del&gt;NekoInverter&lt;/del&gt;&lt;br&gt;&lt;del&gt;飛鳥澪&lt;/del&gt;&lt;br&gt;&lt;del&gt;Foolbar&lt;/del&gt;&lt;br&gt;&lt;a href="https://github.com/Hycnyl"&gt;Hycnyl&lt;/a&gt;</string>
     <string name="settings_about_latest_release">Latest release</string>
     <string name="settings_about_source">Source</string>
     <string name="settings_about_version">Build version</string>
@@ -640,14 +640,14 @@
     <string name="cached_export_inventory">Found %1$d pages, from page %2$d to %3$d. Gaps are preserved.</string>
     <string name="cached_export_total">Gallery page-count estimate: %1$d.</string>
     <string name="cached_export_unknown">Total page count is unknown. Cache indices up to page %1$d were scanned; higher pages may be missed. The highest observed page is only a lower bound.</string>
-    <string name="cached_export_help">This export uses local files only and may be incomplete. Existing files are kept. CBZ snapshots keep additional images in the persistent temporary directory for reading and resuming; extra storage is needed. Later normal downloads follow the global “Save as CBZ” setting.</string>
+    <string name="cached_export_help">Preserves local originals and missing page numbers. Native reading copies follow the current download setting. Staging and extra copies need additional space.</string>
     <string name="cached_export_progress">Preparing %1$d / %2$d image files; packaging and verifying output may take longer. Cancel keeps sources and any already saved files.</string>
     <string name="cached_export_success">Exported %1$d pages / estimated %2$d gallery pages. This is a local snapshot and may be incomplete.</string>
     <string name="cached_export_page_numbers">Saved page numbers (first 100): %1$s</string>
     <string name="cached_export_failed_pages">%1$d discovered pages could not be saved.</string>
     <string name="cached_export_registered">Available in downloads. Existing download status is preserved; newly restored entries remain unfinished. Missing pages are not downloaded by this action.</string>
     <string name="cached_export_error">Export failed: %1$s</string>
-    <string name="cached_export_active">Pause this gallery in the download queue before exporting cached pages.</string>
+    <string name="cached_export_active">Pause this gallery and close its reader, then wait for its file tasks to finish before exporting.</string>
     <string name="cached_export_token_conflict">Local token records disagree. Only page tokens matching this gallery identity are retained; no online refresh is attempted.</string>
     <string name="cached_export_conflicts">Multiple image formats exist for the same page. A deterministic primary is used for reading; additional versions go into the snapshot or a conflict backup.</string>
     <string name="cached_export_conflict_saved">Preserved %1$s in cached-page-conflicts; existing page files were kept.</string>
@@ -657,4 +657,20 @@
     <string name="cached_export_not_registered">Files were saved, but native page copies or download registration could not be completed. Use Restore downloads after checking the saved files. No completed state was assigned.</string>
     <string name="cached_export_save_failed">No page could be safely saved. Check storage space and download-directory access.</string>
     <string name="cached_export_success_unknown">Exported %1$d pages. The gallery total is unknown; original page numbers are preserved.</string>
+    <string name="cached_export_queue_busy">This gallery is exporting cached pages. Finish or cancel that export before starting its download.</string>
+    <string name="cached_export_reading_range">Original total unknown. Local reading uses pages 1–%1$d only. This range is not a complete-gallery count and cannot be used to finish a normal download.</string>
+    <string name="cached_export_offline_only">This rescued item is available for offline reading. Its original total is unknown, so a normal download cannot start until trustworthy gallery information is available.</string>
+    <string name="cached_export_saved">Saved safely</string>
+    <string name="cached_export_locations">Saved locations</string>
+    <string name="cached_export_local_badge">Local files only</string>
+    <string name="cached_export_range">Pages %1$d–%2$d</string>
+    <string name="cached_export_scan_limit">Cache probe limit (not the gallery total)</string>
+    <string name="cached_export_saved_pages">Saved pages</string>
+    <string name="cached_export_found_pages">Available pages</string>
+    <string name="cached_export_gallery_total">Gallery total</string>
+    <string name="cached_export_unknown_value">Unknown</string>
+    <string name="cached_export_loose_description">Images with their original page numbers</string>
+    <string name="cached_export_cbz_description">A portable snapshot, independent of complete downloads</string>
+    <string name="cached_export_warnings">Show or hide notices (first %1$d)</string>
+    <string name="cached_export_offline_registered">Added to downloads for offline reading. The cached reading range is preserved; a verified total is required before normal downloading.</string>
 </resources>

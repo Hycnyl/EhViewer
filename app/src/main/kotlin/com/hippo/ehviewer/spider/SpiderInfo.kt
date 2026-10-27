@@ -2,6 +2,7 @@ package com.hippo.ehviewer.spider
 
 import com.ehviewer.core.files.read
 import com.ehviewer.core.files.write
+import com.ehviewer.core.model.GalleryInfo
 import com.ehviewer.core.util.logcat
 import com.hippo.ehviewer.coil.edit
 import com.hippo.ehviewer.coil.read
@@ -28,13 +29,27 @@ class SpiderInfo(
     val pTokenMap: MutableMap<Int, String> = hashMapOf(),
 
     var previewPerPage: Int = -1,
+
+    // Rescue-only reading range, not an authoritative gallery total. Legacy clients see
+    // pages=0 on disk, rather than mistaking this bound for a completed gallery.
+    val cachedPageCount: Int = 0,
 )
 
 private val cbor = Cbor {
     ignoreUnknownKeys = true
 }
 
-fun SpiderInfo.write(file: Path) = file.write { write(cbor.encodeToByteArray(contextOf<SpiderInfo>())) }
+fun SpiderInfo.write(file: Path) {
+    val stored = if (cachedPageCount > 0) SpiderInfo(gid, token, 0, pTokenMap, previewPerPage, cachedPageCount) else this
+    file.write { write(cbor.encodeToByteArray(stored)) }
+}
+
+internal fun SpiderInfo.forLocalReading(info: GalleryInfo): SpiderInfo {
+    if (cachedPageCount == 0) return this
+    require(cachedPageCount in 1..MAX_RESCUE_PAGES)
+    val verified = info.pages.takeIf { it in cachedPageCount..MAX_RESCUE_PAGES }
+    return SpiderInfo(gid, token, verified ?: cachedPageCount, pTokenMap, previewPerPage, if (verified == null) cachedPageCount else 0)
+}
 
 fun SpiderInfo.saveToCache() {
     runSuspendCatching {

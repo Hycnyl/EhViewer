@@ -13,6 +13,7 @@ import com.ehviewer.core.model.BaseGalleryInfo
 import com.ehviewer.core.model.GalleryInfo
 import com.ehviewer.core.util.withIOContext
 import com.hippo.ehviewer.EhDB
+import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUtils.getSuitableTitle
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.downloadLocation
@@ -47,7 +48,8 @@ internal data class RescueInventory(
     val spiderInfo: SpiderInfo?,
     val warnings: List<String>,
 ) {
-    val indices get() = sources.map { it.page.index }.distinct().sorted()
+    val indices = sources.map { it.page.index }.distinct().sorted()
+    val sourceBytes = sources.distinctBy { it.page }.sumOf { it.size }
 }
 
 internal data class RescueResult(
@@ -62,10 +64,12 @@ internal data class RescueResult(
 
 // All metadata comes from arguments, the local database, local XML/CBOR or committed cache
 // snapshots. In particular, do not use SpiderDen.writeComicInfo() or a SpiderQueen here.
-internal suspend fun inspectCachedPages(info: GalleryInfo): RescueInventory = withIOContext {
+internal suspend fun inspectCachedPages(info: GalleryInfo, fallbackScanLimit: Int = UNKNOWN_RESCUE_SCAN): RescueInventory = withIOContext {
     require(info.gid > 0)
     val warnings = mutableListOf<String>()
-    val download = DownloadManager.getDownloadInfo(info.gid)
+    val existingDownload = DownloadManager.getDownloadInfo(info.gid)
+    val download = existingDownload?.takeIf { info.token.isEmpty() || it.token == info.token }
+    if (existingDownload != null && download == null) warnings += appCtx.getString(R.string.cached_export_token_conflict)
     val local = BaseGalleryInfo(
         gid = info.gid,
         token = info.token.ifEmpty { download?.token.orEmpty() },
@@ -87,7 +91,7 @@ internal suspend fun inspectCachedPages(info: GalleryInfo): RescueInventory = wi
         favoriteName = info.favoriteName,
         favoriteNote = info.favoriteNote,
     )
-    val dirname = download?.dirname ?: EhDB.getDownloadDirname(info.gid)
+    val dirname = existingDownload?.dirname ?: EhDB.getDownloadDirname(info.gid)
         ?: FileUtils.sanitizeFilename("${info.gid}-${getSuitableTitle(local)}")
     val directory = downloadLocation / dirname
     val directories = listOfNotNull(directory, local.tempDownloadDir).distinct()
@@ -97,25 +101,33 @@ internal suspend fun inspectCachedPages(info: GalleryInfo): RescueInventory = wi
     }
     if (local.token.isEmpty()) local.token = spiders.firstOrNull()?.token.orEmpty()
     if (spiders.any { it.token != local.token }) warnings += appCtx.getString(R.string.cached_export_token_conflict)
-    val spider = spiders.firstOrNull { it.token == local.token && it.pages in 1..MAX_RESCUE_PAGES }
-    val comicCounts = directories.mapNotNull { readComicInfo(it / COMIC_INFO_FILE)?.pageCount }
-    val knownPages = rescuePageCount(local.pages, *spiders.map { it.pages }.toIntArray(), *comicCounts.toIntArray())
+    val matchingSpiders = spiders.filter { it.matchesIdentity(local) }
+    val spider = matchingSpiders.firstOrNull { it.pages in 1..MAX_RESCUE_PAGES || it.cachedPageCount in 1..MAX_RESCUE_PAGES }
+    val comicCounts = directories.mapNotNull { dir ->
+        readComicInfo(dir / COMIC_INFO_FILE)?.let { comic ->
+            comic.trustedPageCount(local).also { if (it == null) warnings += appCtx.getString(R.string.cached_export_metadata_preserved, COMIC_INFO_FILE) }
+        }
+    }
+    val knownPages = rescuePageCount(local.pages, *matchingSpiders.filter { it.cachedPageCount == 0 }.map { it.pages }.toIntArray(), *comicCounts.toIntArray())
+    val cachedRange = rescuePageCount(*matchingSpiders.map { it.cachedPageCount }.toIntArray())
     val largestFilePage = directories.flatMap { it.list() }.mapNotNull { parseRescuePageName(it.name)?.index?.plus(1) }.maxOrNull() ?: 0
-    val scan = maxOf(knownPages.takeIf { it > 0 } ?: UNKNOWN_RESCUE_SCAN, largestFilePage)
+    val scan = maxOf(knownPages.takeIf { it > 0 } ?: fallbackScanLimit.coerceIn(1, MAX_RESCUE_PAGES), largestFilePage, cachedRange)
     val sources = SpiderDen(local).inspectLocalPages(directories, scan) { name, error ->
         if (warnings.size < 100) warnings += appCtx.getString(R.string.cached_export_page_failed, name, error.localizedMessage.orEmpty())
     }
-    val total = rescuePageCount(knownPages, sources.maxOfOrNull { it.page.index + 1 } ?: 0)
+    val observed = sources.maxOfOrNull { it.page.index + 1 } ?: 0
+    val total = rescuePageCount(knownPages, observed, cachedRange)
+    val knownTotal = knownPages > 0 && knownPages >= maxOf(observed, cachedRange)
     local.pages = total
     if (sources.groupBy { it.page.index }.any { (_, pages) -> pages.map { it.page.extension }.distinct().size > 1 }) {
         warnings += appCtx.getString(R.string.cached_export_conflicts)
     }
-    RescueInventory(local, dirname, directory, sources, total, knownPages > 0, scan, spider, warnings)
+    RescueInventory(local, dirname, directory, sources, total, knownTotal, scan, spider, warnings)
 }
 
-internal suspend fun exportCachedPages(info: GalleryInfo, format: RescueFormat, progress: (Int, Int) -> Unit): RescueResult = withIOContext {
+internal suspend fun exportCachedPages(info: GalleryInfo, format: RescueFormat, fallbackScanLimit: Int = UNKNOWN_RESCUE_SCAN, progress: (Int, Int) -> Unit): RescueResult = withIOContext {
     DownloadManager.withCachedPageExport(info.gid, appCtx.getString(R.string.cached_export_active)) {
-        val inventory = inspectCachedPages(info)
+        val inventory = inspectCachedPages(info, fallbackScanLimit)
         check(inventory.sources.isNotEmpty()) { appCtx.getString(R.string.cached_export_empty) }
         val warnings = inventory.warnings.toMutableList()
         fun warn(name: String, error: Throwable) {
@@ -146,10 +158,11 @@ internal suspend fun exportCachedPages(info: GalleryInfo, format: RescueFormat, 
             }
             check(staged.isNotEmpty()) { appCtx.getString(R.string.cached_export_empty) }
             val comic = File(staging, COMIC_INFO_FILE)
-            val existingComic = readComicInfo(inventory.directory / COMIC_INFO_FILE)?.takeIf { it.pageCount in 1..MAX_RESCUE_PAGES }
+            val existingComic = readComicInfo(inventory.directory / COMIC_INFO_FILE)?.takeIf { it.trustedPageCount(inventory.info) != null }
+            val authoritativePages = if (inventory.knownTotal) inventory.totalPages else 0
             val comicWritten = runSuspendCatching {
-                writeComicInfo((existingComic ?: inventory.info.getComicInfo()).copy(pageCount = inventory.totalPages), comic.toOkioPath())
-                check(readComicInfo(comic.toOkioPath())?.pageCount == inventory.totalPages)
+                writeComicInfo((existingComic ?: inventory.info.getComicInfo()).copy(pageCount = authoritativePages), comic.toOkioPath())
+                check(readComicInfo(comic.toOkioPath())?.pageCount == authoritativePages)
             }.onFailure { warn(COMIC_INFO_FILE, it) }.isSuccess
             val state = File(staging, SPIDER_INFO_FILENAME)
             val spider = inventory.spiderInfo
@@ -157,11 +170,12 @@ internal suspend fun exportCachedPages(info: GalleryInfo, format: RescueFormat, 
                 SpiderInfo(
                     gid = info.gid,
                     token = inventory.info.token,
-                    pages = inventory.totalPages,
+                    pages = authoritativePages,
                     pTokenMap = spider?.pTokenMap?.filter { (index, token) -> index in 0 until inventory.totalPages && token.isNotBlank() }?.toMutableMap() ?: hashMapOf(),
                     previewPerPage = spider?.previewPerPage ?: -1,
+                    cachedPageCount = if (inventory.knownTotal) 0 else inventory.totalPages,
                 ).write(state.toOkioPath())
-                check(readCompatFromPath(state.toOkioPath())?.let { it.gid == info.gid && it.pages == inventory.totalPages && it.token == inventory.info.token } == true)
+                check(readCompatFromPath(state.toOkioPath())?.let { it.matchesIdentity(inventory.info) && it.pages == authoritativePages && (inventory.knownTotal || it.cachedPageCount == inventory.totalPages) } == true)
             }.onFailure { warn(SPIDER_INFO_FILENAME, it) }.isSuccess
             val metadata = listOfNotNull(comic.takeIf { comicWritten }, state.takeIf { stateWritten })
 
@@ -184,7 +198,7 @@ internal suspend fun exportCachedPages(info: GalleryInfo, format: RescueFormat, 
                     if (comicWritten) {
                         comic.inputStream().use { readRescueBytes(it, zip, checkpoint = checkpoint) }
                     } else {
-                        zip.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?><ComicInfo><PageCount>${inventory.totalPages}</PageCount></ComicInfo>".toByteArray())
+                        zip.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?><ComicInfo><PageCount>$authoritativePages</PageCount></ComicInfo>".toByteArray())
                     }
                     zip.closeEntry()
                 }
@@ -194,42 +208,54 @@ internal suspend fun exportCachedPages(info: GalleryInfo, format: RescueFormat, 
                 saved += staged.keys.map { it.index }
             }
 
-            val nativeDirectory = if (format == RescueFormat.LOOSE) directory else inventory.info.tempDownloadDir
-            if (nativeDirectory != null) {
-                runSuspendCatching { nativeDirectory.mkdirs() }.onFailure { warn(nativeDirectory.toString(), it) }
-                val existing = nativeDirectory.list().filter { parseRescuePageName(it.name) != null }.groupBy { parseRescuePageName(it.name)!!.index }
+            fun savePages(destinationDir: Path, keepExtraVersions: Boolean, exportOutput: Boolean): Set<Int> {
+                val readable = mutableSetOf<Int>()
+                runSuspendCatching { destinationDir.mkdirs() }.onFailure { warn(destinationDir.toString(), it) }
+                val existing = destinationDir.list().sortedBy { it.name }.filter { parseRescuePageName(it.name) != null }
+                    .groupBy { parseRescuePageName(it.name)!!.index }
                 staged.entries.groupBy { it.key.index }.forEach { (index, versions) ->
                     checkpoint()
                     val primary = versions.first()
                     val old = existing[index].orEmpty()
                     val readableOld = old.firstOrNull { file ->
-                        !(nativeDirectory / rescueMarkerName(file.name)).exists() && runSuspendCatching {
+                        !(destinationDir / rescueMarkerName(file.name)).exists() && runSuspendCatching {
                             file.withRescueInput { readRescueBytes(it, extension = parseRescuePageName(file.name)!!.extension, checkpoint = checkpoint) }
                         }.isSuccess
                     }
                     val usable = readableOld != null || (
                         old.isEmpty() && runSuspendCatching {
-                            commitRescueFile(primary.value, nativeDirectory / primary.key.name, checkpoint)
+                            commitRescueFile(primary.value, destinationDir / primary.key.name, checkpoint)
                         }.onFailure { warn(primary.key.name, it) }.isSuccess
                         )
                     if (usable) {
-                        native += index
-                        if (format == RescueFormat.LOOSE) saved += index
+                        readable += index
+                        if (exportOutput) saved += index
                     }
-                    if (format == RescueFormat.LOOSE) {
+                    if (keepExtraVersions) {
                         versions.filter { it != primary || !usable || (readableOld != null && readableOld.name != it.key.name) }.forEach { (page, file) ->
                             val backup = directory / "cached-page-conflicts" / staging.name / page.name
                             runSuspendCatching {
                                 backup.parent!!.mkdirs()
                                 commitRescueFile(file, backup, checkpoint)
-                                saved += index
+                                if (exportOutput) saved += index
                                 destinations += backup.toString()
                                 warnings += appCtx.getString(R.string.cached_export_conflict_saved, page.name)
                             }.onFailure { warn(page.name, it) }
                         }
                     }
                 }
-                if (native.isNotEmpty()) destinations += nativeDirectory.toString()
+                if (readable.isNotEmpty()) destinations += destinationDir.toString()
+                return readable
+            }
+            // The portable export format and the native download format are independent.
+            val loosePages = if (format == RescueFormat.LOOSE) savePages(directory, true, true) else emptySet()
+            val nativeDirectory = if (Settings.saveAsCbz.value) inventory.info.tempDownloadDir else directory
+            if (nativeDirectory != null) {
+                native += if (nativeDirectory == directory && format == RescueFormat.LOOSE) {
+                    loosePages
+                } else {
+                    savePages(nativeDirectory, false, false)
+                }
             }
             check(saved.isNotEmpty()) { appCtx.getString(R.string.cached_export_save_failed) }
             // Metadata is best effort. Never replace any existing file, including damaged metadata.
@@ -238,16 +264,41 @@ internal suspend fun exportCachedPages(info: GalleryInfo, format: RescueFormat, 
                 if (!destination.exists()) {
                     runSuspendCatching { commitRescueFile(file, destination, checkpoint) }.onFailure { warn(file.name, it) }
                 } else {
-                    val valid = if (file == comic) readComicInfo(destination) != null else readCompatFromPath(destination)?.let { it.gid == info.gid && it.token == inventory.info.token && it.pages >= inventory.totalPages } == true
+                    val valid = if (file == comic) {
+                        readComicInfo(destination)?.let { it.trustedPageCount(inventory.info) != null || (!inventory.knownTotal && it.pageCount == 0) } == true
+                    } else {
+                        readCompatFromPath(destination)?.let {
+                            it.matchesIdentity(inventory.info) && if (inventory.knownTotal) {
+                                it.pages >= inventory.totalPages
+                            } else {
+                                it.pages == 0 && it.cachedPageCount >= inventory.totalPages
+                            }
+                        } == true
+                    }
                     if (!valid) warnings += appCtx.getString(R.string.cached_export_metadata_preserved, file.name)
                 }
             }
             var registered = false
-            if (native.containsAll(saved)) {
+            val readableState = readCompatFromPath(directory / SPIDER_INFO_FILENAME)?.let {
+                it.matchesIdentity(inventory.info) && if (inventory.knownTotal) {
+                    it.cachedPageCount == 0 && it.pages in inventory.totalPages..MAX_RESCUE_PAGES
+                } else {
+                    it.pages == 0 && it.cachedPageCount in inventory.totalPages..MAX_RESCUE_PAGES
+                }
+            } == true
+            if (!inventory.knownTotal) warnings += appCtx.getString(R.string.cached_export_reading_range, inventory.totalPages)
+            if (native.containsAll(saved) && readableState) {
                 runSuspendCatching {
                     EhDB.putDownloadDirname(info.gid, inventory.dirname)
-                    if (!DownloadManager.containDownloadInfo(info.gid)) DownloadManager.restoreDownload(inventory.info, inventory.dirname)
-                    registered = DownloadManager.containDownloadInfo(info.gid)
+                    inventory.info.pages = authoritativePages
+                    val existing = DownloadManager.getDownloadInfo(info.gid)
+                    if (existing == null) {
+                        DownloadManager.restoreDownload(inventory.info, inventory.dirname)
+                    } else if (inventory.knownTotal && existing.token == inventory.info.token && existing.pages < authoritativePages) {
+                        existing.pages = authoritativePages
+                        EhDB.putGalleryInfo(existing.galleryInfo)
+                    }
+                    registered = DownloadManager.getDownloadInfo(info.gid)?.token == inventory.info.token
                 }.onFailure { warn(inventory.dirname, it) }
             }
             if (!registered) warnings += appCtx.getString(R.string.cached_export_not_registered)
@@ -257,45 +308,5 @@ internal suspend fun exportCachedPages(info: GalleryInfo, format: RescueFormat, 
             // already verified destination files survive errors and cancellation.
             staging.deleteRecursively()
         }
-    }
-}
-
-private inline fun <T> Path.withRescueInput(block: (java.io.InputStream) -> T): T = ParcelFileDescriptor.AutoCloseInputStream(openFileDescriptor("r")).use(block)
-
-// Write .tmp, close, re-read and verify CRC/length, then publish. The marker also protects
-// readers after a crash on SAF providers which cannot rename. SpiderDen ignores marked pages.
-private fun commitRescueFile(source: File, destination: Path, checkpoint: () -> Unit) {
-    val marker = destination.parent!! / rescueMarkerName(destination.name)
-    check(!destination.exists() && !marker.exists()) { "Destination already exists: $destination" }
-    val temporary = destination.parent!! / ".${destination.name}.${UUID.randomUUID()}.tmp"
-    val expected = source.inputStream().use { readRescueBytes(it, checkpoint = checkpoint) }
-    var ownsDestination = false
-    var ownsMarker = false
-    var committed = false
-    try {
-        source.inputStream().use { input ->
-            ParcelFileDescriptor.AutoCloseOutputStream(temporary.openFileDescriptor("wt")).use { readRescueBytes(input, it, checkpoint = checkpoint) }
-        }
-        check(temporary.withRescueInput { readRescueBytes(it, checkpoint = checkpoint) } == expected) { "Staging verification failed" }
-        checkpoint()
-        check(!destination.exists() && !marker.exists()) { "Destination appeared during export: $destination" }
-        ownsMarker = true
-        ParcelFileDescriptor.AutoCloseOutputStream(marker.openFileDescriptor("wt")).use { it.write(destination.name.toByteArray()) }
-        ownsDestination = true
-        runSuspendCatching { temporary moveTo destination }
-        if (!destination.exists()) {
-            temporary.withRescueInput { input ->
-                ParcelFileDescriptor.AutoCloseOutputStream(destination.openFileDescriptor("wt")).use { readRescueBytes(input, it, checkpoint = checkpoint) }
-            }
-        }
-        check(destination.withRescueInput { readRescueBytes(it, checkpoint = checkpoint) } == expected) { "Destination verification failed" }
-        marker.delete()
-        check(!marker.exists()) { "Cannot remove incomplete marker: $marker" }
-        committed = true
-    } finally {
-        runCatching { temporary.delete() }
-        if (!committed && ownsDestination) runCatching { destination.delete() }
-        // If cleanup cannot remove the incomplete destination, retain its reader guard.
-        if (!committed && ownsMarker && !destination.exists()) runCatching { marker.delete() }
     }
 }

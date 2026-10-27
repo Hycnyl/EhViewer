@@ -622,14 +622,14 @@
     <string name="cached_export_inventory">找到 %1$d 页，页号范围 %2$d–%3$d；保留原页号，允许缺页。</string>
     <string name="cached_export_total">画廊预计总页数：%1$d。</string>
     <string name="cached_export_unknown">画廊总页数未知。已扫描到第 %1$d 页对应的缓存索引，可能遗漏更高页号；发现的最大页号仅代表已知下界。</string>
-    <string name="cached_export_help">只保存本机已有文件，可能缺页，保留已有成果。CBZ 救援快照会同时保留持久临时目录中的散图，以供阅读和续传，需要额外存储空间。后续常规下载仍遵循全局“保存为 CBZ”设置。</string>
+    <string name="cached_export_help">保留本机原图和缺页页号。原生阅读副本按当前下载设置保存；暂存、归档及额外副本需要更多存储空间。</string>
     <string name="cached_export_progress">正在准备 %1$d / %2$d 个图片文件；随后还需打包和校验。取消会保留源文件和已保存的文件。</string>
     <string name="cached_export_success">已导出 %1$d 页 / 画廊预计 %2$d 页（本地救援快照，可能不完整）。</string>
     <string name="cached_export_page_numbers">已保存的页号（前 100 项）：%1$s</string>
     <string name="cached_export_failed_pages">发现的页面中有 %1$d 页未能保存。</string>
     <string name="cached_export_registered">可在下载列表查看。已有下载状态不变；新登记项保持未完成，本操作不会补下缺页。</string>
     <string name="cached_export_error">导出失败：%1$s</string>
-    <string name="cached_export_active">此画廊正在下载或排队，请先在下载列表暂停，再导出缓存页面。</string>
+    <string name="cached_export_active">此画廊仍在排队、阅读或收尾写入。请先暂停下载并关闭该画廊阅读器，待任务结束后再导出。</string>
     <string name="cached_export_token_conflict">本地 token 记录存在冲突，仅保留与当前画廊身份匹配的真实页面 token，不会联网刷新。</string>
     <string name="cached_export_conflicts">同一页存在多个图片格式；阅读目录使用确定的主版本，额外版本保存在救援快照或冲突备份中。</string>
     <string name="cached_export_conflict_saved">已将 %1$s 另存到 cached-page-conflicts，保留原有页图。</string>
@@ -639,4 +639,20 @@
     <string name="cached_export_not_registered">文件已保存，但原生散图副本或下载登记尚未全部完成。检查文件后可使用“恢复下载项”，未标记为完整下载。</string>
     <string name="cached_export_save_failed">未能安全保存任何页面，请检查存储空间及下载目录访问权限。</string>
     <string name="cached_export_success_unknown">已导出 %1$d 页；画廊总页数未知，已保留原页号。</string>
+    <string name="cached_export_queue_busy">此画廊正在导出缓存，请完成或取消导出后再开始它的下载；其他画廊不受影响。</string>
+    <string name="cached_export_reading_range">原总页数未知。本地阅读范围暂设为第 1–%1$d 页，这不是完整画廊总数，不可据此判定普通下载完成。</string>
+    <string name="cached_export_offline_only">此救援项可离线阅读，但原总页数未知；取得可信的画廊信息后才能开始普通下载，以免误报完整。</string>
+    <string name="cached_export_saved">已安全保存</string>
+    <string name="cached_export_locations">保存位置</string>
+    <string name="cached_export_local_badge">仅本地文件</string>
+    <string name="cached_export_range">页号 %1$d–%2$d</string>
+    <string name="cached_export_scan_limit">缓存探测上限（不是画廊总页数）</string>
+    <string name="cached_export_saved_pages">已保存页数</string>
+    <string name="cached_export_found_pages">可用页数</string>
+    <string name="cached_export_gallery_total">画廊总页数</string>
+    <string name="cached_export_unknown_value">未知</string>
+    <string name="cached_export_loose_description">保留原页号，逐张保存图片</string>
+    <string name="cached_export_cbz_description">便携救援快照，与完整下载归档独立</string>
+    <string name="cached_export_warnings">展开或收起提示（前 %1$d 项）</string>
+    <string name="cached_export_offline_registered">已加入下载列表，可离线阅读已知缓存范围。总页数核实前不会作为普通完整下载处理。</string>
 </resources>

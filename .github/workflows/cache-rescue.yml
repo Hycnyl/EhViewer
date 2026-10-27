@@ -34,13 +34,13 @@ jobs:
         run: |
           mkdir -p delivery
           for abi in universal arm64-v8a armeabi-v7a x86_64 x86; do
-            cp "app/build/outputs/apk/default/release/app-default-$abi-release.apk" "delivery/EhViewer-1.15.0-$abi.apk"
+            cp "app/build/outputs/apk/default/release/app-default-$abi-release.apk" "delivery/EhViewer-1.15.1-$abi.apk"
           done
           cd delivery
           sha256sum *.apk > SHA256SUMS.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: EhViewer-1.15.0-apks
+          name: EhViewer-1.15.1-apks
           path: delivery/*
           retention-days: 30
       - uses: actions/upload-artifact@v4
@@ -55,7 +55,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "v1.15.0-pre.${{ github.run_number }}" delivery/* \
+          gh release create "v1.15.1-pre.${{ github.run_number }}" delivery/* \
             --target "$GITHUB_SHA" --prerelease \
-            --title "EhViewer 1.15.0 cache rescue (pre.${{ github.run_number }})" \
-            --notes-file docs/CACHE_RESCUE.md
+            --title "EhViewer 1.15.1 cache rescue (pre.${{ github.run_number }})" \
+            --notes-file docs/DELIVERY-1.15.1.md

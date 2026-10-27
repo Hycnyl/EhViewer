@@ -33,6 +33,7 @@ import com.hippo.ehviewer.client.EhUrl.referer
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.exception.FatalException
 import com.hippo.ehviewer.client.exception.QuotaExceededException
+import com.hippo.ehviewer.download.galleryWorkGate
 import com.hippo.ehviewer.util.displayString
 import kotlin.concurrent.atomics.AtomicInt
 import kotlin.concurrent.atomics.decrementAndFetch
@@ -48,6 +49,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
@@ -313,10 +315,10 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         find(SPIDER_INFO_FILENAME)?.let { file ->
             readCompatFromPath(file)?.takeIf {
                 it.gid == galleryInfo.gid && it.token == galleryInfo.token
-            }
+            }?.forLocalReading(galleryInfo)
         }
     }
-        ?: readFromCache(galleryInfo.gid)?.takeIf { it.gid == galleryInfo.gid && it.token == galleryInfo.token }
+        ?: readFromCache(galleryInfo.gid)?.takeIf { it.gid == galleryInfo.gid && it.token == galleryInfo.token }?.forLocalReading(galleryInfo)
 
     private fun readPreviews(previews: List<GalleryPreview>, index: Int, spiderInfo: SpiderInfo) {
         if (index == 0) {
@@ -439,15 +441,24 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         const val SPIDER_INFO_FILENAME = ".ehviewer"
         private val sQueenMap = mutableMapOf<Long, SpiderQueen>()
 
-        fun obtainSpiderQueen(galleryInfo: GalleryInfo, @Mode mode: Int): SpiderQueen {
+        suspend fun obtainSpiderQueen(galleryInfo: GalleryInfo, @Mode mode: Int): SpiderQueen = if (mode == MODE_READ) {
+            galleryWorkGate.withReader(galleryInfo.gid) { obtain(galleryInfo, mode) }
+        } else {
+            obtain(galleryInfo, mode)
+        }
+
+        private fun obtain(galleryInfo: GalleryInfo, @Mode mode: Int): SpiderQueen = synchronized(sQueenMap) {
             val gid = galleryInfo.gid
-            return (sQueenMap.getOrPut(gid) { SpiderQueen(galleryInfo) }).apply {
+            (sQueenMap.getOrPut(gid) { SpiderQueen(galleryInfo) }).apply {
+                // Keep the job registered even after release removes this queen from the
+                // map. Cancellation is not completion: its final file writes must finish.
+                galleryWorkGate.observe(gid, coroutineContext.job)
                 setMode(mode)
                 launch { updateMode() }
             }
         }
 
-        fun releaseSpiderQueen(queen: SpiderQueen, @Mode mode: Int) {
+        fun releaseSpiderQueen(queen: SpiderQueen, @Mode mode: Int) = synchronized(sQueenMap) {
             queen.run {
                 clearMode(mode)
                 if (mReadReference == 0 && mDownloadReference == 0) {
