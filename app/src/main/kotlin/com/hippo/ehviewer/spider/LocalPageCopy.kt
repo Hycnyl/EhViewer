@@ -7,6 +7,7 @@ import com.ehviewer.core.files.exists
 import com.ehviewer.core.files.moveTo
 import com.ehviewer.core.files.openFileDescriptor
 import java.io.File
+import java.io.IOException
 import java.io.InputStream
 import java.util.UUID
 import moe.tarsin.coroutines.runSuspendCatching
@@ -17,6 +18,46 @@ internal inline fun <T> Path.withRescueInput(block: (java.io.InputStream) -> T):
 // Write .tmp, close, re-read and verify CRC/length, then publish. The marker also protects
 // readers after a crash on SAF providers which cannot rename. SpiderDen ignores marked pages.
 internal fun commitRescueFile(source: File, destination: Path, checkpoint: () -> Unit) = commitLocalFile({ source.inputStream() }, destination, checkpoint)
+
+// Used only after an explicit export overwrite choice. Retain the previous file until
+// publication succeeds, and restore it if cancellation or an I/O error interrupts the write.
+internal fun overwriteRescueFile(source: File, destination: Path, checkpoint: () -> Unit) {
+    val previous = destination.parent!! / ".${destination.name}.${UUID.randomUUID()}.previous"
+    val marker = destination.parent!! / rescueMarkerName(destination.name)
+    val wasIncomplete = marker.exists()
+    fun copyExisting(from: Path, to: Path) {
+        if (from.withRescueInput { it.read() } == -1) {
+            ParcelFileDescriptor.AutoCloseOutputStream(to.openFileDescriptor("wt")).use {}
+        } else {
+            copyLocalPageSafely(from, to)
+        }
+    }
+    var replacing = false
+    var keepPrevious = false
+    try {
+        copyExisting(destination, previous)
+        checkpoint()
+        replacing = true
+        destination.delete()
+        marker.delete()
+        commitRescueFile(source, destination, checkpoint)
+    } catch (error: Throwable) {
+        if (replacing) {
+            try {
+                destination.delete()
+                marker.delete()
+                copyExisting(previous, destination)
+                if (wasIncomplete) ParcelFileDescriptor.AutoCloseOutputStream(marker.openFileDescriptor("wt")).use { it.write(destination.name.toByteArray()) }
+            } catch (restoreError: Throwable) {
+                keepPrevious = true
+                throw IOException("Previous file retained at $previous after restore failed", restoreError).apply { addSuppressed(error) }
+            }
+        }
+        throw error
+    } finally {
+        if (!keepPrevious) runCatching { previous.delete() }
+    }
+}
 
 internal fun copyLocalPageSafely(source: Path, destination: Path) = commitLocalFile(
     { ParcelFileDescriptor.AutoCloseInputStream(source.openFileDescriptor("r")) },

@@ -1,5 +1,7 @@
 # EhViewer Hycnyl 1.15.1
 
+> 本文为 1.15.1 的历史交付记录。1.15.2 按新的兼容性要求改用标准 `GID.cbz`、保存封面并允许选择覆盖／跳过，详见 [1.15.2 说明](DELIVERY-1.15.2.md)。
+
 包名 `moe.hycnyl.ehviewer`，版本码 `180065`，Android 8.0+。本次是 1.15.0 的兼容性修复和界面改进，延续 FooIbar 1.14.6 (`0195f1c9b8f9397e635c84ce14735ba2a2aae4c8`) 的版本体系。仅以当前 Hycnyl 仓库 `10c43f3ed1906945ef85ae5ff58d400d980032a9` 为开发基线，核心代码由主 Codex 代理亲自实现，未使用子代理。
 
 安装包提供 universal、arm64-v8a、armeabi-v7a、x86_64、x86，发布在 [Hycnyl/EhViewer Releases](https://github.com/Hycnyl/EhViewer/releases)。保持 1.15.0 的包名和仓库原有测试签名，可直接升级该 fork；原 FooIbar 包的私有缓存仍不能由新包直接读取。

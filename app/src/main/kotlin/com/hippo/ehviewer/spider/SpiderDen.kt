@@ -55,12 +55,9 @@ import com.hippo.ehviewer.util.sha1
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.client.statement.request
-import java.io.File
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.ensureActive
 import moe.tarsin.coroutines.runSuspendCatching
 import okio.Path
 
@@ -82,58 +79,6 @@ class SpiderDen(val info: GalleryInfo) {
             val names = files.map { it.name }.toSet()
             files.filterNot { rescueMarkerName(it.name) in names }
         }.associateBy { it }.toMutableMap()
-    }
-
-    // Read committed snapshots only. Never change spider mode or call the normal downloader.
-    internal suspend fun inspectLocalPages(
-        directories: List<Path>,
-        scanLimit: Int,
-        warning: (String, Throwable) -> Unit,
-    ): List<LocalRescuePage> = withIOContext {
-        val context = currentCoroutineContext()
-        val pages = mutableListOf<LocalRescuePage>()
-        fun inspect(path: Path, name: RescuePageName, cached: Boolean = false) {
-            runSuspendCatching {
-                context.ensureActive()
-                val fingerprint = ParcelFileDescriptor.AutoCloseInputStream(path.openFileDescriptor("r")).use {
-                    readRescueBytes(it, extension = name.extension, checkpoint = { context.ensureActive() })
-                }
-                pages += LocalRescuePage(name, path.takeUnless { cached }, fingerprint.size)
-            }.onFailure { warning(name.name, it) }
-        }
-        directories.distinct().forEach { dir ->
-            context.ensureActive()
-            val files = dir.list().sortedBy { it.name }
-            val names = files.map { it.name }.toSet()
-            files.forEach { file ->
-                parseRescuePageName(file.name)?.takeUnless { rescueMarkerName(file.name) in names }?.let { inspect(file, it) }
-            }
-        }
-        repeat(scanLimit.coerceIn(0, MAX_RESCUE_PAGES)) { index ->
-            context.ensureActive()
-            runSuspendCatching {
-                sCache.read(getImageKey(gid, index)) {
-                    val extension = metadata.toFile().readText().trim().lowercase()
-                    val name = requireNotNull(parseRescuePageName(perFilename(index, extension))) { "Invalid cached image extension" }
-                    inspect(data, name, cached = true)
-                }
-            }.onFailure { warning(perFilename(index), it) }
-        }
-        pages
-    }
-
-    internal suspend fun copyLocalPageTo(page: LocalRescuePage, destination: File): RescueFingerprint? = withIOContext {
-        val context = currentCoroutineContext()
-        fun copy(path: Path) = ParcelFileDescriptor.AutoCloseInputStream(path.openFileDescriptor("r")).use { input ->
-            destination.outputStream().use { output ->
-                readRescueBytes(input, output, page.page.extension) { context.ensureActive() }
-            }
-        }
-        page.path?.let(::copy) ?: sCache.read(getImageKey(gid, page.page.index)) {
-            check(metadata.toFile().readText().trim().lowercase() == page.page.extension) { "Cached image changed during export" }
-            // Both streams close before read() releases the snapshot.
-            copy(data)
-        }
     }
 
     private val imageDir

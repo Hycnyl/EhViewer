@@ -30,15 +30,6 @@ internal fun rescueMarkerName(name: String) = ".$name.rescue-incomplete"
 
 internal fun rescuePageCount(vararg counts: Int) = counts.filter { it in 1..MAX_RESCUE_PAGES }.maxOrNull() ?: 0
 
-internal fun rescueArchiveName(gid: Long, exists: (String) -> Boolean): String {
-    for (number in 1..9_999) {
-        val suffix = if (number == 1) "" else "-$number"
-        val name = "$gid.cached-partial$suffix.cbz"
-        if (!exists(name)) return name
-    }
-    throw IOException("Too many cached-page snapshots")
-}
-
 internal data class RescueFingerprint(val size: Long, val crc: Long)
 
 // Constant memory; also works with non-seekable SAF streams. No bitmap decode or re-encoding.

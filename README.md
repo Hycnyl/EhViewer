@@ -1,4 +1,4 @@
-> **Hycnyl 1.15.1 缓存救援 fork**：延续 FooIbar 1.14.6 (`0195f1c`)，包名 `moe.hycnyl.ehviewer`。本次修复保存格式切换后的原生散图接管、同画廊写入隔离及未知总页数处理，更新导出界面和关于/更新地址。详见 [1.15.1 交付说明](docs/DELIVERY-1.15.1.md) 和 [预发布 APK](https://github.com/Hycnyl/EhViewer/releases)。新包无法直接读取旧包私有缓存；请勿卸载旧版或清空缓存。
+> **Hycnyl 1.15.2 缓存救援 fork**：延续 FooIbar 1.14.6 (`0195f1c`)，包名 `moe.hycnyl.ehviewer`。导出使用正常的 `GID.cbz` 结构，立即保存已缓存封面，并支持同名文件覆盖／跳过；通过 GitHub Actions 直接发布正式版。详见 [1.15.2 交付说明](docs/DELIVERY-1.15.2.md) 和 [正式版 APK](https://github.com/Hycnyl/EhViewer/releases)。新包无法直接读取旧包私有缓存；请勿卸载旧版或清空缓存。
 
 <p align="right">
   <strong>English</strong>
