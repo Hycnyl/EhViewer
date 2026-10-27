@@ -320,4 +320,33 @@
     <string name="settings_eh_show_gallery_pages_summary">Die Galerieseitenzahle in der Galerieliste anzeigen</string>
     <string name="dark_theme_follow_system">System folgen</string>
 
+    <string name="cached_export">Gecachte Seiten exportieren</string>
+    <string name="cached_export_loose">Bilder exportieren</string>
+    <string name="cached_export_cbz">CBZ exportieren</string>
+    <string name="cached_export_help">Diese Funktion kann und soll normale Downloads nicht ersetzen. Wenn die Galerie noch erreichbar ist, laden Sie sie bitte auf dem normalen Weg herunter. Verwenden Sie den Cache-Export nur, wenn [die Galerie in Ihren Favoriten ist + Bilder lokal gecacht sind + die Galerie entfernt wurde].</string>
+    <string name="cached_export_loose_description">Empfohlen</string>
+    <string name="cached_export_cbz_description">Potenziell destruktiv</string>
+    <string name="cached_export_success">Der Cache-Export ist abgeschlossen und wurde den Downloads hinzugefügt. Die Dateien liegen im Downloadordner, den Sie für EhViewer eingestellt haben.</string>
+    <string name="cached_export_progress">Gecachte Seiten werden exportiert. Bitte lassen Sie dieses Fenster geöffnet und warten Sie. Fortschritt: %1$d / %2$d Bilddateien.</string>
+    <string name="cached_export_scanning">Lokale Dateien werden gesucht…</string>
+    <string name="cached_export_empty">Keine exportierbaren Seiten gefunden.</string>
+    <string name="cached_export_unknown">Die Gesamtseitenzahl ist unbekannt. Der Cache wurde bis Seite %1$d durchsucht; höhere Seiten können fehlen.</string>
+    <string name="cached_export_locations">Speicherort</string>
+    <string name="cached_export_local_badge">Nur lokale Dateien</string>
+    <string name="cached_export_range">Seiten %1$d–%2$d</string>
+    <string name="cached_export_scan_limit">Suchbereich</string>
+    <string name="cached_export_saved_pages">Geschriebene Seiten</string>
+    <string name="cached_export_found_pages">Verfügbare Seiten</string>
+    <string name="cached_export_gallery_total">Gesamtseitenzahl</string>
+    <string name="cached_export_unknown_value">Unbekannt</string>
+    <string name="cached_export_file_exists">Datei bereits vorhanden</string>
+    <string name="cached_export_overwrite">Überschreiben</string>
+    <string name="cached_export_skip">Überspringen</string>
+    <string name="cached_export_remember_choice">Bei diesem Export nicht mehr fragen</string>
+    <string name="cached_export_cover_saved">Cover gespeichert</string>
+    <string name="cached_export_cover_unavailable">Kein lokales Cover im Cache gefunden. Die Seitenbilder wurden exportiert.</string>
+    <string name="cached_export_skipped_files">%1$d Dateien übersprungen</string>
+    <string name="cached_export_warnings">Hinweise ein-/ausblenden (erste %1$d)</string>
+    <string name="cached_export_failed_pages">%1$d Seiten konnten nicht gespeichert werden.</string>
+    <string name="read_cache_size_custom">Benutzerdefiniert</string>
 </resources>

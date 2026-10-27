@@ -613,4 +613,33 @@
     <string name="blocked_image">ブロックされた画像</string>
     <string name="show_blocked_image">ブロックされた画像を表示</string>
     <!-- Tachiyomi Reader End-->
+    <string name="cached_export">キャッシュ済みページをエクスポート</string>
+    <string name="cached_export_loose">画像をエクスポート</string>
+    <string name="cached_export_cbz">CBZ をエクスポート</string>
+    <string name="cached_export_help">この機能は通常のダウンロードの代わりにはなりません。ギャラリーにアクセスできる場合は、通常の手順でダウンロードしてください。[ギャラリーをお気に入りに登録済み＋画像が端末にキャッシュ済み＋ギャラリーが削除済み]の場合に限り、キャッシュ済みページの救出に使用することをおすすめします。</string>
+    <string name="cached_export_loose_description">こちらを推奨</string>
+    <string name="cached_export_cbz_description">データが失われる場合があります</string>
+    <string name="cached_export_success">キャッシュのエクスポートが完了し、ダウンロード一覧に追加されました。保存先は EhViewer で設定したダウンロード先です。</string>
+    <string name="cached_export_progress">キャッシュ済みページをエクスポートしています。このウィンドウを閉じずにお待ちください。進捗：画像ファイル %1$d / %2$d 件。</string>
+    <string name="cached_export_scanning">端末内のファイルを検索中…</string>
+    <string name="cached_export_empty">エクスポートできるページが見つかりません。</string>
+    <string name="cached_export_unknown">総ページ数は不明です。%1$d ページ目までのキャッシュを検索しました。それ以降のページがある可能性があります。</string>
+    <string name="cached_export_locations">保存先</string>
+    <string name="cached_export_local_badge">ローカルファイルのみ</string>
+    <string name="cached_export_range">ページ %1$d–%2$d</string>
+    <string name="cached_export_scan_limit">検索範囲</string>
+    <string name="cached_export_saved_pages">保存したページ数</string>
+    <string name="cached_export_found_pages">利用可能なページ数</string>
+    <string name="cached_export_gallery_total">総ページ数</string>
+    <string name="cached_export_unknown_value">不明</string>
+    <string name="cached_export_file_exists">同名のファイルがあります</string>
+    <string name="cached_export_overwrite">上書き</string>
+    <string name="cached_export_skip">スキップ</string>
+    <string name="cached_export_remember_choice">今回のエクスポートでは再確認しない</string>
+    <string name="cached_export_cover_saved">表紙を保存しました</string>
+    <string name="cached_export_cover_unavailable">端末のキャッシュに表紙が見つかりません。ページ画像はエクスポートされました。</string>
+    <string name="cached_export_skipped_files">%1$d 件のファイルをスキップ</string>
+    <string name="cached_export_warnings">通知を表示／非表示（先頭 %1$d 件）</string>
+    <string name="cached_export_failed_pages">%1$d ページを保存できませんでした。</string>
+    <string name="read_cache_size_custom">カスタム</string>
 </resources>

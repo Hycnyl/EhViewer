@@ -242,7 +242,7 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
         val imageCache by lazy {
             diskCache {
                 directory(appCtx.cacheDir.toOkioPath() / "image_cache")
-                maxSizeBytes(Settings.readCacheSize.value.coerceIn(320, 5120).toLong() * 1024 * 1024)
+                maxSizeBytes(com.hippo.ehviewer.util.readCacheSizeBytes(Settings.readCacheSize.value))
             }
         }
 
