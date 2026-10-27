@@ -1,0 +1,226 @@
+{
+  "package": "moe.hycnyl.ehviewer",
+  "versionName": "1.15.2",
+  "versionCode": 180066,
+  "sourceCommit": "f4364dd41f5fcd78cc92604ef8da5feea6e027e2",
+  "implementationCommit": "30ffaa3ca2d3a329ed5b5e79ba13aa7b37853a2c",
+  "baseCommit": "a257e958ff71430c5d55e104a407c58d4630ca43",
+  "release": {
+    "tag": "v1.15.2",
+    "url": "https://github.com/Hycnyl/EhViewer/releases/tag/v1.15.2",
+    "prerelease": false,
+    "draft": false,
+    "source": "f4364dd41f5fcd78cc92604ef8da5feea6e027e2",
+    "published": "2026-10-27T10:18:09Z",
+    "assets": [
+      {
+        "name": "EhViewer-1.15.2-arm64-v8a.apk",
+        "bytes": 8728889,
+        "digest": "sha256:47d5480e96e408d9be1c3bbcfd9482d47690024d8aca4eb78253f409d2ce2294",
+        "url": "https://github.com/Hycnyl/EhViewer/releases/download/v1.15.2/EhViewer-1.15.2-arm64-v8a.apk"
+      },
+      {
+        "name": "EhViewer-1.15.2-armeabi-v7a.apk",
+        "bytes": 8475045,
+        "digest": "sha256:72e65f88c99eccd077584d3343a0a90cab21aaac105e68b6fef161170290f28d",
+        "url": "https://github.com/Hycnyl/EhViewer/releases/download/v1.15.2/EhViewer-1.15.2-armeabi-v7a.apk"
+      },
+      {
+        "name": "EhViewer-1.15.2-universal.apk",
+        "bytes": 12358537,
+        "digest": "sha256:b9b3fbc8bfaab72e4738a304a9d2026c409447d5d22a29fb4d5df014ee547b26",
+        "url": "https://github.com/Hycnyl/EhViewer/releases/download/v1.15.2/EhViewer-1.15.2-universal.apk"
+      },
+      {
+        "name": "EhViewer-1.15.2-x86.apk",
+        "bytes": 8962905,
+        "digest": "sha256:35b8b47a9026c8393b12ce61249151afafd6bd11482cff93d33b64884989150c",
+        "url": "https://github.com/Hycnyl/EhViewer/releases/download/v1.15.2/EhViewer-1.15.2-x86.apk"
+      },
+      {
+        "name": "EhViewer-1.15.2-x86_64.apk",
+        "bytes": 8950187,
+        "digest": "sha256:3c351ff808c033ffdede417d8f2cb35460674e8c12158b02ca61e97213d553bf",
+        "url": "https://github.com/Hycnyl/EhViewer/releases/download/v1.15.2/EhViewer-1.15.2-x86_64.apk"
+      },
+      {
+        "name": "SHA256SUMS.txt",
+        "bytes": 473,
+        "digest": "sha256:d5212c79c3f073dd646fc640fc26b36ba6c21a28cd9289f5be6d8a5a1bd14e7a",
+        "url": "https://github.com/Hycnyl/EhViewer/releases/download/v1.15.2/SHA256SUMS.txt"
+      }
+    ]
+  },
+  "isLatestStableRelease": true,
+  "githubActions": {
+    "url": "https://github.com/Hycnyl/EhViewer/actions/runs/40485746907",
+    "runId": 40485746907,
+    "jobId": 122126970847,
+    "result": "PASS",
+    "buildTime": "11m 59s"
+  },
+  "ciReleaseTests": [
+    {
+      "name": "com.hippo.ehviewer.download.GalleryWorkGateTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.108"
+    },
+    {
+      "name": "com.hippo.ehviewer.spider.CachedPageFilesTest",
+      "tests": "6",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.014"
+    },
+    {
+      "name": "com.hippo.ehviewer.spider.CachedPageCompatibilityTest",
+      "tests": "9",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "5.214"
+    },
+    {
+      "name": "com.hippo.ehviewer.updater.UpdateSelectionTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.02"
+    }
+  ],
+  "localChecks": {
+    "debugRegression": {
+      "tests": 21,
+      "failures": 0,
+      "errors": 0
+    },
+    "focusedOverwriteRecovery": {
+      "tests": 2,
+      "result": "PASS"
+    },
+    "dataStoreModeFixture": {
+      "tests": 1,
+      "result": "PASS"
+    },
+    "spotlessCheck": "PASS"
+  },
+  "apks": [
+    {
+      "file": "EhViewer-1.15.2-universal.apk",
+      "bytes": 12358537,
+      "package": "moe.hycnyl.ehviewer",
+      "versionCode": "180066",
+      "versionName": "1.15.2",
+      "abis": [
+        "arm64-v8a",
+        "armeabi-v7a",
+        "x86",
+        "x86_64"
+      ],
+      "certificateSHA256": "5d91dff13b6489a9cfadbb197b3e795eefc8c39f849c4543f32c160720fb40a6",
+      "sha256": "b9b3fbc8bfaab72e4738a304a9d2026c409447d5d22a29fb4d5df014ee547b26",
+      "sourceCommit": "f4364dd41f5fcd78cc92604ef8da5feea6e027e2",
+      "minSDK": 26,
+      "targetSDK": 36,
+      "signature": "PASS",
+      "zipCRC": "PASS",
+      "zipAlignment16KiB": "PASS",
+      "elfArchitecture": "PASS"
+    },
+    {
+      "file": "EhViewer-1.15.2-arm64-v8a.apk",
+      "bytes": 8728889,
+      "package": "moe.hycnyl.ehviewer",
+      "versionCode": "180066",
+      "versionName": "1.15.2",
+      "abis": [
+        "arm64-v8a"
+      ],
+      "certificateSHA256": "5d91dff13b6489a9cfadbb197b3e795eefc8c39f849c4543f32c160720fb40a6",
+      "sha256": "47d5480e96e408d9be1c3bbcfd9482d47690024d8aca4eb78253f409d2ce2294",
+      "sourceCommit": "f4364dd41f5fcd78cc92604ef8da5feea6e027e2",
+      "minSDK": 26,
+      "targetSDK": 36,
+      "signature": "PASS",
+      "zipCRC": "PASS",
+      "zipAlignment16KiB": "PASS",
+      "elfArchitecture": "PASS"
+    },
+    {
+      "file": "EhViewer-1.15.2-armeabi-v7a.apk",
+      "bytes": 8475045,
+      "package": "moe.hycnyl.ehviewer",
+      "versionCode": "180066",
+      "versionName": "1.15.2",
+      "abis": [
+        "armeabi-v7a"
+      ],
+      "certificateSHA256": "5d91dff13b6489a9cfadbb197b3e795eefc8c39f849c4543f32c160720fb40a6",
+      "sha256": "72e65f88c99eccd077584d3343a0a90cab21aaac105e68b6fef161170290f28d",
+      "sourceCommit": "f4364dd41f5fcd78cc92604ef8da5feea6e027e2",
+      "minSDK": 26,
+      "targetSDK": 36,
+      "signature": "PASS",
+      "zipCRC": "PASS",
+      "zipAlignment16KiB": "PASS",
+      "elfArchitecture": "PASS"
+    },
+    {
+      "file": "EhViewer-1.15.2-x86_64.apk",
+      "bytes": 8950187,
+      "package": "moe.hycnyl.ehviewer",
+      "versionCode": "180066",
+      "versionName": "1.15.2",
+      "abis": [
+        "x86_64"
+      ],
+      "certificateSHA256": "5d91dff13b6489a9cfadbb197b3e795eefc8c39f849c4543f32c160720fb40a6",
+      "sha256": "3c351ff808c033ffdede417d8f2cb35460674e8c12158b02ca61e97213d553bf",
+      "sourceCommit": "f4364dd41f5fcd78cc92604ef8da5feea6e027e2",
+      "minSDK": 26,
+      "targetSDK": 36,
+      "signature": "PASS",
+      "zipCRC": "PASS",
+      "zipAlignment16KiB": "PASS",
+      "elfArchitecture": "PASS"
+    },
+    {
+      "file": "EhViewer-1.15.2-x86.apk",
+      "bytes": 8962905,
+      "package": "moe.hycnyl.ehviewer",
+      "versionCode": "180066",
+      "versionName": "1.15.2",
+      "abis": [
+        "x86"
+      ],
+      "certificateSHA256": "5d91dff13b6489a9cfadbb197b3e795eefc8c39f849c4543f32c160720fb40a6",
+      "sha256": "35b8b47a9026c8393b12ce61249151afafd6bd11482cff93d33b64884989150c",
+      "sourceCommit": "f4364dd41f5fcd78cc92604ef8da5feea6e027e2",
+      "minSDK": 26,
+      "targetSDK": 36,
+      "signature": "PASS",
+      "zipCRC": "PASS",
+      "zipAlignment16KiB": "PASS",
+      "elfArchitecture": "PASS"
+    }
+  ],
+  "allPublishedFilesMatchArtifacts": true,
+  "artifacts": [
+    {
+      "id": 12725950484,
+      "name": "validation-results",
+      "digest": "sha256:ea9819f5af496a9f829d1887f353cb4cfe0869b6271b1869072ab97596b8bced"
+    },
+    {
+      "id": 12724499915,
+      "name": "EhViewer-1.15.2-apks",
+      "digest": "sha256:ebff2fd79b39e40a42edb53ae1536077a262169ee22a31cdd2c1b651df40a7cb"
+    }
+  ],
+  "deviceValidation": "No new physical-device UI or SAF-provider acceptance testing. JVM tests cover file bytes, ZIP STORE/order, native archive selection and queue behavior; native JNI archive reading is unchanged and was not run in the JVM."
+}
