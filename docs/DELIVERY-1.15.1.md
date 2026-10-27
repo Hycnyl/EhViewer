@@ -4,6 +4,8 @@
 
 安装包提供 universal、arm64-v8a、armeabi-v7a、x86_64、x86，发布在 [Hycnyl/EhViewer Releases](https://github.com/Hycnyl/EhViewer/releases)。保持 1.15.0 的包名和仓库原有测试签名，可直接升级该 fork；原 FooIbar 包的私有缓存仍不能由新包直接读取。
 
+实际预发布：[v1.15.1-pre.4](https://github.com/Hycnyl/EhViewer/releases/tag/v1.15.1-pre.4)。[GitHub Actions #4](https://github.com/Hycnyl/EhViewer/actions/runs/40455879012) 构建成功，五个公开 APK 的 SHA-256 与本地校验产物逐一相同。包信息、文件大小、散列及两套测试结果见 [机器可读验证记录](validation-1.15.1.json)，发布页同时提供 `SHA256SUMS.txt`。
+
 ## 本次修复
 
 - 独立救援 CBZ 继续使用 `gid.cached-partial*.cbz`，不充当完整下载。原生散图按全局“保存为 CBZ”设置进入原下载目录或持久临时目录。用户随后切换设置时，普通下载先安全复制到本次下载实际使用的目标目录，再认可页面命中；原位置文件保留。
@@ -30,7 +32,9 @@
 
 ## 验证范围
 
-本地 `:app:testDefaultDebugUnitTest` 已通过：19 个测试，0 失败、0 错误；其中一个集成测试循环覆盖下述 8 种格式组合。`:app:spotlessApply` 已完成。正式 release 构建和 GitHub Actions 的结果在发布后补充。
+本地 `:app:testDefaultDebugUnitTest` 已通过：19 个测试，0 失败、0 错误；其中一个集成测试循环覆盖下述 8 种格式组合。`:app:spotlessCheck` 和 `:app:assembleDefaultRelease` 均通过，正式构建耗时 8 分 39 秒。五个 APK 已核对包名、1.15.1 / 180065、构建提交 `d3419871455d6f2cccf30f1daf80d3edcb8f89ea`、签名、ZIP CRC、16 KiB 对齐及实际 ELF 架构。签名证书 SHA-256 与 1.15.0 相同。
+
+云端 `:app:testDefaultReleaseUnitTest` 与 `:app:assembleDefaultRelease` 通过，构建耗时 13 分 13 秒。已下载并校验 Actions 测试报告归档：release 的 19 个测试全部通过，0 失败、0 错误、0 跳过。源代码构建提交为上述 `d341987`，后续交付记录提交不改变 APK 内容。
 
 先以最小集成用例复现旧代码的目标目录缺页、无关下载被长导出阻塞、身份冲突元数据污染页数，再修改生产实现。测试使用 JUnit 和仅用于 JVM 测试的 Robolectric；不变更应用运行依赖、工具链或数据库 schema。
 
@@ -42,11 +46,12 @@
 - 未知总数的 `.ehviewer` / XML / 数据库均不伪造真实总数，实际 SpiderQueen 从下载项本地准备成功并读取第 3/8 页，关闭后仍保留未知标记；普通下载被安全拦截。
 - 外来身份元数据保留、救援归档/文件名/标记过滤；五种 ABI 的更新资源选择、预发布版本比较及 GitHub Release JSON。
 
-JVM 中通过实际 SpiderDen 读取全部归档输入，使用 Java ZIP 代替 JNI 归档写入，再执行实际 `postArchive`。这验证目录、页面数据和整理契约，不代表已在 Android 真机跑过原生归档器。四架构原生库由正式 APK 构建流程编译/链接。安装包另检查包名、版本、签名一致性、ZIP CRC、16 KiB 对齐及 ELF 架构；实际结果随交付补充。
+JVM 中通过实际 SpiderDen 读取全部归档输入，使用 Java ZIP 代替 JNI 归档写入，再执行实际 `postArchive`。这验证目录、页面数据和整理契约，不代表已在 Android 真机跑过原生归档器。四架构原生库由正式 APK 构建流程编译/链接；本地无原生源码变更时复用既有构建结果。
 
 ## 已确认的取舍与限制
 
 - 按用户确认采用后续任务书目录规则，替代 1.15.0 的“CBZ 救援原生副本一律写 temp”。
 - P2 按用户确认暂缓。已有同画廊阅读器或蜘蛛任务仍在收尾时拒绝救援并提示先关闭/等待；救援期间新开的同 GID 阅读器等待完成，其他 GID 不受影响。不改阅读器核心状态机。
 - SAF 内容提供器故障、不同厂商设备的交互和新界面尚未做真机验收；本地集成用例使用真实文件描述符，但不能代替所有 SAF 提供器。无硬件加速模拟器环境，本次不为外观另做冗长环境搭建。
+- 现有元数据若不能覆盖本次发现的页号或身份不符，保留原文件并报告原生接管未完成；已验证提交的散图和独立快照仍会保留。
 - 不改原版画廊网络请求、正常完成条件、完整归档命名、数据库 schema，不增加权限；保留原 LICENSE/NOTICE 和作者版权。
