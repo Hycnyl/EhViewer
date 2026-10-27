@@ -1,0 +1,361 @@
+{
+  "package": "moe.hycnyl.ehviewer",
+  "versionName": "1.15.3",
+  "versionCode": 180067,
+  "sourceCommit": "c77c8c9158c6240463afc2fee6ee71fd634392a6",
+  "baseCommit": "2329425ed345a1f6d8df6666f50c8610ac6650b5",
+  "release": {
+    "tag": "v1.15.3",
+    "url": "https://github.com/Hycnyl/EhViewer/releases/tag/v1.15.3",
+    "prerelease": false,
+    "draft": false,
+    "source": "c77c8c9158c6240463afc2fee6ee71fd634392a6",
+    "published": "2026-10-27T15:19:27Z",
+    "assets": [
+      {
+        "name": "EhViewer-1.15.3-arm64-v8a.apk",
+        "bytes": 8750965,
+        "digest": "sha256:6c805e36953357624b54e934ab0e19e940e36eabd9fae9e9928aa575918b593a",
+        "url": "https://github.com/Hycnyl/EhViewer/releases/download/v1.15.3/EhViewer-1.15.3-arm64-v8a.apk"
+      },
+      {
+        "name": "EhViewer-1.15.3-armeabi-v7a.apk",
+        "bytes": 8497057,
+        "digest": "sha256:77736cb775036b08c364e205768e625c174b7b58274a6f669454d58bc5984d89",
+        "url": "https://github.com/Hycnyl/EhViewer/releases/download/v1.15.3/EhViewer-1.15.3-armeabi-v7a.apk"
+      },
+      {
+        "name": "EhViewer-1.15.3-universal.apk",
+        "bytes": 12380613,
+        "digest": "sha256:54d079744ae8e10c78bfe67e2bec88bad59896926b457d9f74b38bd811f33e09",
+        "url": "https://github.com/Hycnyl/EhViewer/releases/download/v1.15.3/EhViewer-1.15.3-universal.apk"
+      },
+      {
+        "name": "EhViewer-1.15.3-x86.apk",
+        "bytes": 8984981,
+        "digest": "sha256:74e589d448880d2221f136a77745e54f92a59b174619c9b5074f51aec90ec351",
+        "url": "https://github.com/Hycnyl/EhViewer/releases/download/v1.15.3/EhViewer-1.15.3-x86.apk"
+      },
+      {
+        "name": "EhViewer-1.15.3-x86_64.apk",
+        "bytes": 8972263,
+        "digest": "sha256:f7aadf1be885b850a32539904553af0228e1824ed42c50d8f7e1838c7adcfd4a",
+        "url": "https://github.com/Hycnyl/EhViewer/releases/download/v1.15.3/EhViewer-1.15.3-x86_64.apk"
+      },
+      {
+        "name": "SHA256SUMS.txt",
+        "bytes": 473,
+        "digest": "sha256:75928a3308eca401aefc9f9d6fe1fb2b5b2ca3d2d45c8b5ab22f169759618326",
+        "url": "https://github.com/Hycnyl/EhViewer/releases/download/v1.15.3/SHA256SUMS.txt"
+      }
+    ]
+  },
+  "isLatestStableRelease": true,
+  "githubActions": {
+    "url": "https://github.com/Hycnyl/EhViewer/actions/runs/40527480635",
+    "runId": 40527480635,
+    "jobId": 122270871077,
+    "result": "PASS",
+    "buildTime": "13m 10s"
+  },
+  "localDebugTests": [
+    {
+      "name": "com.hippo.ehviewer.download.GalleryWorkGateTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.115"
+    },
+    {
+      "name": "com.hippo.ehviewer.spider.CachedPageCompatibilityTest",
+      "tests": "9",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "5.937"
+    },
+    {
+      "name": "com.hippo.ehviewer.spider.CachedPageFilesTest",
+      "tests": "6",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.012"
+    },
+    {
+      "name": "com.hippo.ehviewer.updater.UpdateSelectionTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.022"
+    },
+    {
+      "name": "com.hippo.ehviewer.util.ReadCacheSizeTest",
+      "tests": "4",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.022"
+    }
+  ],
+  "ciReleaseTests": [
+    {
+      "name": "com.hippo.ehviewer.download.GalleryWorkGateTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.126"
+    },
+    {
+      "name": "com.hippo.ehviewer.spider.CachedPageCompatibilityTest",
+      "tests": "9",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "5.581"
+    },
+    {
+      "name": "com.hippo.ehviewer.spider.CachedPageFilesTest",
+      "tests": "6",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.013"
+    },
+    {
+      "name": "com.hippo.ehviewer.updater.UpdateSelectionTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.031"
+    },
+    {
+      "name": "com.hippo.ehviewer.util.ReadCacheSizeTest",
+      "tests": "4",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "0.035"
+    }
+  ],
+  "spotlessCheck": "PASS",
+  "languageAudit": {
+    "locales": [
+      {
+        "locale": "base",
+        "translatedExportStrings": 40,
+        "totalExportStrings": 40,
+        "coverage": "full",
+        "customCacheOptionTranslated": true
+      },
+      {
+        "locale": "de",
+        "translatedExportStrings": 28,
+        "totalExportStrings": 40,
+        "coverage": "main flow; technical errors fall back to English",
+        "customCacheOptionTranslated": true
+      },
+      {
+        "locale": "es",
+        "translatedExportStrings": 28,
+        "totalExportStrings": 40,
+        "coverage": "main flow; technical errors fall back to English",
+        "customCacheOptionTranslated": true
+      },
+      {
+        "locale": "fr",
+        "translatedExportStrings": 28,
+        "totalExportStrings": 40,
+        "coverage": "main flow; technical errors fall back to English",
+        "customCacheOptionTranslated": true
+      },
+      {
+        "locale": "ja",
+        "translatedExportStrings": 28,
+        "totalExportStrings": 40,
+        "coverage": "main flow; technical errors fall back to English",
+        "customCacheOptionTranslated": true
+      },
+      {
+        "locale": "ko",
+        "translatedExportStrings": 28,
+        "totalExportStrings": 40,
+        "coverage": "main flow; technical errors fall back to English",
+        "customCacheOptionTranslated": true
+      },
+      {
+        "locale": "nb-rNO",
+        "translatedExportStrings": 28,
+        "totalExportStrings": 40,
+        "coverage": "main flow; technical errors fall back to English",
+        "customCacheOptionTranslated": true
+      },
+      {
+        "locale": "th",
+        "translatedExportStrings": 28,
+        "totalExportStrings": 40,
+        "coverage": "main flow; technical errors fall back to English",
+        "customCacheOptionTranslated": true
+      },
+      {
+        "locale": "tr",
+        "translatedExportStrings": 28,
+        "totalExportStrings": 40,
+        "coverage": "main flow; technical errors fall back to English",
+        "customCacheOptionTranslated": true
+      },
+      {
+        "locale": "zh-rCN",
+        "translatedExportStrings": 40,
+        "totalExportStrings": 40,
+        "coverage": "full",
+        "customCacheOptionTranslated": true
+      },
+      {
+        "locale": "zh-rHK",
+        "translatedExportStrings": 40,
+        "totalExportStrings": 40,
+        "coverage": "full",
+        "customCacheOptionTranslated": true
+      },
+      {
+        "locale": "zh-rTW",
+        "translatedExportStrings": 40,
+        "totalExportStrings": 40,
+        "coverage": "full",
+        "customCacheOptionTranslated": true
+      }
+    ],
+    "xmlAndPlaceholders": "PASS",
+    "specifiedChineseCopy": "PASS",
+    "unusedExportResources": 0
+  },
+  "cacheSetting": {
+    "unit": "GB",
+    "minimumGb": 5,
+    "decimalInput": true,
+    "existingMbPreferenceRetained": true,
+    "requiresRestart": true,
+    "coilTwentyGbBudgetBytes": 21474836480,
+    "preallocatedDiskFiles": 0,
+    "largeBudgetTest": "PASS"
+  },
+  "apks": [
+    {
+      "file": "EhViewer-1.15.3-universal.apk",
+      "bytes": 12380613,
+      "package": "moe.hycnyl.ehviewer",
+      "versionCode": "180067",
+      "versionName": "1.15.3",
+      "abis": [
+        "arm64-v8a",
+        "armeabi-v7a",
+        "x86",
+        "x86_64"
+      ],
+      "certificateSHA256": "5d91dff13b6489a9cfadbb197b3e795eefc8c39f849c4543f32c160720fb40a6",
+      "sha256": "54d079744ae8e10c78bfe67e2bec88bad59896926b457d9f74b38bd811f33e09",
+      "sourceCommit": "c77c8c9158c6240463afc2fee6ee71fd634392a6",
+      "minSDK": 26,
+      "targetSDK": 36,
+      "signature": "PASS",
+      "zipCRC": "PASS",
+      "zipAlignment16KiB": "PASS",
+      "elfArchitecture": "PASS"
+    },
+    {
+      "file": "EhViewer-1.15.3-arm64-v8a.apk",
+      "bytes": 8750965,
+      "package": "moe.hycnyl.ehviewer",
+      "versionCode": "180067",
+      "versionName": "1.15.3",
+      "abis": [
+        "arm64-v8a"
+      ],
+      "certificateSHA256": "5d91dff13b6489a9cfadbb197b3e795eefc8c39f849c4543f32c160720fb40a6",
+      "sha256": "6c805e36953357624b54e934ab0e19e940e36eabd9fae9e9928aa575918b593a",
+      "sourceCommit": "c77c8c9158c6240463afc2fee6ee71fd634392a6",
+      "minSDK": 26,
+      "targetSDK": 36,
+      "signature": "PASS",
+      "zipCRC": "PASS",
+      "zipAlignment16KiB": "PASS",
+      "elfArchitecture": "PASS"
+    },
+    {
+      "file": "EhViewer-1.15.3-armeabi-v7a.apk",
+      "bytes": 8497057,
+      "package": "moe.hycnyl.ehviewer",
+      "versionCode": "180067",
+      "versionName": "1.15.3",
+      "abis": [
+        "armeabi-v7a"
+      ],
+      "certificateSHA256": "5d91dff13b6489a9cfadbb197b3e795eefc8c39f849c4543f32c160720fb40a6",
+      "sha256": "77736cb775036b08c364e205768e625c174b7b58274a6f669454d58bc5984d89",
+      "sourceCommit": "c77c8c9158c6240463afc2fee6ee71fd634392a6",
+      "minSDK": 26,
+      "targetSDK": 36,
+      "signature": "PASS",
+      "zipCRC": "PASS",
+      "zipAlignment16KiB": "PASS",
+      "elfArchitecture": "PASS"
+    },
+    {
+      "file": "EhViewer-1.15.3-x86_64.apk",
+      "bytes": 8972263,
+      "package": "moe.hycnyl.ehviewer",
+      "versionCode": "180067",
+      "versionName": "1.15.3",
+      "abis": [
+        "x86_64"
+      ],
+      "certificateSHA256": "5d91dff13b6489a9cfadbb197b3e795eefc8c39f849c4543f32c160720fb40a6",
+      "sha256": "f7aadf1be885b850a32539904553af0228e1824ed42c50d8f7e1838c7adcfd4a",
+      "sourceCommit": "c77c8c9158c6240463afc2fee6ee71fd634392a6",
+      "minSDK": 26,
+      "targetSDK": 36,
+      "signature": "PASS",
+      "zipCRC": "PASS",
+      "zipAlignment16KiB": "PASS",
+      "elfArchitecture": "PASS"
+    },
+    {
+      "file": "EhViewer-1.15.3-x86.apk",
+      "bytes": 8984981,
+      "package": "moe.hycnyl.ehviewer",
+      "versionCode": "180067",
+      "versionName": "1.15.3",
+      "abis": [
+        "x86"
+      ],
+      "certificateSHA256": "5d91dff13b6489a9cfadbb197b3e795eefc8c39f849c4543f32c160720fb40a6",
+      "sha256": "74e589d448880d2221f136a77745e54f92a59b174619c9b5074f51aec90ec351",
+      "sourceCommit": "c77c8c9158c6240463afc2fee6ee71fd634392a6",
+      "minSDK": 26,
+      "targetSDK": 36,
+      "signature": "PASS",
+      "zipCRC": "PASS",
+      "zipAlignment16KiB": "PASS",
+      "elfArchitecture": "PASS"
+    }
+  ],
+  "allPublishedFilesMatchArtifacts": true,
+  "artifacts": [
+    {
+      "id": 12744699119,
+      "name": "EhViewer-1.15.3-apks",
+      "digest": "sha256:623971f027957d06c84f0a9dc9cf6070eb45e5da97ecbf1b2903324e9c7ac9cd"
+    },
+    {
+      "id": 12743809900,
+      "name": "validation-results",
+      "digest": "sha256:58f7be52d2663f50b9820af402cbfe9048ea0fe40c6e9c64a0740440c172993f"
+    }
+  ],
+  "deviceValidation": "No new device UI or SAF acceptance testing. Cache input/budget and Coil behavior tested; gallery navigation reuses the existing detail destination and offline read action."
+}
