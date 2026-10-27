@@ -575,8 +575,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
         }
 
         fun onItemClick(info: DownloadInfo) {
-            launchIO { EhDB.putHistoryInfo(info) }
-            navToReader(info.galleryInfo)
+            navigate(info.galleryInfo.asDst())
         }
 
         Crossfade(targetState = gridView, label = "Downloads") { showGridView ->

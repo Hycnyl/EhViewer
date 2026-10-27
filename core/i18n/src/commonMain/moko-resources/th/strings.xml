@@ -373,4 +373,33 @@
 
     <string name="download_service">บริการดาวน์โหลด</string>
     <string name="favorite_name">รายการโปรด</string>
+    <string name="cached_export">ส่งออกหน้าที่แคชไว้</string>
+    <string name="cached_export_loose">ส่งออกรูปภาพ</string>
+    <string name="cached_export_cbz">ส่งออก CBZ</string>
+    <string name="cached_export_help">ฟังก์ชันนี้ไม่สามารถและไม่ควรใช้แทนการดาวน์โหลดตามปกติ หากยังเข้าถึงแกลเลอรีได้ แนะนำให้ดาวน์โหลดตามขั้นตอนปกติ ใช้ฟังก์ชันนี้เพื่อกู้หน้าจากแคชเฉพาะเมื่อ [เพิ่มแกลเลอรีในรายการโปรดแล้ว + มีรูปภาพอยู่ในแคชของเครื่อง + แกลเลอรีถูกนำออกแล้ว] เท่านั้น</string>
+    <string name="cached_export_loose_description">แนะนำให้เลือกตัวเลือกนี้</string>
+    <string name="cached_export_cbz_description">อาจทำให้ข้อมูลเสียหาย</string>
+    <string name="cached_export_success">ส่งออกแคชเสร็จแล้วและเพิ่มในรายการดาวน์โหลดแล้ว ไฟล์อยู่ในโฟลเดอร์ดาวน์โหลดที่คุณตั้งค่าไว้สำหรับ EhViewer</string>
+    <string name="cached_export_progress">กำลังส่งออกหน้าที่แคชไว้ โปรดอย่าปิดหน้าต่างนี้และรอสักครู่ ความคืบหน้า: ไฟล์รูปภาพ %1$d / %2$d ไฟล์</string>
+    <string name="cached_export_scanning">กำลังค้นหาไฟล์ในเครื่อง…</string>
+    <string name="cached_export_empty">ไม่พบหน้าที่ส่งออกได้</string>
+    <string name="cached_export_unknown">ไม่ทราบจำนวนหน้าทั้งหมด ค้นหาแคชถึงหน้า %1$d แล้ว อาจยังมีหน้าที่มีหมายเลขสูงกว่านี้</string>
+    <string name="cached_export_locations">ตำแหน่งบันทึก</string>
+    <string name="cached_export_local_badge">เฉพาะไฟล์ในเครื่อง</string>
+    <string name="cached_export_range">หน้า %1$d–%2$d</string>
+    <string name="cached_export_scan_limit">ช่วงการค้นหา</string>
+    <string name="cached_export_saved_pages">หน้าที่บันทึก</string>
+    <string name="cached_export_found_pages">หน้าที่ใช้ได้</string>
+    <string name="cached_export_gallery_total">จำนวนหน้าทั้งหมด</string>
+    <string name="cached_export_unknown_value">ไม่ทราบ</string>
+    <string name="cached_export_file_exists">มีไฟล์ชื่อเดียวกันอยู่แล้ว</string>
+    <string name="cached_export_overwrite">เขียนทับ</string>
+    <string name="cached_export_skip">ข้าม</string>
+    <string name="cached_export_remember_choice">ไม่ต้องถามอีกในการส่งออกครั้งนี้</string>
+    <string name="cached_export_cover_saved">บันทึกปกแล้ว</string>
+    <string name="cached_export_cover_unavailable">ไม่พบปกในแคชของเครื่อง ส่งออกรูปภาพของหน้าแล้ว</string>
+    <string name="cached_export_skipped_files">ข้าม %1$d ไฟล์แล้ว</string>
+    <string name="cached_export_warnings">แสดงหรือซ่อนข้อความแจ้ง (ไม่เกิน %1$d รายการแรก)</string>
+    <string name="cached_export_failed_pages">บันทึกไม่ได้ %1$d หน้า</string>
+    <string name="read_cache_size_custom">กำหนดเอง</string>
 </resources>

@@ -104,6 +104,8 @@ internal fun CachedPageExportDialog(info: GalleryInfo, onDismiss: () -> Unit) {
         onDismiss()
     }
     fun export() {
+        completed = 0
+        total = inventory?.sources?.distinctBy { it.page }?.size ?: 0
         running = true
         job = scope.launch {
             try {
@@ -157,15 +159,7 @@ internal fun CachedPageExportDialog(info: GalleryInfo, onDismiss: () -> Unit) {
                             if (report.skippedFiles > 0) ExportBadge(Icons.Outlined.Info, stringResource(R.string.cached_export_skipped_files, report.skippedFiles))
                         }
                         if (report.downloadRegistered) {
-                            ExportNotice(
-                                stringResource(
-                                    when {
-                                        selectedFormat == RescueFormat.CBZ -> R.string.cached_export_archive_registered
-                                        report.knownTotal -> R.string.cached_export_registered
-                                        else -> R.string.cached_export_offline_registered
-                                    },
-                                ),
-                            )
+                            ExportNotice(stringResource(R.string.cached_export_success))
                         } else {
                             ExportNotice(stringResource(R.string.cached_export_not_registered), warning = true)
                         }

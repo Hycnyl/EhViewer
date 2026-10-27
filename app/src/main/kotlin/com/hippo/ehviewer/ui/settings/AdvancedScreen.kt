@@ -167,12 +167,7 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
                     }
                 }
             }
-            SimpleMenuPreferenceInt(
-                title = stringResource(id = R.string.settings_advanced_read_cache_size),
-                entry = com.hippo.ehviewer.R.array.read_cache_size_entries,
-                entryValueRes = com.hippo.ehviewer.R.array.read_cache_size_entry_values,
-                state = Settings.readCacheSize.asMutableState(),
-            )
+            ReadCacheSizePreference()
             var currentLanguage by remember { mutableStateOf(getAppLanguage()) }
             val languages = remember { getLanguages() }
             DropdownListPreference(

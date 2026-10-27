@@ -620,11 +620,10 @@
     <string name="cached_export_scanning">正在扫描本机文件，不会联网…</string>
     <string name="cached_export_empty">当前未找到可导出的完整页面，不会创建下载项或空归档。</string>
     <string name="cached_export_unknown">画廊总页数未知。已扫描到第 %1$d 页对应的缓存索引，可能遗漏更高页号；发现的最大页号仅代表已知下界。</string>
-    <string name="cached_export_help">仅保存本地页面，不会补下缺页。CBZ 使用正常的 GID.cbz 结构，已缓存封面保存在散图或归档旁。</string>
-    <string name="cached_export_progress">正在准备 %1$d / %2$d 个图片文件；随后还需打包和校验。取消会保留源文件和已保存的文件。</string>
+    <string name="cached_export_help">本功能不可且不应替代下载，只要您仍可访问画廊，都建议通过正常下载流程进行本地下载。只有当您[收藏了画廊+本地缓存了图片+画廊已下架]时，才建议使用此功能从本机缓存中导出已有页面数据。</string>
+    <string name="cached_export_progress">正在导出已缓存页面，请勿关闭此窗口，请耐心等待。当前进度：%1$d / %2$d 个图片文件。</string>
     <string name="cached_export_page_numbers">已保存的页号（前 100 项）：%1$s</string>
     <string name="cached_export_failed_pages">发现的页面中有 %1$d 页未能保存。</string>
-    <string name="cached_export_registered">可在下载列表查看。已有下载状态不变；新登记项保持未完成，本操作不会补下缺页。</string>
     <string name="cached_export_error">导出失败：%1$s</string>
     <string name="cached_export_active">此画廊仍在排队、阅读或收尾写入。请先暂停下载并关闭该画廊阅读器，待任务结束后再导出。</string>
     <string name="cached_export_token_conflict">本地 token 记录存在冲突，仅保留与当前画廊身份匹配的真实页面 token，不会联网刷新。</string>
@@ -643,17 +642,17 @@
     <string name="cached_export_found_pages">可用页数</string>
     <string name="cached_export_gallery_total">画廊总页数</string>
     <string name="cached_export_unknown_value">未知</string>
-    <string name="cached_export_loose_description">保留原页号，逐张保存图片</string>
-    <string name="cached_export_cbz_description">GID.cbz，可从下载列表直接阅读</string>
+    <string name="cached_export_loose_description">推荐选择此项</string>
+    <string name="cached_export_cbz_description">有一定破坏性</string>
     <string name="cached_export_warnings">展开或收起提示（前 %1$d 项）</string>
-    <string name="cached_export_offline_registered">已加入下载列表，可离线阅读已知缓存范围。总页数核实前不会作为普通完整下载处理。</string>
     <string name="cached_export_cover_saved">封面已保存</string>
     <string name="cached_export_cover_unavailable">未找到本地封面缓存，页面图片已导出。</string>
-    <string name="cached_export_archive_registered">已加入下载列表，可直接阅读归档。归档仅包含已缓存页面。</string>
     <string name="cached_export_file_exists">已有同名文件</string>
     <string name="cached_export_overwrite">覆盖</string>
     <string name="cached_export_skip">跳过</string>
     <string name="cached_export_remember_choice">不再询问（仅本次导出）</string>
     <string name="cached_export_skipped_files">已跳过 %1$d 个文件</string>
     <string name="cached_export_metadata_unmatched">本地 %1$s 未提供匹配的总页数信息。</string>
+    <string name="cached_export_success">已完成缓存导出，已加入下载列表；导出路径为您为 EhViewer 设置的下载路径。</string>
+    <string name="read_cache_size_custom">自定义</string>
 </resources>
