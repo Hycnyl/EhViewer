@@ -12,7 +12,6 @@ import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Rule
@@ -72,19 +71,8 @@ class CachedPageFilesTest {
     }
 
     @Test
-    fun repeatedSnapshotsNeverUseCompleteArchiveNamesOrOverwriteHistory() {
-        val existing = mutableSetOf("123.cbz", "123.zip", "123.cached-partial.cbz")
-        val first = rescueArchiveName(123) { it in existing }
-        existing += first
-        val second = rescueArchiveName(123) { it in existing }
-        assertEquals("123.cached-partial-2.cbz", first)
-        assertEquals("123.cached-partial-3.cbz", second)
-        assertFalse(first == "123.cbz" || first == "123.zip")
-    }
-
-    @Test
     fun sparseZipIsReadableAndCrcCorruptionIsRejected() {
-        val file = temporary.newFile("123.cached-partial.cbz")
+        val file = temporary.newFile("123.cbz")
         val names = setOf("00000003.png", "00000008.png", "ComicInfo.xml")
         ZipOutputStream(file.outputStream()).use { zip ->
             zip.setLevel(0)

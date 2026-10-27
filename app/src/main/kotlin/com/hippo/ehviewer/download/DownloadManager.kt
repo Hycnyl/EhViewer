@@ -131,6 +131,8 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
 
     private suspend fun canQueueGallery(info: GalleryInfo): Boolean {
         val existing = getDownloadInfo(info.gid)?.takeIf { it.token == info.token }
+        // Standard archives use the original queue fast path, including rescued GID.cbz.
+        if (existing?.archiveFile != null) return true
         val dirname = existing?.dirname ?: EhDB.getDownloadDirname(info.gid)
         val state = dirname?.let { readCompatFromPath(downloadLocation / it / SPIDER_INFO_FILENAME) }?.takeIf { it.matchesIdentity(info) }
             ?: readFromCache(info.gid)?.takeIf { it.matchesIdentity(info) }
