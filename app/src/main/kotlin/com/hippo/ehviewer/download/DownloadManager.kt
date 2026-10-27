@@ -16,7 +16,10 @@
 package com.hippo.ehviewer.download
 
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.util.SparseLongArray
+import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.Stable
@@ -37,6 +40,7 @@ import com.ehviewer.core.files.delete
 import com.ehviewer.core.files.find
 import com.ehviewer.core.files.toOkioPath
 import com.ehviewer.core.files.toUri
+import com.ehviewer.core.i18n.R
 import com.ehviewer.core.model.BaseGalleryInfo
 import com.ehviewer.core.model.GalleryInfo
 import com.ehviewer.core.preferences.edit
@@ -51,9 +55,12 @@ import com.hippo.ehviewer.spider.SpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.SPIDER_INFO_FILENAME
 import com.hippo.ehviewer.spider.SpiderQueen.OnSpiderListener
 import com.hippo.ehviewer.spider.downloadDirname
+import com.hippo.ehviewer.spider.matchesIdentity
 import com.hippo.ehviewer.spider.readComicInfo
 import com.hippo.ehviewer.spider.readCompatFromPath
+import com.hippo.ehviewer.spider.readFromCache
 import com.hippo.ehviewer.spider.toSimpleTags
+import com.hippo.ehviewer.spider.trustedPageCount
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.insertWith
 import com.hippo.ehviewer.util.runAssertingNotMainThread
@@ -70,6 +77,7 @@ import logcat.LogPriority
 import okio.Path
 import okio.Path.Companion.toOkioPath
 import okio.Path.Companion.toPath
+import splitties.init.appCtx
 
 object DownloadManager : OnSpiderListener, CoroutineScope {
     override val coroutineContext = Dispatchers.IO + Job()
@@ -100,18 +108,42 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
 
     private val mutex = Mutex()
 
-    // Queue creation and local rescue output share this lock. An unrelated running download
-    // can still finish; only new queue requests wait while a rescue commits its files.
-    private val localOutputMutex = Mutex()
+    // Preserve the original ordering of queue requests. Export I/O never holds this lock.
+    private val queueRequestMutex = Mutex()
 
-    internal suspend fun <T> withCachedPageExport(gid: Long, activeMessage: String, action: suspend () -> T): T = localOutputMutex.withLock {
-        mutex.withLock {
-            check(
+    internal suspend fun <T> withCachedPageExport(gid: Long, activeMessage: String, action: suspend () -> T): T = galleryWorkGate.withExport(
+        gid,
+        activeMessage,
+        isIdle = {
+            mutex.withLock {
                 mCurrentTask?.gid != gid && mWaitList.none { it.gid == gid } &&
-                    getDownloadState(gid) != DownloadInfo.STATE_WAIT && getDownloadState(gid) != DownloadInfo.STATE_DOWNLOAD,
-            ) { activeMessage }
+                    getDownloadState(gid) != DownloadInfo.STATE_WAIT && getDownloadState(gid) != DownloadInfo.STATE_DOWNLOAD
+            }
+        },
+        action = action,
+    )
+
+    private fun notifyExportBusy() {
+        Handler(Looper.getMainLooper()).post {
+            Toast.makeText(appCtx, R.string.cached_export_queue_busy, Toast.LENGTH_LONG).show()
         }
-        action()
+    }
+
+    private suspend fun canQueueGallery(info: GalleryInfo): Boolean {
+        val existing = getDownloadInfo(info.gid)?.takeIf { it.token == info.token }
+        val dirname = existing?.dirname ?: EhDB.getDownloadDirname(info.gid)
+        val state = dirname?.let { readCompatFromPath(downloadLocation / it / SPIDER_INFO_FILENAME) }?.takeIf { it.matchesIdentity(info) }
+            ?: readFromCache(info.gid)?.takeIf { it.matchesIdentity(info) }
+        if (state == null || state.cachedPageCount == 0) return true
+        val pages = maxOf(info.pages, existing?.pages ?: 0)
+        if (pages in state.cachedPageCount..100_000) {
+            if (existing != null) existing.pages = pages
+            return true
+        }
+        Handler(Looper.getMainLooper()).post {
+            Toast.makeText(appCtx, R.string.cached_export_offline_only, Toast.LENGTH_LONG).show()
+        }
+        return false
     }
 
     private val sortMutex = Mutex()
@@ -188,7 +220,9 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
     }
 
     suspend fun startDownload(galleryInfo: BaseGalleryInfo, label: String?) {
-        localOutputMutex.withLock { startDownloadInternal(galleryInfo, label) }
+        queueRequestMutex.withLock {
+            if (!galleryWorkGate.withDownload(galleryInfo.gid) { startDownloadInternal(galleryInfo, label) }) notifyExportBusy()
+        }
     }
 
     private suspend fun startDownloadInternal(galleryInfo: BaseGalleryInfo, label: String?) {
@@ -196,6 +230,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
             // It is current task
             return
         }
+        if (!canQueueGallery(galleryInfo)) return
 
         // Check in download list
         var info = mAllInfoMap[galleryInfo.gid]
@@ -240,7 +275,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
     }
 
     suspend fun startRangeDownload(gidList: LongArray) {
-        localOutputMutex.withLock { startRangeDownloadInternal(gidList) }
+        queueRequestMutex.withLock { startRangeDownloadInternal(gidList) }
     }
 
     private suspend fun startRangeDownloadInternal(gidList: LongArray) {
@@ -252,12 +287,23 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
                 }
             }
         if (updateList.isNotEmpty()) {
-            updateList.onEach {
-                it.state = DownloadInfo.STATE_WAIT
-                EhDB.putDownloadInfo(it)
-                mutableNotifyFlow.emit(it)
+            val queued = mutableListOf<DownloadInfo>()
+            var blocked = false
+            updateList.forEach { info ->
+                if (!galleryWorkGate.withDownload(info.gid) {
+                        if (canQueueGallery(info)) {
+                            info.state = DownloadInfo.STATE_WAIT
+                            EhDB.putDownloadInfo(info)
+                            mutableNotifyFlow.emit(info)
+                            queued += info
+                        }
+                    }
+                ) {
+                    blocked = true
+                }
             }
-            mWaitList.addAll(updateList)
+            mWaitList.addAll(queued)
+            if (blocked) notifyExportBusy()
             ensureDownload()
         }
     }
@@ -281,7 +327,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
     }.collectAsState(transform(info)).value
 
     suspend fun startAllDownload() {
-        localOutputMutex.withLock { startAllDownloadInternal() }
+        queueRequestMutex.withLock { startAllDownloadInternal() }
     }
 
     private suspend fun startAllDownloadInternal() {
@@ -294,12 +340,23 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
             }
         }
         if (updateList.isNotEmpty()) {
-            updateList.onEach {
-                it.state = DownloadInfo.STATE_WAIT
-                EhDB.putDownloadInfo(it)
-                mutableNotifyFlow.emit(it)
+            val queued = mutableListOf<DownloadInfo>()
+            var blocked = false
+            updateList.forEach { info ->
+                if (!galleryWorkGate.withDownload(info.gid) {
+                        if (canQueueGallery(info)) {
+                            info.state = DownloadInfo.STATE_WAIT
+                            EhDB.putDownloadInfo(info)
+                            mutableNotifyFlow.emit(info)
+                            queued += info
+                        }
+                    }
+                ) {
+                    blocked = true
+                }
             }
-            mWaitList.addAll(updateList)
+            mWaitList.addAll(queued)
+            if (blocked) notifyExportBusy()
             ensureDownload()
         }
     }
@@ -594,10 +651,13 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
             }
         }.parMapNotNull(concurrency = 5) { (info, updateGallery, updateArtist) ->
             info.downloadDir?.run {
-                val comicInfo = find(COMIC_INFO_FILE)?.let { readComicInfo(it) }
+                val localState = find(SPIDER_INFO_FILENAME)?.let { readCompatFromPath(it) }?.takeIf { it.matchesIdentity(info) }
+                val comicInfo = find(COMIC_INFO_FILE)?.let { readComicInfo(it) }?.takeIf {
+                    (localState?.cachedPageCount ?: 0) == 0 || it.trustedPageCount(info) != null
+                }
                 if (comicInfo != null) {
                     val galleryInfo = if (updateGallery) {
-                        info.pages = comicInfo.pageCount
+                        comicInfo.pageCount.takeIf { it in 1..100_000 }?.let { info.pages = it }
                         info.simpleTags = comicInfo.toSimpleTags()
                         info.galleryInfo
                     } else {
@@ -617,11 +677,9 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
                         null
                     }
                 } else if (info.pages == 0) {
-                    val galleryInfo = find(SPIDER_INFO_FILENAME)?.let {
-                        readCompatFromPath(it)?.run {
-                            info.pages = pages
-                            info.galleryInfo
-                        }
+                    val galleryInfo = localState?.takeIf { it.cachedPageCount == 0 && it.pages in 1..100_000 }?.run {
+                        info.pages = pages
+                        info.galleryInfo
                     }
 
                     galleryInfo?.let { it to null }

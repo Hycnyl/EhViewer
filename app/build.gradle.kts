@@ -17,6 +17,7 @@ plugins {
 val supportedAbis = arrayOf("arm64-v8a", "x86_64", "armeabi-v7a", "x86")
 
 android {
+    testOptions.unitTests.isIncludeAndroidResources = true
     splits {
         abi {
             isEnable = true
@@ -47,15 +48,12 @@ android {
         commandLine = "git log -1 --format=%ct".split(' ')
     }.standardOutput.asText.get().trim()
 
-    val repoName = providers.exec {
-        commandLine = "git remote get-url origin".split(' ')
-    }.standardOutput.asText.get().trim().removePrefix("https://github.com/").removePrefix("git@github.com:")
-        .removeSuffix(".git")
+    val repoName = "Hycnyl/EhViewer"
 
     defaultConfig {
         applicationId = "moe.hycnyl.ehviewer"
-        versionCode = 180064
-        versionName = "1.15.0"
+        versionCode = 180065
+        versionName = "1.15.1"
         // versionNameSuffix = "-SNAPSHOT"
         buildConfigField("String", "RAW_VERSION_NAME", "\"$versionName${versionNameSuffix.orEmpty()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"$commitSha\"")
@@ -168,6 +166,7 @@ baselineProfile {
 
 dependencies {
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.robolectric:robolectric:4.16.1")
     implementation(projects.core.data)
     implementation(projects.core.i18n)
     implementation(projects.core.ui)

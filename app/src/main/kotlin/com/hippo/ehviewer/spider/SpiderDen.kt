@@ -70,18 +70,18 @@ class SpiderDen(val info: GalleryInfo) {
         private set
 
     private var tempDownloadDir: Path? = null
-    private val saveAsCbz = Settings.saveAsCbz.value
+    private var saveAsCbz = Settings.saveAsCbz.value
     private val archiveName = "$gid.cbz"
 
     private val lock = ReentrantReadWriteLock()
 
     // Search in both directories to maintain compatibility
     private val fileCache by lazy {
-        listOfNotNull(tempDownloadDir, downloadDir).flatMap { dir ->
+        listOfNotNull(downloadDir, tempDownloadDir).flatMap { dir ->
             val files = dir.list()
             val names = files.map { it.name }.toSet()
             files.filterNot { rescueMarkerName(it.name) in names }
-        }.associateBy { it.name }.toMutableMap()
+        }.associateBy { it }.toMutableMap()
     }
 
     // Read committed snapshots only. Never change spider mode or call the normal downloader.
@@ -149,6 +149,8 @@ class SpiderDen(val info: GalleryInfo) {
         private set
 
     suspend fun setMode(value: Int) {
+        // Latch the preference at the start of a download, not halfway through one.
+        if (value == SpiderQueen.MODE_DOWNLOAD && mode != value) saveAsCbz = Settings.saveAsCbz.value
         mode = value
         if (mode == SpiderQueen.MODE_DOWNLOAD) {
             if (downloadDir == null) {
@@ -165,9 +167,36 @@ class SpiderDen(val info: GalleryInfo) {
         return sCache.read(key) {} != null
     }
 
-    private fun findImageFile(index: Int, temp: Boolean = false) = lock.read {
+    private fun findImageFile(index: Int, temp: Boolean = false, directory: Path? = null) = lock.read {
         val head = perFilename(index)
-        fileCache.entries.firstOrNull { (name) -> name.startsWith(head) && temp == name.endsWith(TEMP_SUFFIX) }?.value
+        fileCache.values.firstOrNull { file ->
+            file.name.startsWith(head) && temp == file.name.endsWith(TEMP_SUFFIX) &&
+                (directory == null || file.parent == directory) &&
+                (file.parent!! / rescueMarkerName(file.name)).exists().not() && (temp || isReadablePage(file))
+        }
+    }
+
+    private fun isReadablePage(file: Path) = runCatching {
+        file.withRescueInput { it.read() >= 0 }
+    }.getOrDefault(false)
+
+    private fun ensureImageInDownloadDir(index: Int): Boolean {
+        val target = imageDir ?: return false
+        if (findImageFile(index, directory = target) != null) return true
+        val existing = findImageFile(index)
+        if (existing != null) {
+            val destination = target / existing.name
+            val copied = runSuspendCatching {
+                if (destination.exists()) {
+                    check((target / rescueMarkerName(destination.name)).exists().not() && isReadablePage(destination))
+                } else {
+                    copyLocalPageSafely(existing, destination)
+                }
+                lock.write { fileCache[destination] = destination }
+            }.onFailure { logcat(it) }.isSuccess
+            if (copied) return true
+        }
+        return copyFromCacheToDownloadDir(index)
     }
 
     private fun containInDownloadDir(index: Int): Boolean = findImageFile(index) != null
@@ -179,7 +208,11 @@ class SpiderDen(val info: GalleryInfo) {
             sCache.read(key) {
                 val extension = metadata.toFile().readText()
                 val file = dir.findDownloadFileForIndex(index, extension)
-                data sendTo file
+                if (file.exists()) {
+                    check((dir / rescueMarkerName(file.name)).exists().not() && isReadablePage(file))
+                } else {
+                    copyLocalPageSafely(data, file)
+                }
             } != null
         }.onFailure {
             logcat(it)
@@ -191,7 +224,7 @@ class SpiderDen(val info: GalleryInfo) {
             containInCache(index) || containInDownloadDir(index)
         }
         SpiderQueen.MODE_DOWNLOAD -> {
-            containInDownloadDir(index) || copyFromCacheToDownloadDir(index)
+            ensureImageInDownloadDir(index)
         }
         else -> {
             false
@@ -205,7 +238,7 @@ class SpiderDen(val info: GalleryInfo) {
 
     private fun removeTempFile(index: Int) = findImageFile(index, temp = true)?.let { file ->
         file.delete()
-        lock.write { fileCache.remove(file.name) }
+        lock.write { fileCache.remove(file) }
     }
 
     fun removeIntermediateFiles(index: Int) {
@@ -215,7 +248,8 @@ class SpiderDen(val info: GalleryInfo) {
 
     private fun Path.findDownloadFileForIndex(index: Int, extension: String) = with(lock) {
         val name = perFilename(index, extension)
-        read { fileCache[name] } ?: resolve(name).also { write { fileCache[name] = it } }
+        val file = resolve(name)
+        read { fileCache[file] } ?: file.also { write { fileCache[file] = it } }
     }
 
     suspend fun makeHttpCallAndSaveImage(
@@ -240,22 +274,23 @@ class SpiderDen(val info: GalleryInfo) {
             fops(tempFile)
             val file = resolve(tempFile.name.removeSuffix(TEMP_SUFFIX))
             file.delete()
-            lock.write { fileCache.remove(file.name) }
+            lock.write { fileCache.remove(file) }
             tempFile moveTo file
             lock.write {
-                fileCache.remove(tempFile.name)
-                fileCache[file.name] = file
+                fileCache.remove(tempFile)
+                fileCache[file] = file
             }
-            return true
+            return mode != SpiderQueen.MODE_DOWNLOAD || ensureImageInDownloadDir(index)
         }
 
         // Read Mode, allow save to cache
         if (mode == SpiderQueen.MODE_READ) {
             val key = getImageKey(gid, index)
-            return sCache.suspendEdit(key) {
+            val saved = sCache.suspendEdit(key) {
                 metadata.toFile().writeText(ext)
                 fops(data)
             }
+            return saved && (mode != SpiderQueen.MODE_DOWNLOAD || ensureImageInDownloadDir(index))
         }
         return false
     }
@@ -318,7 +353,8 @@ class SpiderDen(val info: GalleryInfo) {
                 }
             }
         }
-        val source = requireNotNull(findImageFile(index)) { "Source $index not found!" }
+        if (mode == SpiderQueen.MODE_DOWNLOAD) check(ensureImageInDownloadDir(index)) { "Source $index is not available in the download target" }
+        val source = requireNotNull(findImageFile(index, directory = imageDir.takeIf { mode == SpiderQueen.MODE_DOWNLOAD })) { "Source $index not found!" }
         return object : PathSource {
             override val source = source
             override val type by lazy {
