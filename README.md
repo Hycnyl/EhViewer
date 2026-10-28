@@ -1,4 +1,4 @@
-> **Hycnyl 1.15.3 缓存救援 fork**：延续 FooIbar 1.14.6 (`0195f1c`)，包名 `moe.hycnyl.ehviewer`。本版按实机反馈调整导出文案和语言支持，增加 GB 自定义阅读缓存，并将下载列表点击改为进入画廊主页。通过 GitHub Actions 直接发布正式版。详见 [1.15.3 交付说明](docs/DELIVERY-1.15.3.md) 和 [正式版 APK](https://github.com/Hycnyl/EhViewer/releases)。新包无法直接读取旧包私有缓存；请勿卸载旧版或清空缓存。
+> **EhViewer Hycnyl** builds on FooIbar 1.14.6. It adds “Export cached pages” to save locally cached images from removed galleries as individual images or CBZ archives and add them to Downloads. It also adds custom reading cache sizes of 5 GB or more, opens gallery details when tapping a download, and points About and update links to this fork. Package: `moe.hycnyl.ehviewer`. [Download APKs](https://github.com/Hycnyl/EhViewer/releases).
 
 <p align="right">
   <strong>English</strong>

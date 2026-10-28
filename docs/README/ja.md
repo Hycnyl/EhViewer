@@ -1,3 +1,5 @@
+> **EhViewer Hycnyl** は FooIbar 1.14.6 をベースにした派生版です。「キャッシュ済みページのエクスポート」を追加し、削除されたギャラリーのローカルキャッシュを個別の画像または CBZ として保存して、ダウンロード一覧に追加できます。閲覧キャッシュ容量のカスタム設定（5 GB 以上）にも対応し、ダウンロード項目のタップでギャラリー詳細を開くように変更しました。アプリ情報と更新確認のリンクは本リポジトリを参照します。パッケージ名は `moe.hycnyl.ehviewer` です。[APK をダウンロード](https://github.com/Hycnyl/EhViewer/releases)。
+
 <p align="right">
   <a href="/README.md">
   English
