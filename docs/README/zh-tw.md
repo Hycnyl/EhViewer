@@ -1,3 +1,5 @@
+> **Hycnyl 版**以 FooIbar 1.14.6 為基礎，新增「匯出已快取頁面」，可將已下架畫廊的本機快取匯出為個別圖片或 CBZ，並加入下載清單；支援自訂閱讀快取大小（5 GB 起），點選下載項目即可進入畫廊首頁，關於頁面及更新檢查指向本分支。套件名稱為 `moe.hycnyl.ehviewer`。[下載 APK](https://github.com/Hycnyl/EhViewer/releases)。
+
 <p align="right">
   <a href="/README.md">
   English
