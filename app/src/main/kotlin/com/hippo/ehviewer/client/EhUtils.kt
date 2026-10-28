@@ -195,10 +195,8 @@ object EhUtils {
         val gid = galleryDetail.gid
         EhEngine.downloadArchive(gid, galleryDetail.token, archive.res, archive.isHath)?.let {
             val uri = it.toUri()
-            val intent = Intent().apply {
-                action = Intent.ACTION_VIEW
-                setDataAndType(uri, "application/zip")
-            }
+            // A ZIP MIME type filters out browsers when handing off a remote download URL.
+            val intent = Intent(Intent.ACTION_VIEW, uri).addCategory(Intent.CATEGORY_BROWSABLE)
             val name = "$gid-${getSuitableTitle(galleryDetail)}.zip"
             try {
                 ctx.startActivity(intent)
