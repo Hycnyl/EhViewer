@@ -1,6 +1,6 @@
 > 您当前浏览的 EhViewer 基于 Foolbar 1.14.6 版 EhViewer 改造而来，基于我的实际使用体验，增加了一些新功能，调整了一些已有功能。需要说明，我并非专业的开发者，所有变更均由 GPT-6.1 Sol(Max) 完成。我不会、也无法满足所有用户的需求，我无法保证解决软件运行中可能出现的问题，我随时可能引入具有破坏性的新特性，我不建议任何追求极致稳定的用户使用此版本 EhViewer。
 
-> 此版本 EhViewer 修改了包名，与您可能正在使用的[“Foolbar 版”](https://github.com/Foolbar/EhViewer)能够共存，但这也意味着您需要重新配置一些设置项。
+> 此版本 EhViewer 修改了包名，与您可能正在使用的[“Foolbar 版”](https://github.com/FooIbar/EhViewer/releases)能够共存，但这也意味着您需要重新配置一些设置项。
 
 <p align="center">
   <a href="/README.md">
@@ -22,24 +22,6 @@
   <img src="https://github.com/FooIbar/EhViewer-art/blob/master/launcher_icon-web.svg" width="200" alt="EhViewer">
   <br>EhViewer<br>
 </h1>
-
-<p align="center">
-  <a href="https://github.com/FooIbar/EhViewer/actions/workflows/ci.yml">
-    <img src="https://github.com/FooIbar/EhViewer/actions/workflows/ci.yml/badge.svg" alt="Github Actions">
-  </a>
-  <a href="/LICENSE">
-    <img src="https://img.shields.io/github/license/FooIbar/EhViewer" alt="LICENSE">
-  </a>
-  <a href="https://www.codefactor.io/repository/github/FooIbar/EhViewer">
-    <img src="https://www.codefactor.io/repository/github/FooIbar/EhViewer/badge" alt="CodeFactor">
-  </a>
-  <a href="https://github.com/FooIbar/EhViewer/releases">
-    <img src="https://img.shields.io/github/v/release/FooIbar/EhViewer" alt="Release">
-  </a>
-  <a href="https://github.com/FooIbar/EhViewer/issues">
-    <img src="https://img.shields.io/github/issues/FooIbar/EhViewer" alt="Issues">
-  </a>
-</p>
 
 <div align="center">
   <h3>
