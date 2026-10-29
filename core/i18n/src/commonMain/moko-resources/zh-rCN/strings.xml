@@ -458,11 +458,11 @@
     <string name="settings_download_download_delay_summary">每次下载延时 %s 毫秒</string>
     <string name="settings_download_timeout_speed">最低下载速度（KB/s）</string>
     <string name="no_browser_installed">请安装一个浏览器。</string>
-    <string name="toplist_alltime">从始至终</string>
-    <string name="toplist_pastyear">过去一年</string>
-    <string name="toplist_pastmonth">过去一个月</string>
-    <string name="toplist_yesterday">昨日</string>
-    <string name="toplist">排行</string>
+    <string name="toplist_alltime">历史总榜</string>
+    <string name="toplist_pastyear">近一年排行</string>
+    <string name="toplist_pastmonth">近一月排行</string>
+    <string name="toplist_yesterday">昨日排行</string>
+    <string name="toplist">画廊排行</string>
     <string name="tag_vote_down">不，这不是</string>
     <string name="tag_vote_up">是的，这很正确</string>
     <string name="tag_vote_withdraw">撤回投票</string>
