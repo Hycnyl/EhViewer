@@ -1,4 +1,4 @@
-> **EhViewer Hycnyl** builds on FooIbar 1.14.6. It adds “Export cached pages” to save locally cached images from removed galleries as individual images or CBZ archives and add them to Downloads. It also adds custom reading cache sizes of 5 GB or more, opens gallery details when tapping a download, and points About and update links to this fork. Package: `moe.hycnyl.ehviewer`. [Download APKs](https://github.com/Hycnyl/EhViewer/releases).
+> **EhViewer Hycnyl** builds on FooIbar 1.14.6. It adds “Export cached pages” to save locally cached images from removed galleries as individual images or CBZ archives and add them to Downloads. It also adds custom reading cache sizes of 5 GB or more and cleanup by age, opens gallery details when tapping a download, and points About and update links to this fork. Package: `moe.hycnyl.ehviewer`. [Download APKs](https://github.com/Hycnyl/EhViewer/releases).
 
 <p align="right">
   <strong>English</strong>

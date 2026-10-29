@@ -642,4 +642,14 @@
     <string name="cached_export_warnings">通知を表示／非表示（先頭 %1$d 件）</string>
     <string name="cached_export_failed_pages">%1$d ページを保存できませんでした。</string>
     <string name="read_cache_size_custom">カスタム</string>
+    <string name="read_cache_cleanup">閲覧キャッシュを削除</string>
+    <string name="read_cache_cleanup_summary">選択した日時より前に保存した画像を削除</string>
+    <string name="read_cache_cleanup_day">1日前</string>
+    <string name="read_cache_cleanup_week">1週間前</string>
+    <string name="read_cache_cleanup_month">1か月前</string>
+    <string name="read_cache_cleanup_year">1年前</string>
+    <string name="read_cache_cleanup_action">削除</string>
+    <string name="read_cache_cleanup_running">削除中…</string>
+    <string name="read_cache_cleanup_done">%1$d 件のキャッシュを削除しました</string>
+    <string name="read_cache_cleanup_failed">キャッシュを削除できませんでした。もう一度お試しください。</string>
 </resources>

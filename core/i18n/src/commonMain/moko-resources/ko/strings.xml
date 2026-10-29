@@ -391,4 +391,14 @@
     <string name="cached_export_warnings">안내 표시 또는 숨기기(처음 %1$d개)</string>
     <string name="cached_export_failed_pages">%1$d페이지를 저장하지 못했습니다.</string>
     <string name="read_cache_size_custom">사용자 지정</string>
+    <string name="read_cache_cleanup">읽기 캐시 정리</string>
+    <string name="read_cache_cleanup_summary">선택한 시점 이전에 저장된 이미지 정리</string>
+    <string name="read_cache_cleanup_day">하루 전</string>
+    <string name="read_cache_cleanup_week">일주일 전</string>
+    <string name="read_cache_cleanup_month">한 달 전</string>
+    <string name="read_cache_cleanup_year">일 년 전</string>
+    <string name="read_cache_cleanup_action">정리</string>
+    <string name="read_cache_cleanup_running">정리 중…</string>
+    <string name="read_cache_cleanup_done">캐시 %1$d개를 정리했습니다</string>
+    <string name="read_cache_cleanup_failed">캐시를 정리하지 못했습니다. 다시 시도하세요.</string>
 </resources>

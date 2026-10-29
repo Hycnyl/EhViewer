@@ -216,4 +216,14 @@
     <string name="cached_export_warnings">Vis eller skjul meldinger (de første %1$d)</string>
     <string name="cached_export_failed_pages">%1$d sider kunne ikke lagres.</string>
     <string name="read_cache_size_custom">Egendefinert</string>
+    <string name="read_cache_cleanup">Tøm lesebuffer</string>
+    <string name="read_cache_cleanup_summary">Fjern bilder lagret før valgt tidspunkt</string>
+    <string name="read_cache_cleanup_day">For én dag siden</string>
+    <string name="read_cache_cleanup_week">For én uke siden</string>
+    <string name="read_cache_cleanup_month">For én måned siden</string>
+    <string name="read_cache_cleanup_year">For ett år siden</string>
+    <string name="read_cache_cleanup_action">Tøm</string>
+    <string name="read_cache_cleanup_running">Tømmer…</string>
+    <string name="read_cache_cleanup_done">Fjernet %1$d bufferoppføringer</string>
+    <string name="read_cache_cleanup_failed">Kunne ikke tømme bufferen. Prøv igjen.</string>
 </resources>

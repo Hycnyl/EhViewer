@@ -349,4 +349,14 @@
     <string name="cached_export_warnings">Hinweise ein-/ausblenden (erste %1$d)</string>
     <string name="cached_export_failed_pages">%1$d Seiten konnten nicht gespeichert werden.</string>
     <string name="read_cache_size_custom">Benutzerdefiniert</string>
+    <string name="read_cache_cleanup">Lesecache leeren</string>
+    <string name="read_cache_cleanup_summary">Vor dem gewählten Zeitpunkt gespeicherte Bilder entfernen</string>
+    <string name="read_cache_cleanup_day">Vor einem Tag</string>
+    <string name="read_cache_cleanup_week">Vor einer Woche</string>
+    <string name="read_cache_cleanup_month">Vor einem Monat</string>
+    <string name="read_cache_cleanup_year">Vor einem Jahr</string>
+    <string name="read_cache_cleanup_action">Leeren</string>
+    <string name="read_cache_cleanup_running">Wird geleert…</string>
+    <string name="read_cache_cleanup_done">%1$d Cacheeinträge entfernt</string>
+    <string name="read_cache_cleanup_failed">Der Cache konnte nicht geleert werden. Bitte erneut versuchen.</string>
 </resources>

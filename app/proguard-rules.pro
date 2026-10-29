@@ -26,3 +26,8 @@
 
 -allowaccessmodification
 -repackageclasses
+
+# ReadCacheCleaner enumerates existing Coil 3.3 entries through this field.
+-keep class coil3.disk.RealDiskCache {
+    coil3.disk.DiskLruCache cache;
+}

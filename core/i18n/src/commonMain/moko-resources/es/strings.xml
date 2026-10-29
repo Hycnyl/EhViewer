@@ -397,4 +397,14 @@
     <string name="cached_export_warnings">Mostrar u ocultar avisos (primeros %1$d)</string>
     <string name="cached_export_failed_pages">No se pudieron guardar %1$d páginas.</string>
     <string name="read_cache_size_custom">Personalizado</string>
+    <string name="read_cache_cleanup">Limpiar caché de lectura</string>
+    <string name="read_cache_cleanup_summary">Borrar imágenes guardadas antes de la fecha elegida</string>
+    <string name="read_cache_cleanup_day">Hace un día</string>
+    <string name="read_cache_cleanup_week">Hace una semana</string>
+    <string name="read_cache_cleanup_month">Hace un mes</string>
+    <string name="read_cache_cleanup_year">Hace un año</string>
+    <string name="read_cache_cleanup_action">Limpiar</string>
+    <string name="read_cache_cleanup_running">Limpiando…</string>
+    <string name="read_cache_cleanup_done">Se eliminaron %1$d entradas de caché</string>
+    <string name="read_cache_cleanup_failed">No se pudo limpiar la caché. Vuelve a intentarlo.</string>
 </resources>

@@ -535,4 +535,14 @@
     <string name="cached_export_metadata_unmatched">本機 %1$s 未提供相符的總頁數資訊。</string>
     <string name="cached_export_success">已完成緩存匯出，已加入下載列表；匯出路徑為您為 EhViewer 設定的下載路徑。</string>
     <string name="read_cache_size_custom">自訂</string>
+    <string name="read_cache_cleanup">清理閱讀快取</string>
+    <string name="read_cache_cleanup_summary">清理所選時間以前儲存的圖片快取</string>
+    <string name="read_cache_cleanup_day">一天前</string>
+    <string name="read_cache_cleanup_week">一週前</string>
+    <string name="read_cache_cleanup_month">一個月前</string>
+    <string name="read_cache_cleanup_year">一年前</string>
+    <string name="read_cache_cleanup_action">清理</string>
+    <string name="read_cache_cleanup_running">清理中…</string>
+    <string name="read_cache_cleanup_done">已清理 %1$d 項快取</string>
+    <string name="read_cache_cleanup_failed">清理失敗，請重試</string>
 </resources>

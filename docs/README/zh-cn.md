@@ -1,4 +1,4 @@
-> **Hycnyl 版**基于 FooIbar 1.14.6，新增“导出已缓存页面”，可将已下架画廊的本机缓存导出为散图或 CBZ，并加入下载列表；支持自定义阅读缓存大小（5 GB 起），下载列表点击进入画廊主页，关于页及更新检查指向本分支。包名为 `moe.hycnyl.ehviewer`。[下载 APK](https://github.com/Hycnyl/EhViewer/releases)。
+> **Hycnyl 版**基于 FooIbar 1.14.6，新增“导出已缓存页面”，可将已下架画廊的本机缓存导出为散图或 CBZ，并加入下载列表；支持自定义阅读缓存大小（5 GB 起）和按时间清理缓存，下载列表点击进入画廊主页，关于页及更新检查指向本分支。包名为 `moe.hycnyl.ehviewer`。[下载 APK](https://github.com/Hycnyl/EhViewer/releases)。
 
 <p align="right">
   <a href="/README.md">

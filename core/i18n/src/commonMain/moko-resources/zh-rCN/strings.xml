@@ -655,4 +655,14 @@
     <string name="cached_export_metadata_unmatched">本地 %1$s 未提供匹配的总页数信息。</string>
     <string name="cached_export_success">已完成缓存导出，已加入下载列表；导出路径为您为 EhViewer 设置的下载路径。</string>
     <string name="read_cache_size_custom">自定义</string>
+    <string name="read_cache_cleanup">清理阅读缓存</string>
+    <string name="read_cache_cleanup_summary">清理所选时间以前保存的图片缓存</string>
+    <string name="read_cache_cleanup_day">一天前</string>
+    <string name="read_cache_cleanup_week">一周前</string>
+    <string name="read_cache_cleanup_month">一月前</string>
+    <string name="read_cache_cleanup_year">一年前</string>
+    <string name="read_cache_cleanup_action">清理</string>
+    <string name="read_cache_cleanup_running">清理中…</string>
+    <string name="read_cache_cleanup_done">已清理 %1$d 项缓存</string>
+    <string name="read_cache_cleanup_failed">清理失败，请重试</string>
 </resources>
