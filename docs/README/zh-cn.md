@@ -106,7 +106,7 @@
 
 *运行 Android 6 的设备需安装 [ISRG Root X1](https://letsencrypt.org/certs/isrgrootx1.pem) 证书
 
-<a href=https://github.com/Hycnyl/EhViewer/releases">
+<a href="https://github.com/Hycnyl/EhViewer/releases">
 <img alt="Get it on GitHub" src="https://github.com/FooIbar/EhViewer-art/blob/master/get-it-on-github.svg" width="200px"/>
 </a>
 
