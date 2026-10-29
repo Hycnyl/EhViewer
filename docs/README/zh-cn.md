@@ -25,8 +25,8 @@
 
 <div align="center">
   <h3>
-    <a href="#描述">
-    描述
+    <a href="#变更">
+    变更
     </a>
     <span> | </span>
     <a href="#下载">
@@ -47,11 +47,10 @@
   </h3>
 </div>
 
-# 描述
+# 变更
 
-致力于高性能的现代 EhViewer 分支
+＞请注意，变更始终是与 Foolbar 1.14.6 版 EhViewer 相比较的。
 
-已针对性适配 Material Design 3 及其动态取色系统
 
 # 下载
 
