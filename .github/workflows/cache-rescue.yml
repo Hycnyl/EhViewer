@@ -38,8 +38,16 @@ jobs:
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
               print(f'name={version}', file=output)
           PY
-      - name: Build and run focused JVM tests
-        run: ./gradlew :app:testDefaultReleaseUnitTest :app:assembleDefaultRelease --max-workers=1 -Pkotlin.compiler.execution.strategy=in-process --stacktrace
+      - name: Build release APKs
+        env:
+          # Skip tests only for a release explicitly requested without them.
+          SKIP_TESTS: ${{ contains(github.event.head_commit.message, '[skip tests]') }}
+        run: |
+          release_tasks=(:app:assembleDefaultRelease)
+          if [[ "$SKIP_TESTS" != "true" ]]; then
+            release_tasks=(:app:testDefaultReleaseUnitTest "${release_tasks[@]}")
+          fi
+          ./gradlew "${release_tasks[@]}" --max-workers=1 -Pkotlin.compiler.execution.strategy=in-process --stacktrace
       - name: Prepare delivery files
         env:
           RELEASE_VERSION: ${{ steps.version.outputs.name }}
