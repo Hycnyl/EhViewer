@@ -1,6 +1,6 @@
-> 您当前浏览的 EhViewer 基于 Foolbar 1.14.6 版 EhViewer 改造而来，基于我的实际使用体验，增加了一些新功能，调整了一些已有功能。需要说明，我并非专业的开发者，所有变更均由 GPT-6.1 Sol(Max) 完成。我不会、也无法满足所有用户的需求，我无法保证解决软件运行中可能出现的问题，我随时可能引入具有破坏性的新特性，我不建议任何追求极致稳定的用户使用此版本 EhViewer。
+> 您当前浏览的 EhViewer 基于 FooIbar 1.14.6 版 EhViewer 改造而来，基于我的实际使用体验，增加了一些新功能，调整了一些已有功能。需要说明，我并非专业的开发者，所有变更均由 GPT-6.1 Sol(Max) 完成。我不会、也无法满足所有用户的需求，我无法保证解决软件运行中可能出现的问题，我随时可能引入具有破坏性的新特性，我不建议任何追求极致稳定的用户使用此版本 EhViewer。
 
-> 此版本 EhViewer 修改了包名，与您可能正在使用的[“Foolbar 版”](https://github.com/FooIbar/EhViewer/releases)能够共存，但这也意味着您需要重新配置一些设置项。
+> 此版本 EhViewer 修改了包名，与您可能正在使用的[“FooIbar 版”](https://github.com/FooIbar/EhViewer/releases)能够共存，但这也意味着您需要重新配置一些设置项。
 
 <p align="center">
   <a href="/README.md">
@@ -37,7 +37,7 @@
     截图
     </a>
     <span> | </span>
-    <a href="#感谢">
+    <a href="#鸣谢">
     感谢
     </a>
     <span> | </span>
@@ -49,7 +49,7 @@
 
 # 变更
 
-> 请注意，变更始终是与 Foolbar 1.14.6 版 EhViewer 相比较的。
+> 请注意，变更始终是与 FooIbar 1.14.6 版 EhViewer 相比较的。
 
 ## 新增
 
@@ -115,18 +115,44 @@
 ![screenshots-01](https://github.com/FooIbar/EhViewer-art/blob/master/screenshots-01.webp)
 ![screenshots-02](https://github.com/FooIbar/EhViewer-art/blob/master/screenshots-02.webp)
 
-# 感谢
+# 鸣谢
 
-本项目受到了诸多开源项目的帮助
+## 原项目与开发者
 
-- [Arrow](https://arrow-kt.io/)
-- [AOSP & AndroidX](https://source.android.com/)
-- [Kotlin & KotlinX](https://kotlinlang.org/)
-- [Material Icons](https://github.com/google/material-design-icons)
-- [Ktor](https://ktor.io/)
-- [Coil](https://coil-kt.github.io/coil/)
-- [Compose Destinations](https://composedestinations.rafaelcosta.xyz/)
-- [libarchive](https://www.libarchive.org/)
+- "FooIbar / EhViewer" (https://codeberg.org/EhViewer/EhViewer)：本分支的直接上游，基于其 1.14.6 版本继续开发。感谢 FooIbar 及所有贡献者长期以来对 EhViewer 的开发与维护。
+- "Hippo Seven（seven332）/ EhViewer" (https://github.com/seven332/EhViewer)：EhViewer 的原始项目及作者，奠定了应用的基础。
+- "NekoInverter / EhViewer" (https://gitlab.com/NekoInverter/EhViewer)：EhViewer 的重要后续分支，为项目的持续开发和现代化作出了贡献。
+- Tarsin Norbin：EhViewer 后续开发与维护中的重要贡献者。
+- "EhViewer Overhauled" (https://github.com/EhViewer-NekoInverter/EhViewer-Overhauled)：EhViewer 现代化开发过程中的重要分支，推动了 Material Design 3 等技术与界面的应用。
+
+## 其他项目与社区贡献
+
+- "Tachiyomi" (https://github.com/tachiyomiorg)：感谢 Tachiyomi 开源社区提供的阅读器实现与相关代码。
+- "EhTagTranslation" (https://github.com/EhTagTranslation/Database)：感谢项目维护者及翻译贡献者为中文标签翻译所付出的努力。
+- "FooIbar / EhViewer-art" (https://github.com/FooIbar/EhViewer-art)：提供本项目 README 所引用的图标、截图及其他视觉资源。
+- EhViewer 的所有贡献者：感谢历代开发者、翻译人员、问题报告者和社区成员的贡献。
+
+## 主要开源依赖
+
+- "Android Open Source Project（AOSP）" (https://source.android.com/)、"AndroidX 与 Jetpack Compose" (https://developer.android.com/jetpack)
+- "Kotlin 与 KotlinX" (https://kotlinlang.org/)
+- "Arrow" (https://arrow-kt.io/)
+- "Ktor" (https://ktor.io/)
+- "OkHttp" (https://github.com/square/okhttp) 与 "Okio" (https://github.com/square/okio)
+- "Coil" (https://coil-kt.github.io/coil/)
+- "Compose Destinations" (https://github.com/raamcosta/compose-destinations)
+- "Material Icons" (https://github.com/google/material-design-icons) 与 "MaterialKolor" (https://github.com/jordond/materialkolor)
+- "Telephoto" (https://github.com/saket/telephoto)
+- "moko-resources" (https://github.com/icerockdev/moko-resources)
+- "AboutLibraries" (https://github.com/mikepenz/AboutLibraries)
+- "libarchive" (https://github.com/libarchive/libarchive)
+- "libwebp" (https://github.com/webmproject/libwebp)
+- "Nettle" (https://www.lysator.liu.se/~nisse/nettle/) 与 "XZ Utils" (https://github.com/tukaani-project/xz)
+- "Rust" (https://www.rust-lang.org/) 与 "Corrosion" (https://github.com/corrosion-rs/corrosion)
+
+以上仅列出部分主要项目，并非完整依赖清单。各组件的版权、许可协议及其他相关声明，请以项目源码、"LICENSE"、"NOTICE" 和应用内的开源许可信息为准。
+
+再次感谢所有让 EhViewer 得以诞生、延续与发展的贡献者。
 
 # 许可证
 
