@@ -25,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.automirrored.filled.LastPage
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.FormatListNumbered
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Reorder
 import androidx.compose.material.icons.filled.Shuffle
@@ -490,7 +491,20 @@ fun AnimatedVisibilityScope.GalleryListScreen(
         trailingIcon = {
             val sheetState = LocalSideSheetState.current
             IconButton(onClick = { launch { sheetState.open() } }, shapes = IconButtonDefaults.shapes()) {
-                Icon(imageVector = Icons.Outlined.Bookmarks, contentDescription = stringResource(id = R.string.quick_search))
+                Icon(
+                    imageVector = if (isTopList) {
+                        Icons.Default.FormatListNumbered
+                    } else {
+                        Icons.Outlined.Bookmarks
+                    },
+                    contentDescription = stringResource(
+                        id = if (isTopList) {
+                            R.string.toplist
+                        } else {
+                            R.string.quick_search
+                        },
+                    ),
+                )
             }
             AvatarIcon()
         },
