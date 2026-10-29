@@ -38,7 +38,7 @@
     </a>
     <span> | </span>
     <a href="#鸣谢">
-    感谢
+    鸣谢
     </a>
     <span> | </span>
     <a href="#许可证">
