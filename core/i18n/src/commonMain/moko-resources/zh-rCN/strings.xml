@@ -462,7 +462,7 @@
     <string name="toplist_pastyear">近一年排行</string>
     <string name="toplist_pastmonth">近一月排行</string>
     <string name="toplist_yesterday">昨日排行</string>
-    <string name="toplist">画廊排行</string>
+    <string name="toplist">排行</string>
     <string name="tag_vote_down">不，这不是</string>
     <string name="tag_vote_up">是的，这很正确</string>
     <string name="tag_vote_withdraw">撤回投票</string>
@@ -655,8 +655,8 @@
     <string name="cached_export_metadata_unmatched">本地 %1$s 未提供匹配的总页数信息。</string>
     <string name="cached_export_success">已完成缓存导出，已加入下载列表；导出路径为您为 EhViewer 设置的下载路径。</string>
     <string name="read_cache_size_custom">自定义</string>
-    <string name="read_cache_cleanup">清理阅读缓存</string>
-    <string name="read_cache_cleanup_summary">清理所选时间以前保存的图片缓存</string>
+    <string name="read_cache_cleanup">[实验性] 清理阅读缓存</string>
+    <string name="read_cache_cleanup_summary">清理即时生效，但仍建议重启应用</string>
     <string name="read_cache_cleanup_day">一天前</string>
     <string name="read_cache_cleanup_week">一周前</string>
     <string name="read_cache_cleanup_month">一月前</string>
