@@ -673,4 +673,14 @@
     <string name="cached_export_metadata_unmatched">Local %1$s does not provide a matching gallery total.</string>
     <string name="cached_export_success">Cached pages have been exported and added to Downloads. The files are in the download folder you set for EhViewer.</string>
     <string name="read_cache_size_custom">Custom</string>
+    <string name="read_cache_cleanup">Clear reading cache</string>
+    <string name="read_cache_cleanup_summary">Clear images cached before the selected time</string>
+    <string name="read_cache_cleanup_day">A day ago</string>
+    <string name="read_cache_cleanup_week">A week ago</string>
+    <string name="read_cache_cleanup_month">A month ago</string>
+    <string name="read_cache_cleanup_year">A year ago</string>
+    <string name="read_cache_cleanup_action">Clear</string>
+    <string name="read_cache_cleanup_running">Clearing…</string>
+    <string name="read_cache_cleanup_done">Cleared %1$d cache entries</string>
+    <string name="read_cache_cleanup_failed">Could not clear the cache. Please try again.</string>
 </resources>

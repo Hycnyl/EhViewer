@@ -421,4 +421,14 @@
     <string name="cached_export_warnings">Afficher ou masquer les avis (les %1$d premiers)</string>
     <string name="cached_export_failed_pages">%1$d pages n’ont pas pu être enregistrées.</string>
     <string name="read_cache_size_custom">Personnalisé</string>
+    <string name="read_cache_cleanup">Vider le cache de lecture</string>
+    <string name="read_cache_cleanup_summary">Supprimer les images mises en cache avant la date choisie</string>
+    <string name="read_cache_cleanup_day">Il y a un jour</string>
+    <string name="read_cache_cleanup_week">Il y a une semaine</string>
+    <string name="read_cache_cleanup_month">Il y a un mois</string>
+    <string name="read_cache_cleanup_year">Il y a un an</string>
+    <string name="read_cache_cleanup_action">Vider</string>
+    <string name="read_cache_cleanup_running">Suppression…</string>
+    <string name="read_cache_cleanup_done">%1$d entrées du cache supprimées</string>
+    <string name="read_cache_cleanup_failed">Impossible de vider le cache. Veuillez réessayer.</string>
 </resources>

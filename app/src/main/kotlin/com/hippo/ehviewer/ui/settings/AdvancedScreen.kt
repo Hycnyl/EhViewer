@@ -168,6 +168,7 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
                 }
             }
             ReadCacheSizePreference()
+            ReadCacheCleanupPreference()
             var currentLanguage by remember { mutableStateOf(getAppLanguage()) }
             val languages = remember { getLanguages() }
             DropdownListPreference(

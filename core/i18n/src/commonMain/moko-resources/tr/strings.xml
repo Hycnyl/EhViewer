@@ -103,4 +103,14 @@
     <string name="cached_export_warnings">Bildirimleri göster veya gizle (ilk %1$d)</string>
     <string name="cached_export_failed_pages">%1$d sayfa kaydedilemedi.</string>
     <string name="read_cache_size_custom">Özel</string>
+    <string name="read_cache_cleanup">Okuma önbelleğini temizle</string>
+    <string name="read_cache_cleanup_summary">Seçilen zamandan önce önbelleğe alınan görüntüleri temizle</string>
+    <string name="read_cache_cleanup_day">Bir gün önce</string>
+    <string name="read_cache_cleanup_week">Bir hafta önce</string>
+    <string name="read_cache_cleanup_month">Bir ay önce</string>
+    <string name="read_cache_cleanup_year">Bir yıl önce</string>
+    <string name="read_cache_cleanup_action">Temizle</string>
+    <string name="read_cache_cleanup_running">Temizleniyor…</string>
+    <string name="read_cache_cleanup_done">%1$d önbellek öğesi temizlendi</string>
+    <string name="read_cache_cleanup_failed">Önbellek temizlenemedi. Tekrar deneyin.</string>
 </resources>
