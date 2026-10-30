@@ -1,11 +1,9 @@
 package com.hippo.ehviewer.ui.main
 
 import android.content.Context
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,8 +14,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -28,10 +24,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -79,9 +72,8 @@ fun SearchFilter(
     onAdvancedOptionChange: (AdvancedSearchOption) -> Unit,
 ) = Column(modifier) {
     val animateItems by Settings.animateItems.collectAsState()
-    var advancedExpanded by rememberSaveable { mutableStateOf(false) }
     fun isCategoryChecked(bit: Int) = category and bit != 0
-    val categories = categoryTable
+    val categories = remember(category) { categoryTable.sortedBy { !isCategoryChecked(it.first) } }
     LazyRow(
         contentPadding = PaddingValues(start = 8.dp, top = 8.dp, end = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -98,8 +90,8 @@ fun SearchFilter(
             )
         }
     }
-    FlowRow(
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+    Row(
+        modifier = Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         val any = stringResource(id = R.string.any)
@@ -221,46 +213,33 @@ fun SearchFilter(
             },
             label = { Text(text = pagesText) },
         )
+        fun checked(bit: Int) = advancedOption.advanceSearch and bit != 0
+        fun AdvancedSearchOption.inv(bit: Int) = onAdvancedOptionChange(copy(advanceSearch = advanceSearch xor bit))
         FilterChip(
-            selected = advancedExpanded || advancedOption.advanceSearch != 0,
-            onClick = { advancedExpanded = !advancedExpanded },
-            label = { Text(stringResource(R.string.advanced_filters)) },
-            trailingIcon = { Icon(if (advancedExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, contentDescription = null) },
+            selected = checked(AdvanceTable.SH),
+            onClick = { advancedOption.inv(AdvanceTable.SH) },
+            label = { Text(text = stringResource(id = R.string.search_sh)) },
         )
-    }
-    AnimatedVisibility(advancedExpanded) {
-        FlowRow(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            fun checked(bit: Int) = advancedOption.advanceSearch and bit != 0
-            fun AdvancedSearchOption.inv(bit: Int) = onAdvancedOptionChange(copy(advanceSearch = advanceSearch xor bit))
-            FilterChip(
-                selected = checked(AdvanceTable.SH),
-                onClick = { advancedOption.inv(AdvanceTable.SH) },
-                label = { Text(text = stringResource(id = R.string.search_sh)) },
-            )
-            FilterChip(
-                selected = checked(AdvanceTable.STO),
-                onClick = { advancedOption.inv(AdvanceTable.STO) },
-                label = { Text(text = stringResource(id = R.string.search_sto)) },
-            )
-            val disableFilter = stringResource(id = R.string.search_sf)
-            FilterChip(
-                selected = checked(AdvanceTable.SFL),
-                onClick = { advancedOption.inv(AdvanceTable.SFL) },
-                label = { Text(text = disableFilter + stringResource(id = R.string.search_sfl)) },
-            )
-            FilterChip(
-                selected = checked(AdvanceTable.SFU),
-                onClick = { advancedOption.inv(AdvanceTable.SFU) },
-                label = { Text(text = disableFilter + stringResource(id = R.string.search_sfu)) },
-            )
-            FilterChip(
-                selected = checked(AdvanceTable.SFT),
-                onClick = { advancedOption.inv(AdvanceTable.SFT) },
-                label = { Text(text = disableFilter + stringResource(id = R.string.search_sft)) },
-            )
-        }
+        FilterChip(
+            selected = checked(AdvanceTable.STO),
+            onClick = { advancedOption.inv(AdvanceTable.STO) },
+            label = { Text(text = stringResource(id = R.string.search_sto)) },
+        )
+        val disableFilter = stringResource(id = R.string.search_sf)
+        FilterChip(
+            selected = checked(AdvanceTable.SFL),
+            onClick = { advancedOption.inv(AdvanceTable.SFL) },
+            label = { Text(text = disableFilter + stringResource(id = R.string.search_sfl)) },
+        )
+        FilterChip(
+            selected = checked(AdvanceTable.SFU),
+            onClick = { advancedOption.inv(AdvanceTable.SFU) },
+            label = { Text(text = disableFilter + stringResource(id = R.string.search_sfu)) },
+        )
+        FilterChip(
+            selected = checked(AdvanceTable.SFT),
+            onClick = { advancedOption.inv(AdvanceTable.SFT) },
+            label = { Text(text = disableFilter + stringResource(id = R.string.search_sft)) },
+        )
     }
 }

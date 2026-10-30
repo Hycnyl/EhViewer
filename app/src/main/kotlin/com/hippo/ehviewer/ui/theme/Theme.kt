@@ -28,14 +28,9 @@ import com.materialkolor.dynamicColorScheme
 fun ColorScheme.amoled(amoled: Boolean) = if (amoled) {
     copy(
         surface = Color.Black,
+        onSurface = Color.White,
         background = Color.Black,
-        surfaceDim = Color.Black,
-        surfaceBright = Color(0xFF24282B),
-        surfaceContainerLowest = Color.Black,
-        surfaceContainerLow = Color(0xFF0C1012),
-        surfaceContainer = Color(0xFF14191C),
-        surfaceContainerHigh = Color(0xFF1C2225),
-        surfaceContainerHighest = Color(0xFF242B2F),
+        onBackground = Color.White,
     )
 } else {
     this
@@ -44,25 +39,8 @@ fun ColorScheme.amoled(amoled: Boolean) = if (amoled) {
 @Composable
 fun EhTheme(useDarkTheme: Boolean, content: @Composable () -> Unit) {
     val amoled by Settings.blackDarkTheme.collectAsState()
-    val paletteMode by Settings.paletteMode.collectAsState()
-    val colors = ehColorScheme(useDarkTheme, paletteMode, amoled)
-
-    MaterialTheme(colorScheme = colors, motionScheme = MotionScheme.expressive()) {
-        val scrollbarStyle = scrollbarStyle(color = MaterialTheme.colorScheme.primary)
-        CompositionLocalProvider(
-            LocalContentColor provides MaterialTheme.colorScheme.onBackground,
-            LocalScrollbarStyle provides scrollbarStyle,
-            content = content,
-        )
-    }
-}
-
-@Composable
-fun ehColorScheme(useDarkTheme: Boolean, paletteMode: Int, amoled: Boolean): ColorScheme {
     val context = LocalContext.current
-    return if (paletteMode == 1) {
-        if (useDarkTheme) ComfortDarkColors.amoled(amoled) else ComfortLightColors
-    } else if (isAtLeastS) {
+    val colors = if (isAtLeastS) {
         if (useDarkTheme) {
             dynamicDarkColorScheme(context).amoled(amoled)
         } else {
@@ -74,10 +52,10 @@ fun ehColorScheme(useDarkTheme: Boolean, paletteMode: Int, amoled: Boolean): Col
             dynamicColorScheme(
                 primary = color.first,
                 isDark = useDarkTheme,
-                isAmoled = useDarkTheme && amoled,
+                isAmoled = amoled,
                 secondary = color.second,
                 tertiary = color.third,
-            ).amoled(useDarkTheme && amoled)
+            )
         } else {
             if (useDarkTheme) {
                 darkColorScheme().amoled(amoled)
@@ -85,6 +63,15 @@ fun ehColorScheme(useDarkTheme: Boolean, paletteMode: Int, amoled: Boolean): Col
                 expressiveLightColorScheme()
             }
         }
+    }
+
+    MaterialTheme(colorScheme = colors, motionScheme = CustomMotionScheme) {
+        val scrollbarStyle = scrollbarStyle(color = MaterialTheme.colorScheme.primary)
+        CompositionLocalProvider(
+            LocalContentColor provides MaterialTheme.colorScheme.onBackground,
+            LocalScrollbarStyle provides scrollbarStyle,
+            content = content,
+        )
     }
 }
 
@@ -101,4 +88,9 @@ fun extractWallPaperPalette(): WallPaperPalette? {
     val secondary = colors.secondaryColor?.toArgb()?.let { Color(it) }
     val tertiary = colors.tertiaryColor?.toArgb()?.let { Color(it) }
     return WallPaperPalette(primary, secondary, tertiary)
+}
+
+// https://issuetracker.google.com/363892346
+object CustomMotionScheme : MotionScheme by MotionScheme.expressive() {
+    override fun <T> defaultSpatialSpec() = defaultEffectsSpec<T>()
 }

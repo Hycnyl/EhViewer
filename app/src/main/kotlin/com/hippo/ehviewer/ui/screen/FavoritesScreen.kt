@@ -5,13 +5,11 @@ import android.view.ViewConfiguration
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -19,16 +17,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.automirrored.filled.LastPage
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Casino
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.outlined.FolderSpecial
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
@@ -58,14 +55,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.ehviewer.core.i18n.R
 import com.ehviewer.core.model.BaseGalleryInfo
+import com.ehviewer.core.ui.component.FAB_ANIMATE_TIME
 import com.ehviewer.core.ui.component.FabLayout
 import com.ehviewer.core.ui.component.LocalSideSheetState
 import com.ehviewer.core.ui.component.ProvideSideSheetContent
-import com.ehviewer.core.ui.component.SelectionBar
-import com.ehviewer.core.ui.component.TooltipIconButton
 import com.ehviewer.core.ui.icons.EhIcons
 import com.ehviewer.core.ui.icons.filled.GoTo
-import com.ehviewer.core.ui.util.ScrollDirectionGate
 import com.ehviewer.core.ui.util.asyncState
 import com.ehviewer.core.ui.util.takeAndClear
 import com.ehviewer.core.ui.util.thenIf
@@ -95,7 +90,6 @@ import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import moe.tarsin.coroutines.runSwallowingWithUI
 import moe.tarsin.navigate
-import moe.tarsin.string
 
 @Destination<RootGraph>
 @Composable
@@ -189,7 +183,6 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
         expanded = searchBarExpanded,
         onExpandedChange = {
             searchBarExpanded = it
-            if (it) fabExpanded = false
             fabHidden = it
             if (it) checkedInfoMap.clear()
         },
@@ -199,7 +192,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
             val sheetState = LocalSideSheetState.current
-            TooltipIconButton(label = stringResource(R.string.favourite), onClick = { launch { sheetState.open() } }, shapes = IconButtonDefaults.shapes()) {
+            IconButton(onClick = { launch { sheetState.open() } }, shapes = IconButtonDefaults.shapes()) {
                 Icon(imageVector = Icons.Outlined.FolderSpecial, contentDescription = null)
             }
             AvatarIcon()
@@ -209,14 +202,17 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
         val height by collectListThumbSizeAsState()
         val showPages by Settings.showGalleryPages.collectAsState()
         val showProgress by Settings.showReadingProgress.collectAsState()
-        val searchBarConnection = remember(density, contentPadding) {
+        val searchBarConnection = remember {
             val slop = ViewConfiguration.get(contextOf<Context>()).scaledTouchSlop
             val topPaddingPx = with(density) { contentPadding.calculateTopPadding().roundToPx() }
-            val scrollGate = ScrollDirectionGate(slop * 4f, slop * 3f)
             object : NestedScrollConnection {
                 override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
                     val dy = -consumed.y
-                    scrollGate.update(dy)?.let { fabHidden = it }
+                    if (dy >= slop) {
+                        fabHidden = true
+                    } else if (dy <= -slop / 2) {
+                        fabHidden = false
+                    }
                     searchBarOffsetY = (searchBarOffsetY - dy).roundToInt().coerceIn(-topPaddingPx, 0)
                     return Offset.Zero // We never consume it
                 }
@@ -224,9 +220,8 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
         }
         GalleryList(
             data = data,
-            queryKey = urlBuilder.build(),
             contentModifier = Modifier.nestedScroll(searchBarConnection),
-            contentPadding = contentPadding + if (selectMode) PaddingValues(bottom = 80.dp) else PaddingValues.Zero,
+            contentPadding = contentPadding,
             listMode = listMode,
             detailItemContent = { info ->
                 val checked = info.gid in checkedInfoMap
@@ -294,28 +289,54 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
         )
     }
 
-    LaunchedEffect(selectMode) {
-        if (selectMode) fabExpanded = false
-    }
-    if (selectMode) {
-        SelectionBar(
-            count = checkedInfoMap.size,
-            countLabel = stringResource(R.string.selected_count, checkedInfoMap.size),
-            moreLabel = stringResource(R.string.more_actions),
-            closeLabel = stringResource(R.string.close),
-            onClose = { checkedInfoMap.clear() },
-        ) {
-            onClick(Icons.Default.DoneAll, autoClose = false, label = string(R.string.select_all)) {
+    val hideFab by asyncState(
+        produce = { fabHidden },
+        transform = {
+            onEachLatest { hide ->
+                if (!hide) delay(FAB_ANIMATE_TIME.toLong())
+            }
+        },
+    )
+
+    FabLayout(
+        hidden = hideFab && !selectMode,
+        expanded = fabExpanded || selectMode,
+        onExpandChanged = {
+            fabExpanded = it
+            checkedInfoMap.clear()
+        },
+        autoCancel = !selectMode,
+    ) {
+        if (!selectMode) {
+            if (urlBuilder.isLocal) {
+                onClick(Icons.Default.Shuffle) {
+                    EhDB.randomLocalFav()?.let { info ->
+                        withUIContext { navigate(info.asDst()) }
+                    }
+                }
+            }
+            onClick(EhIcons.Default.GoTo) {
+                val date = awaitSelectDate()
+                refresh(urlBuilder.copy(jumpTo = date, prev = null, next = "2"))
+            }
+            onClick(Icons.Default.Refresh) {
+                refresh()
+            }
+            onClick(Icons.AutoMirrored.Default.LastPage) {
+                refresh(urlBuilder.copy(jumpTo = null, prev = "1-0", next = null))
+            }
+        } else {
+            onClick(Icons.Default.DoneAll, autoClose = false) {
                 val info = data.itemSnapshotList.items.associateBy { it.gid }
                 checkedInfoMap.putAll(info)
             }
-            onClick(Icons.Default.Download, label = string(R.string.download)) {
+            onClick(Icons.Default.Download) {
                 val info = checkedInfoMap.takeAndClear()
                 runSwallowingWithUI {
                     startDownload(false, *info.toTypedArray())
                 }
             }
-            onClick(Icons.Default.Delete, label = string(R.string.delete)) {
+            onClick(Icons.Default.Delete) {
                 val info = checkedInfoMap.takeAndClear()
                 awaitConfirmationOrCancel(title = R.string.delete_favorites_dialog_title) {
                     Text(text = stringResource(R.string.delete_favorites_dialog_message, info.size))
@@ -332,7 +353,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
                 // We refresh anyway as cloud data maybe partially modified
                 data.refresh()
             }
-            onClick(Icons.AutoMirrored.Default.DriveFileMove, label = string(R.string.move)) {
+            onClick(Icons.AutoMirrored.Default.DriveFileMove) {
                 // First is local favorite, the other 10 is cloud favorite
                 val items = buildList {
                     add(localFavName)
@@ -363,33 +384,6 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, v
                     // We refresh anyway as cloud data maybe partially modified
                     data.refresh()
                 }
-            }
-        }
-    } else {
-        FabLayout(
-            hidden = searchBarExpanded || fabHidden,
-            label = stringResource(R.string.quick_actions),
-            closeLabel = stringResource(R.string.close),
-            expanded = fabExpanded,
-            onExpandChanged = { fabExpanded = it },
-            autoCancel = true,
-        ) {
-            if (urlBuilder.isLocal) {
-                onClick(Icons.Default.Casino, label = string(R.string.random_open)) {
-                    EhDB.randomLocalFav()?.let { info ->
-                        withUIContext { navigate(info.asDst()) }
-                    }
-                }
-            }
-            onClick(Icons.Default.CalendarMonth, label = string(R.string.jump_date)) {
-                val date = awaitSelectDate()
-                refresh(urlBuilder.copy(jumpTo = date, prev = null, next = "2"))
-            }
-            onClick(Icons.Default.Refresh, label = string(R.string.refresh)) {
-                refresh()
-            }
-            onClick(Icons.Default.History, label = string(R.string.oldest_gallery)) {
-                refresh(urlBuilder.copy(jumpTo = null, prev = "1-0", next = null))
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.reader
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -19,7 +20,6 @@ import androidx.compose.ui.unit.dp
 import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
-import com.hippo.ehviewer.ui.settings.DependentPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 
@@ -61,7 +61,7 @@ private fun PagerSetting() = Column {
         values = listOf(0, 1, 2, 3, 4, 5),
         field = pagerNav,
     )
-    DependentPreferences(visible = pagerNav.value != 5) {
+    AnimatedVisibility(visible = pagerNav.value != 5) {
         Column {
             SpinnerChoice(
                 title = stringResource(id = R.string.pref_read_with_tapping_inverted),
@@ -82,7 +82,7 @@ private fun PagerSetting() = Column {
         values = listOf(1, 2, 3, 4, 5, 6),
         field = scaleType,
     )
-    DependentPreferences(visible = scaleType.value == 1) {
+    AnimatedVisibility(visible = scaleType.value == 1) {
         SwitchChoice(
             title = stringResource(id = R.string.pref_landscape_zoom),
             field = Settings.landscapeZoom.asMutableState(),
@@ -114,7 +114,7 @@ private fun WebtoonSetting() = Column {
         values = listOf(0, 1, 2, 3, 4, 5),
         field = webtoonNav,
     )
-    DependentPreferences(visible = webtoonNav.value != 5) {
+    AnimatedVisibility(visible = webtoonNav.value != 5) {
         SpinnerChoice(
             title = stringResource(id = R.string.pref_read_with_tapping_inverted),
             entries = stringArrayResource(id = com.hippo.ehviewer.R.array.invert_tapping_mode),

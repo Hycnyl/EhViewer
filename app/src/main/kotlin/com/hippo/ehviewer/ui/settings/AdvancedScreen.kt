@@ -10,6 +10,7 @@ import android.provider.Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageOnly
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -119,7 +120,6 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
         },
     ) { paddingValues ->
         Column(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).verticalScroll(rememberScrollState()).padding(paddingValues)) {
-            PreferenceSection(R.string.settings_diagnostics)
             SwitchPreference(
                 title = stringResource(id = R.string.settings_advanced_save_parse_error_body),
                 summary = stringResource(id = R.string.settings_advanced_save_parse_error_body_summary),
@@ -130,7 +130,7 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
                 title = stringResource(id = R.string.settings_block_extraneous_ads),
                 state = stripAds,
             )
-            DependentPreferences(visible = stripAds.value) {
+            AnimatedVisibility(visible = stripAds.value) {
                 LauncherPreference(
                     title = stringResource(id = R.string.settings_ads_placeholder),
                     contract = ActivityResultContracts.PickVisualMedia(),
@@ -167,7 +167,20 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
                     }
                 }
             }
-            PreferenceSection(R.string.settings_network_hardware)
+            ReadCacheSizePreference()
+            ReadCacheCleanupPreference()
+            var currentLanguage by remember { mutableStateOf(getAppLanguage()) }
+            val languages = remember { getLanguages() }
+            DropdownListPreference(
+                value = currentLanguage,
+                onValueChange = {
+                    setAppLanguage(it)
+                    currentLanguage = it
+                },
+                items = languages,
+                title = { Text(stringResource(id = R.string.settings_advanced_app_language_title)) },
+                summary = { Text(languages[currentLanguage].orEmpty()) },
+            )
             if (isCronetAvailable) {
                 val enableCronet = Settings.enableCronet.asMutableState()
                 if (BuildConfig.DEBUG || !enableCronet.value) {
@@ -176,7 +189,7 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
                         state = enableCronet,
                     )
                 }
-                DependentPreferences(enableCronet.value) {
+                AnimatedVisibility(enableCronet.value) {
                     SwitchPreference(
                         title = stringResource(id = R.string.settings_advanced_enable_quic),
                         state = Settings.enableQuic.asMutableState(),
@@ -205,11 +218,15 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
                 state = Settings.preloadThumbAggressively.asMutableState(),
             )
             SwitchPreference(
+                title = stringResource(id = R.string.animate_items),
+                summary = stringResource(id = R.string.animate_items_summary),
+                state = Settings.animateItems.asMutableState(),
+            )
+            SwitchPreference(
                 title = stringResource(id = R.string.desktop_site),
                 summary = stringResource(id = R.string.desktop_site_summary),
                 state = Settings.desktopSite.asMutableState(),
             )
-            PreferenceSection(R.string.settings_data_management)
             val exportFailed = stringResource(id = R.string.settings_advanced_export_data_failed)
             LauncherPreference(
                 title = stringResource(id = R.string.settings_advanced_export_data),

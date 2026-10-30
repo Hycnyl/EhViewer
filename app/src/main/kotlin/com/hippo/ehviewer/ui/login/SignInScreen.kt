@@ -29,6 +29,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedSecureTextField
@@ -58,7 +59,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.ehviewer.core.i18n.R
-import com.ehviewer.core.ui.component.TooltipIconButton
 import com.ehviewer.core.ui.util.LocalWindowSizeClass
 import com.ehviewer.core.ui.util.ifTrueThen
 import com.ehviewer.core.ui.util.isExpanded
@@ -165,7 +165,7 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                 if (showPasswordError) {
                     Icon(imageVector = Icons.Filled.Info, contentDescription = null)
                 } else {
-                    TooltipIconButton(label = stringResource(if (passwordHidden) R.string.show_password else R.string.hide_password), onClick = { passwordHidden = !passwordHidden }, shapes = IconButtonDefaults.shapes()) {
+                    IconButton(onClick = { passwordHidden = !passwordHidden }, shapes = IconButtonDefaults.shapes()) {
                         val visibilityIcon = if (passwordHidden) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                         Icon(imageVector = visibilityIcon, contentDescription = null)
                     }

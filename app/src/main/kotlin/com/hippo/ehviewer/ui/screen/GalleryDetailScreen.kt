@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AppBarRow
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.Scaffold
@@ -41,7 +42,6 @@ import com.ehviewer.core.i18n.R
 import com.ehviewer.core.model.BaseGalleryInfo
 import com.ehviewer.core.model.GalleryDetail
 import com.ehviewer.core.model.GalleryInfo
-import com.ehviewer.core.ui.component.TooltipIconButton
 import com.ehviewer.core.ui.util.LocalWindowSizeClass
 import com.ehviewer.core.ui.util.isExpanded
 import com.ehviewer.core.ui.util.launchInVM
@@ -192,7 +192,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                 actions = {
                     AppBarRow(
                         overflowIndicator = {
-                            TooltipIconButton(label = stringResource(R.string.more_actions), onClick = { it.show() }, shapes = IconButtonDefaults.shapes()) {
+                            IconButton(onClick = { it.show() }, shapes = IconButtonDefaults.shapes()) {
                                 Icon(imageVector = Icons.Default.MoreVert, contentDescription = null)
                             }
                         },

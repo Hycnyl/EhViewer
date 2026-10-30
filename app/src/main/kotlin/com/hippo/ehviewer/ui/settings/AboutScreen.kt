@@ -98,7 +98,6 @@ fun AnimatedVisibilityScope.AboutScreen(navigator: DestinationsNavigator) = Scre
                 title = stringResource(id = R.string.settings_about_version),
                 summary = versionCode(),
             )
-            PreferenceSection(R.string.settings_updates)
             SwitchPreference(
                 title = stringResource(id = R.string.backup_before_update),
                 state = Settings.backupBeforeUpdate.asMutableState(),

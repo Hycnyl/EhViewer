@@ -16,7 +16,6 @@
 package com.hippo.ehviewer
 
 import androidx.room.execSQL
-import androidx.room.immediateTransaction
 import androidx.room.useWriterConnection
 import arrow.fx.coroutines.resource
 import arrow.fx.coroutines.resourceScope
@@ -249,27 +248,6 @@ object EhDB {
         val dao = db.historyDao()
         dao.deleteByKey(galleryInfo.gid)
         deleteGalleryInfo(galleryInfo)
-    }
-
-    // UI undo preserves the original timestamp; ordinary history deletion remains unchanged.
-    suspend fun removeHistoryInfoForUndo(galleryInfo: GalleryEntity): HistoryInfo? {
-        val removed = db.useWriterConnection { connection ->
-            connection.immediateTransaction {
-                db.historyDao().load(galleryInfo.gid)?.also { db.historyDao().deleteByKey(it.gid) }
-            }
-        }
-        // Metadata may still be referenced by favorites or downloads. Its best-effort cleanup
-        // must not roll back the history deletion when a foreign key prevents that cleanup.
-        if (removed != null) deleteGalleryInfo(galleryInfo)
-        return removed
-    }
-
-    suspend fun restoreHistoryInfoAfterUndo(galleryInfo: GalleryEntity, historyInfo: HistoryInfo) = db.useWriterConnection { connection ->
-        connection.immediateTransaction {
-            // A newer visit or metadata update takes precedence over the removed snapshot.
-            db.galleryDao().insertOrIgnore(listOf(galleryInfo))
-            db.historyDao().insertOrIgnore(listOf(historyInfo))
-        }
     }
 
     suspend fun clearHistoryInfo() {
