@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.reader
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -15,7 +16,6 @@ import com.ehviewer.core.i18n.R
 import com.ehviewer.core.util.isAtLeastP
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
-import com.hippo.ehviewer.ui.settings.DependentPreferences
 
 @Composable
 fun ReaderGeneralSetting() = Column(modifier = Modifier.verticalScroll(rememberScrollState()).navigationBarsPadding()) {
@@ -45,7 +45,7 @@ fun ReaderGeneralSetting() = Column(modifier = Modifier.verticalScroll(rememberS
     val view = LocalView.current
     val hasDisplayCutout = remember(view) { isAtLeastP && view.rootWindowInsets.displayCutout != null }
     if (hasDisplayCutout) {
-        DependentPreferences(visible = fullscreen.value) {
+        AnimatedVisibility(visible = fullscreen.value) {
             SwitchChoice(
                 title = stringResource(id = R.string.pref_cutout_short),
                 field = Settings.cutoutShort.asMutableState(),
@@ -69,7 +69,7 @@ fun ReaderGeneralSetting() = Column(modifier = Modifier.verticalScroll(rememberS
         title = stringResource(id = R.string.settings_read_volume_page),
         field = volume,
     )
-    DependentPreferences(visible = volume.value) {
+    AnimatedVisibility(visible = volume.value) {
         SwitchChoice(
             title = stringResource(id = R.string.settings_read_reverse_volume),
             field = Settings.readWithVolumeKeysInverted.asMutableState(),

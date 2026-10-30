@@ -60,7 +60,6 @@ fun BoxScope.PausableAlertDialog(
     title: @Composable () -> Unit,
     text: @Composable () -> Unit,
     idleIcon: ImageVector,
-    idleLabel: String,
 ) {
     val scope = rememberCoroutineScope()
     val mutex = remember { MutatorMutex() }
@@ -115,7 +114,7 @@ fun BoxScope.PausableAlertDialog(
             },
         ),
     ) {
-        Icon(imageVector = idleIcon, contentDescription = idleLabel)
+        Icon(imageVector = idleIcon, contentDescription = null)
     }
 }
 

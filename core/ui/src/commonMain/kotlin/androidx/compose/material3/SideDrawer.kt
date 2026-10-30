@@ -3,8 +3,8 @@
 package androidx.compose.material3
 
 import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animate
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.AnchoredDraggableDefaults
@@ -52,15 +52,13 @@ import kotlin.math.roundToInt
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
-private val InitialDrawerMotion = spring<Float>(dampingRatio = 1f, stiffness = 500f)
+private val AnimationSpec = TweenSpec<Float>(durationMillis = 256)
 
 @Suppress("NotCloseable")
 @Stable
 class DrawerState2(initialValue: DrawerValue) {
 
     val anchoredDraggableState = AnchoredDraggableState(initialValue)
-    internal var spatialMotion: AnimationSpec<Float> = InitialDrawerMotion
-    internal var closeMotion: AnimationSpec<Float> = InitialDrawerMotion
 
     /**
      * Whether the drawer is open.
@@ -110,7 +108,7 @@ class DrawerState2(initialValue: DrawerValue) {
      *
      * @return the reason the close animation ended
      */
-    suspend fun close() = animateTo(DrawerValue.Closed, animationSpec = closeMotion)
+    suspend fun close() = animateTo(DrawerValue.Closed)
 
     /**
      * Set the state of the drawer with specific animation
@@ -179,7 +177,7 @@ class DrawerState2(initialValue: DrawerValue) {
 
     private suspend fun animateTo(
         targetValue: DrawerValue,
-        animationSpec: AnimationSpec<Float> = spatialMotion,
+        animationSpec: AnimationSpec<Float> = AnimationSpec,
         velocity: Float = anchoredDraggableState.lastVelocity,
     ) {
         anchoredDraggableState.anchoredDrag(targetValue = targetValue) { anchors, latestTarget ->
@@ -235,11 +233,7 @@ fun ModalSideDrawer(
     var maxValue by remember { mutableFloatStateOf(with(density) { DrawerDefaults.MaximumDrawerWidth.toPx() }) }
     val minValue = 0f
 
-    val spatialMotion = MaterialTheme.motionScheme.defaultSpatialSpec<Float>()
-    val closeMotion = MaterialTheme.motionScheme.fastEffectsSpec<Float>()
     SideEffect {
-        drawerState.spatialMotion = spatialMotion
-        drawerState.closeMotion = closeMotion
         drawerState.density = density
         drawerState.anchoredDraggableState.updateAnchors(
             DraggableAnchors {
@@ -257,7 +251,7 @@ fun ModalSideDrawer(
             enabled = gesturesEnabled,
             flingBehavior = AnchoredDraggableDefaults.flingBehavior(
                 state = drawerState.anchoredDraggableState,
-                animationSpec = spatialMotion,
+                animationSpec = AnimationSpec,
             ),
         ),
     ) {

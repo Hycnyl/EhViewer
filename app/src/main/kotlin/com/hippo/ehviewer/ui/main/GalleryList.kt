@@ -26,7 +26,6 @@ import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ShapeDefaults
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
@@ -34,7 +33,6 @@ import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,7 +54,6 @@ import com.ehviewer.core.i18n.R
 import com.ehviewer.core.model.BaseGalleryInfo
 import com.ehviewer.core.ui.component.FastScrollLazyVerticalGrid
 import com.ehviewer.core.ui.component.FastScrollLazyVerticalStaggeredGrid
-import com.ehviewer.core.ui.component.StatePanel
 import com.ehviewer.core.ui.icons.EhIcons
 import com.ehviewer.core.ui.icons.big.SadAndroid
 import com.ehviewer.core.util.launch
@@ -65,7 +62,6 @@ import com.hippo.ehviewer.client.exception.NoHitsFoundException
 import com.hippo.ehviewer.coil.PrefetchAround
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ktbuilder.imageRequest
-import com.hippo.ehviewer.ui.LocalSnackBarHostState
 import com.hippo.ehviewer.ui.screen.collectDetailSizeAsState
 import com.hippo.ehviewer.util.displayString
 import kotlinx.coroutines.CoroutineScope
@@ -77,7 +73,6 @@ context(_: CoroutineScope, _: Context)
 fun GalleryList(
     modifier: Modifier = Modifier,
     data: LazyPagingItems<BaseGalleryInfo>,
-    queryKey: Any? = null,
     contentModifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues.Zero,
     listMode: Int,
@@ -93,11 +88,6 @@ fun GalleryList(
     val marginH = dimensionResource(id = com.hippo.ehviewer.R.dimen.gallery_list_margin_h)
     val marginV = dimensionResource(id = com.hippo.ehviewer.R.dimen.gallery_list_margin_v)
 
-    var displayedQuery by remember { mutableStateOf(queryKey) }
-    var refreshingQuery by remember { mutableStateOf(queryKey) }
-    val replacingQuery = displayedQuery != queryKey
-    val snackbarHost = LocalSnackBarHostState.current
-    val retryLabel = stringResource(R.string.retry_action)
     var isRefreshing by remember { mutableStateOf(false) }
     val refreshState = rememberPullToRefreshState()
     Box(
@@ -187,55 +177,43 @@ fun GalleryList(
         }
 
         when (val state = data.loadState.refresh) {
-            is LoadState.Loading -> {
-                SideEffect { refreshingQuery = queryKey }
-                if ((replacingQuery || (data.itemCount == 0 && !isRefreshing)) && scrollToTopOnRefresh) {
-                    LaunchedEffect(Unit) {
-                        onLoading()
+            is LoadState.Loading -> if (!isRefreshing && scrollToTopOnRefresh) {
+                LaunchedEffect(Unit) {
+                    onLoading()
+                }
+                LaunchedEffect(Unit) {
+                    if (listMode == 0) {
+                        detailListState.scrollToItem(0)
+                    } else {
+                        thumbListState.scrollToItem(0)
                     }
-                    LaunchedEffect(Unit) {
-                        if (listMode == 0) {
-                            detailListState.scrollToItem(0)
-                        } else {
-                            thumbListState.scrollToItem(0)
-                        }
-                    }
-                    Surface {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            CircularWavyProgressIndicator()
-                        }
+                }
+                Surface {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularWavyProgressIndicator()
                     }
                 }
             }
             is LoadState.Error -> {
-                if (data.itemCount == 0 || replacingQuery) {
-                    Surface {
-                        ErrorTip(
-                            modifier = Modifier.clip(ShapeDefaults.Small).clickable { data.retry() },
-                            text = state.error.displayString(),
-                        )
-                    }
-                } else {
-                    LaunchedEffect(state.error) {
-                        if (snackbarHost.showSnackbar(state.error.displayString(), retryLabel) == SnackbarResult.ActionPerformed) data.retry()
-                    }
+                Surface {
+                    ErrorTip(
+                        modifier = Modifier.widthIn(max = 228.dp).clip(ShapeDefaults.Small).clickable { data.retry() },
+                        text = state.error.displayString(),
+                    )
                 }
             }
-            is LoadState.NotLoading -> {
-                SideEffect { if (refreshingQuery == queryKey) displayedQuery = queryKey }
-                if (data.itemCount == 0) {
-                    // Only for local favorites as empty gallery lists from network are treated as error
-                    ErrorTip(text = stringResource(id = R.string.gallery_list_empty_hit))
-                }
+            is LoadState.NotLoading -> if (data.itemCount == 0) {
+                // Only for local favorites as empty gallery lists from network are treated as error
+                ErrorTip(modifier = Modifier.widthIn(max = 228.dp), text = stringResource(id = R.string.gallery_list_empty_hit))
             }
         }
 
         PullToRefreshDefaults.LoadingIndicator(
             state = refreshState,
-            isRefreshing = isRefreshing || (data.itemCount > 0 && data.loadState.refresh is LoadState.Loading),
+            isRefreshing = isRefreshing,
             modifier = Modifier.align(Alignment.TopCenter).padding(top = contentPadding.calculateTopPadding())
                 .offset { IntOffset(0, searchBarOffsetY()) },
         )
@@ -244,5 +222,25 @@ fun GalleryList(
 
 @Composable
 fun ErrorTip(modifier: Modifier = Modifier, text: String) {
-    StatePanel(icon = EhIcons.Big.Default.SadAndroid, text = text, modifier = modifier)
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            modifier = modifier,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Icon(
+                imageVector = EhIcons.Big.Default.SadAndroid,
+                contentDescription = null,
+                modifier = Modifier.padding(16.dp).size(120.dp),
+                tint = MaterialTheme.colorScheme.tertiary,
+            )
+            Text(
+                text = text,
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
 }

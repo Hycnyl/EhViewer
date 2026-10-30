@@ -3,7 +3,7 @@ package com.hippo.ehviewer.ui.reader
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -33,7 +33,7 @@ fun SpinnerChoice(title: String, entries: Array<String>, values: List<Int>, fiel
     var dropdown by remember { mutableStateOf(false) }
     val data = remember { entries zip values }
     Row(
-        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable { dropdown = true }.padding(horizontal = 16.dp),
+        modifier = Modifier.fillMaxWidth().height(48.dp).clickable { dropdown = true }.padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(text = title, modifier = Modifier.weight(0.5f), color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -69,7 +69,7 @@ fun SpinnerChoice(title: String, entries: Array<String>, values: List<Int>, fiel
 fun SwitchChoice(title: String, field: MutableState<Boolean>) {
     var value by field
     Row(
-        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable { value = !value }.padding(horizontal = 16.dp),
+        modifier = Modifier.fillMaxWidth().height(48.dp).clickable { value = !value }.padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(text = title, modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onSurfaceVariant)

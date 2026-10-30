@@ -38,6 +38,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -68,7 +69,6 @@ import com.ehviewer.core.database.dao.SearchDao
 import com.ehviewer.core.database.model.Search
 import com.ehviewer.core.i18n.R
 import com.ehviewer.core.model.TagNamespace
-import com.ehviewer.core.ui.component.TooltipIconButton
 import com.ehviewer.core.ui.util.ifNotNullThen
 import com.ehviewer.core.ui.util.ifTrueThen
 import com.ehviewer.core.ui.util.thenIf
@@ -250,12 +250,12 @@ fun SearchBarScreen(
                     },
                     leadingIcon = {
                         if (expanded) {
-                            TooltipIconButton(label = stringResource(R.string.back), onClick = { hideSearchView() }, shapes = IconButtonDefaults.shapes()) {
+                            IconButton(onClick = { hideSearchView() }, shapes = IconButtonDefaults.shapes()) {
                                 Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
                             }
                         } else {
                             val drawerState = LocalNavDrawerState.current
-                            TooltipIconButton(label = stringResource(R.string.open_navigation), onClick = { scope.launch { drawerState.open() } }, shapes = IconButtonDefaults.shapes()) {
+                            IconButton(onClick = { scope.launch { drawerState.open() } }, shapes = IconButtonDefaults.shapes()) {
                                 Icon(Icons.Default.Menu, contentDescription = null)
                             }
                         }
@@ -264,11 +264,11 @@ fun SearchBarScreen(
                         if (expanded) {
                             AnimatedContent(targetState = searchFieldState.text.isNotEmpty()) { hasText ->
                                 if (hasText) {
-                                    TooltipIconButton(label = stringResource(R.string.clear_search), onClick = { searchFieldState.clearText() }, shapes = IconButtonDefaults.shapes()) {
+                                    IconButton(onClick = { searchFieldState.clearText() }, shapes = IconButtonDefaults.shapes()) {
                                         Icon(Icons.Default.Close, contentDescription = null)
                                     }
                                 } else {
-                                    TooltipIconButton(label = stringResource(R.string.image_search), onClick = { navigate(ImageSearchScreenDestination) }, shapes = IconButtonDefaults.shapes()) {
+                                    IconButton(onClick = { navigate(ImageSearchScreenDestination) }, shapes = IconButtonDefaults.shapes()) {
                                         Icon(Icons.Default.ImageSearch, contentDescription = null)
                                     }
                                 }
@@ -303,7 +303,7 @@ fun SearchBarScreen(
                             )
                         },
                         trailingContent = it.canDelete.ifTrueThen {
-                            TooltipIconButton(label = stringResource(R.string.delete), onClick = { deleteKeyword(it.keyword) }, shapes = IconButtonDefaults.shapes()) {
+                            IconButton(onClick = { deleteKeyword(it.keyword) }, shapes = IconButtonDefaults.shapes()) {
                                 Icon(
                                     imageVector = Icons.Default.Close,
                                     contentDescription = null,

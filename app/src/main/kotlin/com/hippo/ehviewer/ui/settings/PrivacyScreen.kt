@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.settings
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -46,7 +47,7 @@ fun AnimatedVisibilityScope.PrivacyScreen(navigator: DestinationsNavigator) = Sc
                 state = security,
                 enabled = isAuthenticationSupported(),
             )
-            DependentPreferences(visible = security.value) {
+            AnimatedVisibility(visible = security.value) {
                 val securityDelay = Settings.securityDelay.asMutableState()
                 val summary = if (securityDelay.value == 0) {
                     stringResource(id = R.string.settings_privacy_require_unlock_delay_summary_immediately)

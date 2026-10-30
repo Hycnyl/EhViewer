@@ -12,6 +12,7 @@ import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.FlexibleBottomAppBar
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,13 +24,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ehviewer.core.i18n.R
-import com.ehviewer.core.ui.component.TooltipIconButton
 import com.ehviewer.core.ui.icons.EhIcons
 import com.ehviewer.core.ui.icons.filled.Crop
 import com.ehviewer.core.ui.icons.filled.CropOff
@@ -71,7 +68,6 @@ fun BottomReaderBar(onClickSettings: () -> Unit, containerColor: Color) = Flexib
         onClick = { cropBorder = !cropBorder },
         imageVector = if (cropBorder) EhIcons.Default.Crop else EhIcons.Default.CropOff,
         contentDescription = stringResource(R.string.pref_crop_borders),
-        modifier = Modifier.semantics { selected = cropBorder },
     )
     ActionButton(
         onClick = onClickSettings,
@@ -95,12 +91,11 @@ private fun DropdownIconButton(
         onExpandedChange = { expanded = it },
         modifier = modifier,
     ) {
-        val selectedLabel = stringResource(selectedItem.stringRes)
         ActionButton(
             onClick = {},
             imageVector = selectedItem.icon,
             contentDescription = label,
-            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable).semantics { stateDescription = selectedLabel },
+            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
         )
         ExposedDropdownMenu(
             expanded = expanded,
@@ -133,8 +128,7 @@ private fun ActionButton(
     contentDescription: String,
     modifier: Modifier = Modifier,
 ) {
-    TooltipIconButton(
-        label = contentDescription,
+    IconButton(
         onClick = onClick,
         modifier = modifier.size(IconButtonDefaults.mediumContainerSize(IconButtonDefaults.IconButtonWidthOption.Wide)),
         shapes = IconButtonDefaults.shapes(IconButtonDefaults.mediumRoundShape, IconButtonDefaults.mediumPressedShape),

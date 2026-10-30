@@ -19,6 +19,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.SnackbarHostState
@@ -45,7 +46,6 @@ import coil3.network.HttpException
 import com.ehviewer.core.i18n.R
 import com.ehviewer.core.ui.component.RollingNumber
 import com.ehviewer.core.ui.component.RollingNumberPlaceholder
-import com.ehviewer.core.ui.component.TooltipIconButton
 import com.ehviewer.core.util.launch
 import com.ehviewer.core.util.launchIO
 import com.hippo.ehviewer.Settings
@@ -93,8 +93,7 @@ fun AvatarIcon() {
     if (hasSignedIn) {
         val placeholder = stringResource(id = R.string.please_wait)
         val result by limitFlow.collectAsState()
-        TooltipIconButton(
-            label = stringResource(R.string.image_limits),
+        IconButton(
             onClick = {
                 launch {
                     refreshEvent.emit(Unit)
@@ -202,8 +201,7 @@ fun AvatarIcon() {
             }
         }
     } else {
-        TooltipIconButton(
-            label = stringResource(R.string.sign_in),
+        IconButton(
             onClick = {
                 launch {
                     awaitConfirmationOrCancel(

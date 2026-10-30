@@ -2,7 +2,6 @@ package com.hippo.ehviewer.ui.screen
 
 import android.content.Context
 import android.view.ViewConfiguration
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateDpAsState
@@ -33,20 +32,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.automirrored.filled.ViewList
-import androidx.compose.material.icons.filled.Casino
-import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.NewLabel
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Reorder
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -91,18 +89,15 @@ import arrow.core.partially1
 import com.ehviewer.core.database.model.DownloadInfo
 import com.ehviewer.core.i18n.R
 import com.ehviewer.core.model.TagNamespace
+import com.ehviewer.core.ui.component.FAB_ANIMATE_TIME
 import com.ehviewer.core.ui.component.FabLayout
 import com.ehviewer.core.ui.component.FastScrollLazyColumn
 import com.ehviewer.core.ui.component.FastScrollLazyVerticalStaggeredGrid
 import com.ehviewer.core.ui.component.LocalSideSheetState
 import com.ehviewer.core.ui.component.ProvideSideSheetContent
-import com.ehviewer.core.ui.component.SelectionBar
-import com.ehviewer.core.ui.component.StatePanel
-import com.ehviewer.core.ui.component.TooltipIconButton
 import com.ehviewer.core.ui.icons.EhIcons
 import com.ehviewer.core.ui.icons.big.Download
 import com.ehviewer.core.ui.util.HapticFeedbackType
-import com.ehviewer.core.ui.util.ScrollDirectionGate
 import com.ehviewer.core.ui.util.asyncState
 import com.ehviewer.core.ui.util.ifTrueThen
 import com.ehviewer.core.ui.util.rememberHapticFeedback
@@ -141,10 +136,8 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlin.math.roundToInt
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import moe.tarsin.navigate
-import moe.tarsin.string
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
@@ -252,8 +245,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
             colors = topBarOnDrawerColor(),
             actions = {
                 if (DownloadsFilterMode.CUSTOM == filterMode) {
-                    TooltipIconButton(
-                        label = stringResource(R.string.new_label_title),
+                    IconButton(
                         onClick = {
                             launch {
                                 val text = awaitInputText(title = newLabel, hint = labelsStr) { text ->
@@ -271,8 +263,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                         Icon(imageVector = Icons.Default.NewLabel, contentDescription = null)
                     }
                     val letMeSelect = stringResource(R.string.let_me_select)
-                    TooltipIconButton(
-                        label = stringResource(R.string.default_download_label),
+                    IconButton(
                         onClick = {
                             launch {
                                 val selected = if (!Settings.hasDefaultDownloadLabel) {
@@ -299,13 +290,12 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                         },
                         shapes = IconButtonDefaults.shapes(),
                     ) {
-                        Icon(imageVector = Icons.Default.Folder, contentDescription = null)
+                        Icon(imageVector = Icons.Default.Download, contentDescription = null)
                     }
                 }
                 val custom = stringResource(R.string.select_grouping_mode_custom)
                 val artist = stringResource(R.string.select_grouping_mode_artist)
-                TooltipIconButton(
-                    label = stringResource(R.string.select_grouping_mode),
+                IconButton(
                     onClick = {
                         launch {
                             awaitSelectAction(R.string.select_grouping_mode) {
@@ -321,7 +311,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                     },
                     shapes = IconButtonDefaults.shapes(),
                 ) {
-                    Icon(imageVector = Icons.Default.Category, contentDescription = null)
+                    Icon(imageVector = Icons.Default.Settings, contentDescription = null)
                 }
             },
         )
@@ -422,8 +412,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                             },
                             trailingContent = editEnable.ifTrueThen {
                                 Row {
-                                    TooltipIconButton(
-                                        label = stringResource(R.string.rename_label_title),
+                                    IconButton(
                                         onClick = {
                                             launch {
                                                 val new = awaitInputText(initial = item, title = renameLabel, hint = labelsStr) { text ->
@@ -465,7 +454,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                                             },
                                         ),
                                     ) {
-                                        Icon(imageVector = Icons.Default.Reorder, contentDescription = stringResource(R.string.reorder_position, index + 1, DownloadManager.labelList.size))
+                                        Icon(imageVector = Icons.Default.Reorder, contentDescription = null)
                                     }
                                 }
                             },
@@ -491,7 +480,6 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
         expanded = searchBarExpanded,
         onExpandedChange = {
             searchBarExpanded = it
-            if (it) fabExpanded = false
             fabHidden = it
             if (it) checkedInfoMap.clear()
         },
@@ -508,45 +496,13 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
         },
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
-            TooltipIconButton(label = stringResource(R.string.sort_by), onClick = {
-                launch(Dispatchers.Default) {
-                    val oldMode = SortMode.from(sortMode)
-                    val sortModes = contextOf<Context>().resources.getStringArray(com.hippo.ehviewer.R.array.download_sort_modes).toList()
-                    val (selected, checked) = awaitSelectItemWithCheckBox(
-                        sortModes,
-                        R.string.sort_by,
-                        R.string.group_by_download_label,
-                        SortMode.All.indexOfFirst { it.field == oldMode.field && it.order == oldMode.order },
-                        oldMode.groupByDownloadLabel,
-                    )
-                    val mode = SortMode.All[selected].copy(groupByDownloadLabel = checked)
-                    if (mode != oldMode) {
-                        sortMode = mode.flag
-                        isLoading = true
-                        DownloadManager.sortDownloads(mode)
-                        invalidateKey = !invalidateKey
-                    }
-                }
-            }) { Icon(Icons.AutoMirrored.Default.Sort, contentDescription = null) }
-            TooltipIconButton(label = stringResource(R.string.download_filter), onClick = {
-                launch(Dispatchers.Default) {
-                    val downloadStates = contextOf<Context>().resources.getStringArray(com.hippo.ehviewer.R.array.download_state).toList()
-                    val state = awaitSingleChoice(
-                        downloadStates,
-                        filterState.state + 1,
-                        R.string.download_filter,
-                    ) - 1
-                    filterState = filterState.copy(state = state)
-                }
-            }) { Icon(Icons.Default.FilterList, contentDescription = null) }
             var expanded by remember { mutableStateOf(false) }
             val sideSheetState = LocalSideSheetState.current
-            TooltipIconButton(label = stringResource(if (gridView) R.string.view_list else R.string.view_grid), onClick = { gridView = !gridView }, shapes = IconButtonDefaults.shapes()) {
-                AnimatedContent(targetState = gridView, label = "List mode") { grid ->
-                    Icon(if (grid) Icons.AutoMirrored.Default.ViewList else Icons.Default.GridView, contentDescription = null)
-                }
+            IconButton(onClick = { gridView = !gridView }, shapes = IconButtonDefaults.shapes()) {
+                val icon = if (gridView) Icons.AutoMirrored.Default.ViewList else Icons.Default.GridView
+                Icon(imageVector = icon, contentDescription = null)
             }
-            TooltipIconButton(label = stringResource(R.string.more_actions), onClick = { expanded = !expanded }, shapes = IconButtonDefaults.shapes()) {
+            IconButton(onClick = { expanded = !expanded }, shapes = IconButtonDefaults.shapes()) {
                 Icon(imageVector = Icons.Default.MoreVert, contentDescription = null)
             }
             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
@@ -600,15 +556,18 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
         },
     ) { contentPadding ->
         val height by collectListThumbSizeAsState()
-        val realPadding = contentPadding + (if (selectMode) PaddingValues(bottom = 80.dp) else PaddingValues.Zero) + PaddingValues(dimensionResource(id = com.hippo.ehviewer.R.dimen.gallery_list_margin_h), dimensionResource(id = com.hippo.ehviewer.R.dimen.gallery_list_margin_v))
-        val searchBarConnection = remember(density, contentPadding) {
+        val realPadding = contentPadding + PaddingValues(dimensionResource(id = com.hippo.ehviewer.R.dimen.gallery_list_margin_h), dimensionResource(id = com.hippo.ehviewer.R.dimen.gallery_list_margin_v))
+        val searchBarConnection = remember {
             val slop = ViewConfiguration.get(contextOf<Context>()).scaledTouchSlop
             val topPaddingPx = with(density) { contentPadding.calculateTopPadding().roundToPx() }
-            val scrollGate = ScrollDirectionGate(slop * 4f, slop * 3f)
             object : NestedScrollConnection {
                 override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
                     val dy = -consumed.y
-                    scrollGate.update(dy)?.let { fabHidden = it }
+                    if (dy >= slop) {
+                        fabHidden = true
+                    } else if (dy <= -slop / 2) {
+                        fabHidden = false
+                    }
                     searchBarOffsetY = (searchBarOffsetY - dy).roundToInt().coerceIn(-topPaddingPx, 0)
                     return Offset.Zero // We never consume it
                 }
@@ -692,63 +651,101 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                 CircularWavyProgressIndicator()
             }
         } else if (list.isEmpty()) {
-            Box(Modifier.padding(realPadding)) {
-                StatePanel(icon = EhIcons.Big.Default.Download, text = stringResource(R.string.no_download_info))
+            Column(
+                modifier = Modifier.padding(realPadding).fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Icon(
+                    imageVector = EhIcons.Big.Default.Download,
+                    contentDescription = null,
+                    modifier = Modifier.padding(16.dp),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = stringResource(id = R.string.no_download_info),
+                    style = MaterialTheme.typography.headlineMedium,
+                )
             }
         }
     }
 
-    LaunchedEffect(selectMode) {
-        if (selectMode) fabExpanded = false
-    }
-    if (selectMode) {
-        SelectionBar(
-            count = checkedInfoMap.size,
-            countLabel = stringResource(R.string.selected_count, checkedInfoMap.size),
-            moreLabel = stringResource(R.string.more_actions),
-            closeLabel = stringResource(R.string.close),
-            onClose = { checkedInfoMap.clear() },
-        ) {
-            onClick(Icons.Default.DoneAll, autoClose = false, label = string(R.string.select_all)) {
+    val hideFab by asyncState(
+        produce = { fabHidden },
+        transform = {
+            onEachLatest { hide ->
+                if (!hide) delay(FAB_ANIMATE_TIME.toLong())
+            }
+        },
+    )
+
+    FabLayout(
+        hidden = hideFab && !selectMode,
+        expanded = fabExpanded || selectMode,
+        onExpandChanged = {
+            fabExpanded = it
+            checkedInfoMap.clear()
+        },
+        autoCancel = !selectMode,
+    ) {
+        if (!selectMode) {
+            onClick(Icons.Default.Shuffle) {
+                if (list.isNotEmpty()) {
+                    withUIContext { navToReader(list.random().galleryInfo) }
+                }
+            }
+            onClick(Icons.AutoMirrored.Default.Sort) {
+                val oldMode = SortMode.from(sortMode)
+                val sortModes = contextOf<Context>().resources.getStringArray(com.hippo.ehviewer.R.array.download_sort_modes).toList()
+                val (selected, checked) = awaitSelectItemWithCheckBox(
+                    sortModes,
+                    R.string.sort_by,
+                    R.string.group_by_download_label,
+                    SortMode.All.indexOfFirst { it.field == oldMode.field && it.order == oldMode.order },
+                    oldMode.groupByDownloadLabel,
+                )
+                val mode = SortMode.All[selected].copy(groupByDownloadLabel = checked)
+                if (mode != oldMode) {
+                    sortMode = mode.flag
+                    isLoading = true
+                    DownloadManager.sortDownloads(mode)
+                    invalidateKey = !invalidateKey
+                }
+            }
+            onClick(Icons.Default.FilterList) {
+                val downloadStates = contextOf<Context>().resources.getStringArray(com.hippo.ehviewer.R.array.download_state).toList()
+                val state = awaitSingleChoice(
+                    downloadStates,
+                    filterState.state + 1,
+                    R.string.download_filter,
+                ) - 1
+                filterState = filterState.copy(state = state)
+            }
+        } else {
+            onClick(Icons.Default.DoneAll, autoClose = false) {
                 val info = list.associateBy { it.gid }
                 checkedInfoMap.putAll(info)
             }
-            onClick(Icons.Default.PlayArrow, label = string(R.string.download_start)) {
+            onClick(Icons.Default.PlayArrow) {
                 val gidList = checkedInfoMap.takeAndClear().mapToLongArray(DownloadInfo::gid)
                 DownloadService.startRangeDownload(gidList)
             }
-            onClick(Icons.Default.Pause, label = string(R.string.download_stop)) {
+            onClick(Icons.Default.Pause) {
                 val gidList = checkedInfoMap.takeAndClear().mapToLongArray(DownloadInfo::gid)
                 DownloadManager.stopRangeDownload(gidList)
             }
-            onClick(Icons.Default.Delete, label = string(R.string.delete)) {
+            onClick(Icons.Default.Delete) {
                 val infoList = checkedInfoMap.takeAndClear()
                 confirmRemoveDownloadRange(infoList)
                 list.removeAll(infoList)
             }
-            onClick(Icons.AutoMirrored.Default.DriveFileMove, label = string(R.string.move)) {
+            onClick(Icons.AutoMirrored.Default.DriveFileMove) {
                 val infoList = checkedInfoMap.takeAndClear()
                 val toLabel = showMoveDownloadLabelList(infoList)
                 with(filterState) {
                     if (label != "" && label != toLabel) {
                         list.removeAll(infoList)
                     }
-                }
-            }
-        }
-    } else {
-        FabLayout(
-            hidden = searchBarExpanded || fabHidden,
-            label = stringResource(R.string.quick_actions),
-            singleAction = true,
-            closeLabel = stringResource(R.string.close),
-            expanded = fabExpanded,
-            onExpandChanged = { fabExpanded = it },
-            autoCancel = true,
-        ) {
-            onClick(Icons.Default.Casino, label = string(R.string.random_read)) {
-                if (list.isNotEmpty()) {
-                    withUIContext { navToReader(list.random().galleryInfo) }
                 }
             }
         }
