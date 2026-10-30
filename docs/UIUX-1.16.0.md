@@ -4,7 +4,7 @@
 
 修改前基线为 `b78069e79df89f646c7fbc02c7f405eb0430de84`，对应 1.15.6 的代码及随后同步的 README。
 
-GitHub 保留 [backup/before-uiux-1.16.0](https://github.com/Hycnyl/EhViewer/tree/backup/before-uiux-1.16.0) 分支；本次调整界面、设置组织及配色，保留原有数据结构和设置键。历史记录撤销使用独立的辅助查询和事务入口，原有删除方法不变。需要回滚时，在当前分支撤销 UI/UX 提交并提升版本号构建，可继续使用已有数据，无需改写 main 历史。
+GitHub 保留 [backup/before-uiux-1.16.0](https://github.com/Hycnyl/EhViewer/tree/backup/before-uiux-1.16.0) 分支；本次调整界面、设置组织及配色，保留原有数据结构和设置键。历史记录撤销使用独立的辅助查询和事务入口，原有删除方法不变。需要回滚时，在当前分支按从新到旧的顺序撤销本轮 UI/UX 及其修正提交，保留独立的 README 规则提交 `05ac74a`，并提升版本号构建，可继续使用已有数据，无需改写 main 历史。
 
 ## 本轮约定
 

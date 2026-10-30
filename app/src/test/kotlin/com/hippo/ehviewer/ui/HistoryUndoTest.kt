@@ -28,8 +28,10 @@ class HistoryUndoTest {
     private val fixtures = mutableListOf<BaseGalleryInfo>()
 
     @Before
-    fun initializeContext() {
+    fun initializeContext() = runBlocking(Dispatchers.IO) {
         RuntimeEnvironment.getApplication().injectAsAppCtx()
+        // Download compatibility tests also create history entries in the shared sandbox.
+        EhDB.clearHistoryInfo()
     }
 
     @After
