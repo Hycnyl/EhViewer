@@ -144,7 +144,7 @@ class CachedPageCompatibilityTest {
                         }
                         setModePreference(if (switchMode) !cbz else cbz)
                         withTimeout(1500) { DownloadManager.startDownload(info, null) }
-                        withTimeout(5000) { while (entry.state != DownloadInfo.STATE_FINISH) delay(10) }
+                        awaitFinished(entry.gid)
                         listOf(0, 2).forEach { assertArrayEquals(scenario, png, read(source / perFilename(it, "png"))) }
                         DownloadManager.stopAllDownload()
                         continue
@@ -265,7 +265,7 @@ class CachedPageCompatibilityTest {
         exportCachedPages(entry.galleryInfo, RescueFormat.CBZ) { _, _ -> }
         assertEquals(directory / "${info.gid}.cbz", entry.archiveFile)
         withTimeout(1500) { DownloadManager.startDownload(entry.galleryInfo, null) }
-        withTimeout(5000) { while (entry.state != DownloadInfo.STATE_FINISH) delay(10) }
+        awaitFinished(entry.gid)
         DownloadManager.stopAllDownload()
     }
 
@@ -292,7 +292,7 @@ class CachedPageCompatibilityTest {
             withTimeout(1500) { DownloadManager.startDownload(other, null) }
             assertTrue(DownloadManager.containDownloadInfo(other.gid))
             assertFalse(release.isCompleted)
-            withTimeout(5000) { while (DownloadManager.getDownloadState(other.gid) != DownloadInfo.STATE_FINISH) delay(10) }
+            awaitFinished(other.gid)
             DownloadManager.stopAllDownload()
         } finally {
             release.complete(Unit)
@@ -384,6 +384,14 @@ class CachedPageCompatibilityTest {
         }
     }
 
+    private suspend fun awaitFinished(gid: Long) {
+        // The in-memory finish flag precedes its database write. Keep fixture metadata
+        // until that write commits so cleanup cannot cancel the shared download scope.
+        withTimeout(5000) {
+            while (EhDB.getAllDownloadInfo().none { it.gid == gid && it.state == DownloadInfo.STATE_FINISH }) delay(10)
+        }
+    }
+
     private suspend fun setDownloadLocation(path: Path) {
         downloadLocation = path
         // Preferences commit asynchronously; wait before resolving fixture directories.
@@ -421,10 +429,10 @@ class CachedPageCompatibilityTest {
         try {
             withTimeout(1500) { DownloadManager.startRangeDownload(longArrayOf(first, galleries[1].gid)) }
             assertEquals(DownloadInfo.STATE_NONE, DownloadManager.getDownloadState(first))
-            withTimeout(1500) { while (DownloadManager.getDownloadState(galleries[1].gid) != DownloadInfo.STATE_FINISH) delay(10) }
+            awaitFinished(galleries[1].gid)
             withTimeout(1500) { DownloadManager.startAllDownload() }
             assertEquals(DownloadInfo.STATE_NONE, DownloadManager.getDownloadState(first))
-            withTimeout(1500) { while (DownloadManager.getDownloadState(galleries[2].gid) != DownloadInfo.STATE_FINISH) delay(10) }
+            awaitFinished(galleries[2].gid)
             assertFalse(release.isCompleted)
             DownloadManager.stopAllDownload()
         } finally {
@@ -432,7 +440,7 @@ class CachedPageCompatibilityTest {
             rescue.await()
         }
         withTimeout(1500) { DownloadManager.startRangeDownload(longArrayOf(first)) }
-        withTimeout(1500) { while (DownloadManager.getDownloadState(first) != DownloadInfo.STATE_FINISH) delay(10) }
+        awaitFinished(first)
         galleries.forEach { assertTrue(DownloadManager.containDownloadInfo(it.gid)) }
         DownloadManager.stopAllDownload()
     }
