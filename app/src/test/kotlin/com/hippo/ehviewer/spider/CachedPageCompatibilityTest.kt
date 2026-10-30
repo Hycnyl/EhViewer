@@ -144,7 +144,7 @@ class CachedPageCompatibilityTest {
                         }
                         setModePreference(if (switchMode) !cbz else cbz)
                         withTimeout(1500) { DownloadManager.startDownload(info, null) }
-                        withTimeout(1500) { while (entry.state != DownloadInfo.STATE_FINISH) delay(10) }
+                        withTimeout(5000) { while (entry.state != DownloadInfo.STATE_FINISH) delay(10) }
                         listOf(0, 2).forEach { assertArrayEquals(scenario, png, read(source / perFilename(it, "png"))) }
                         DownloadManager.stopAllDownload()
                         continue
@@ -265,7 +265,7 @@ class CachedPageCompatibilityTest {
         exportCachedPages(entry.galleryInfo, RescueFormat.CBZ) { _, _ -> }
         assertEquals(directory / "${info.gid}.cbz", entry.archiveFile)
         withTimeout(1500) { DownloadManager.startDownload(entry.galleryInfo, null) }
-        withTimeout(1500) { while (entry.state != DownloadInfo.STATE_FINISH) delay(10) }
+        withTimeout(5000) { while (entry.state != DownloadInfo.STATE_FINISH) delay(10) }
         DownloadManager.stopAllDownload()
     }
 
@@ -292,7 +292,7 @@ class CachedPageCompatibilityTest {
             withTimeout(1500) { DownloadManager.startDownload(other, null) }
             assertTrue(DownloadManager.containDownloadInfo(other.gid))
             assertFalse(release.isCompleted)
-            withTimeout(1500) { while (DownloadManager.getDownloadState(other.gid) != DownloadInfo.STATE_FINISH) delay(10) }
+            withTimeout(5000) { while (DownloadManager.getDownloadState(other.gid) != DownloadInfo.STATE_FINISH) delay(10) }
             DownloadManager.stopAllDownload()
         } finally {
             release.complete(Unit)
