@@ -408,8 +408,7 @@ class MainActivity : EhActivity() {
                                             },
                                             selected = currentDestination === direction,
                                             onClick = {
-                                                navigator.navigate(direction)
-                                                closeDrawer()
+                                                closeDrawer { navigator.navigate(direction) }
                                             },
                                             modifier = Modifier.padding(horizontal = 12.dp),
                                             icon = {

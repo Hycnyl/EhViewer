@@ -11,6 +11,9 @@ import com.ehviewer.core.database.model.HistoryInfo
 
 @Dao
 interface HistoryDao {
+    @Query("SELECT * FROM HISTORY WHERE GID = :gid")
+    suspend fun load(gid: Long): HistoryInfo?
+
     @Query("SELECT HISTORY.* FROM HISTORY JOIN GALLERIES USING(GID) ORDER BY TIME")
     suspend fun list(): List<HistoryInfo>
 

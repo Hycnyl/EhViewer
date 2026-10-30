@@ -25,7 +25,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.automirrored.filled.LastPage
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.FormatListNumbered
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Numbers
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Reorder
 import androidx.compose.material.icons.filled.Shuffle
@@ -72,15 +75,16 @@ import arrow.core.raise.ensure
 import arrow.core.raise.ensureNotNull
 import com.ehviewer.core.database.model.QuickSearch
 import com.ehviewer.core.i18n.R
-import com.ehviewer.core.ui.component.FAB_ANIMATE_TIME
 import com.ehviewer.core.ui.component.FabLayout
 import com.ehviewer.core.ui.component.FastScrollLazyColumn
 import com.ehviewer.core.ui.component.LocalSideSheetState
 import com.ehviewer.core.ui.component.ProvideSideSheetContent
+import com.ehviewer.core.ui.component.TooltipIconButton
 import com.ehviewer.core.ui.icons.EhIcons
 import com.ehviewer.core.ui.icons.filled.GoTo
 import com.ehviewer.core.ui.util.Await
 import com.ehviewer.core.ui.util.HapticFeedbackType
+import com.ehviewer.core.ui.util.ScrollDirectionGate
 import com.ehviewer.core.ui.util.asyncState
 import com.ehviewer.core.ui.util.rememberHapticFeedback
 import com.ehviewer.core.ui.util.thenIf
@@ -241,7 +245,8 @@ fun AnimatedVisibilityScope.GalleryListScreen(
                 title = { Text(text = stringResource(id = R.string.quick_search)) },
                 colors = topBarOnDrawerColor(),
                 actions = {
-                    IconButton(
+                    TooltipIconButton(
+                        label = stringResource(R.string.quick_search_help),
                         onClick = {
                             launch {
                                 awaitConfirmationOrCancel(title = R.string.quick_search, showCancelButton = false) {
@@ -253,13 +258,14 @@ fun AnimatedVisibilityScope.GalleryListScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Default.Help,
-                            contentDescription = stringResource(id = R.string.readme),
+                            contentDescription = stringResource(id = R.string.quick_search_help),
                         )
                     }
                     val invalidImageQuickSearch = stringResource(R.string.image_search_not_quick_search)
                     val nameEmpty = stringResource(R.string.name_is_empty)
                     val dupName = stringResource(R.string.duplicate_name)
-                    IconButton(
+                    TooltipIconButton(
+                        label = stringResource(R.string.add_quick_search_dialog_title),
                         onClick = {
                             launch {
                                 if (urlBuilder.mode == MODE_IMAGE_SEARCH) {
@@ -406,7 +412,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(
                                                 },
                                             ),
                                         ) {
-                                            Icon(imageVector = Icons.Default.Reorder, contentDescription = null)
+                                            Icon(imageVector = Icons.Default.Reorder, contentDescription = stringResource(R.string.reorder_position, index + 1, quickSearchList.size))
                                         }
                                     },
                                     colors = listItemOnDrawerColor(false),
@@ -474,6 +480,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(
         expanded = searchBarExpanded,
         onExpandedChange = {
             searchBarExpanded = it
+            if (it) fabExpanded = false
             fabHidden = it
         },
         title = suitableTitle,
@@ -490,7 +497,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
             val sheetState = LocalSideSheetState.current
-            IconButton(onClick = { launch { sheetState.open() } }, shapes = IconButtonDefaults.shapes()) {
+            TooltipIconButton(label = stringResource(if (isTopList) R.string.toplist else R.string.quick_search), onClick = { launch { sheetState.open() } }, shapes = IconButtonDefaults.shapes()) {
                 Icon(
                     imageVector = if (isTopList) {
                         Icons.Default.FormatListNumbered
@@ -522,17 +529,14 @@ fun AnimatedVisibilityScope.GalleryListScreen(
         val height by collectListThumbSizeAsState()
         val showPages by Settings.showGalleryPages.collectAsState()
         val showProgress by Settings.showReadingProgress.collectAsState()
-        val searchBarConnection = remember {
+        val searchBarConnection = remember(density, contentPadding) {
             val slop = ViewConfiguration.get(contextOf<Context>()).scaledTouchSlop
             val topPaddingPx = with(density) { contentPadding.calculateTopPadding().roundToPx() }
+            val scrollGate = ScrollDirectionGate(slop * 4f, slop * 3f)
             object : NestedScrollConnection {
                 override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
                     val dy = -consumed.y
-                    if (dy >= slop) {
-                        fabHidden = true
-                    } else if (dy <= -slop / 2) {
-                        fabHidden = false
-                    }
+                    scrollGate.update(dy)?.let { fabHidden = it }
                     searchBarOffsetY = (searchBarOffsetY - dy).roundToInt().coerceIn(-topPaddingPx, 0)
                     return Offset.Zero // We never consume it
                 }
@@ -540,6 +544,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(
         }
         GalleryList(
             data = data,
+            queryKey = urlBuilder.build(),
             contentModifier = Modifier.nestedScroll(searchBarConnection),
             contentPadding = contentPadding,
             listMode = listMode,
@@ -577,33 +582,27 @@ fun AnimatedVisibilityScope.GalleryListScreen(
     val invalidNum = stringResource(R.string.error_invalid_number)
     val outOfRange = stringResource(R.string.error_out_of_range)
 
-    val hideFab by asyncState(
-        produce = { fabHidden },
-        transform = {
-            onEachLatest { hide ->
-                if (!hide) delay(FAB_ANIMATE_TIME.toLong())
-            }
-        },
-    )
-
     FabLayout(
-        hidden = hideFab,
+        hidden = searchBarExpanded || fabHidden,
+        label = stringResource(R.string.quick_actions),
+        closeLabel = stringResource(R.string.close),
+        singleAction = urlBuilder.mode == MODE_WHATS_HOT,
         expanded = fabExpanded,
         onExpandChanged = { fabExpanded = it },
         autoCancel = true,
     ) {
         if (urlBuilder.mode in arrayOf(MODE_NORMAL, MODE_UPLOADER, MODE_TAG)) {
-            onClick(Icons.Default.Shuffle) {
+            onClick(Icons.Default.Shuffle, label = string(R.string.random_browse)) {
                 urlBuilder.setRange(Random.nextInt(100))
                 data.refresh()
             }
         }
-        onClick(Icons.Default.Refresh) {
+        onClick(Icons.Default.Refresh, label = string(R.string.refresh)) {
             urlBuilder.setRange(0)
             data.refresh()
         }
         if (urlBuilder.mode != MODE_WHATS_HOT) {
-            onClick(EhIcons.Default.GoTo) {
+            onClick(if (isTopList) Icons.Default.Numbers else Icons.Default.CalendarMonth, label = string(if (isTopList) R.string.jump_page else R.string.jump_date)) {
                 if (isTopList) {
                     val hint = string(R.string.go_to_hint, urlBuilder.page, TOPLIST_PAGES)
                     val text = awaitInputText(title = gotoTitle, hint = hint, isNumber = true) { oriText ->
@@ -617,7 +616,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(
                 }
                 data.refresh()
             }
-            onClick(Icons.AutoMirrored.Default.LastPage) {
+            onClick(if (isTopList) Icons.AutoMirrored.Default.LastPage else Icons.Default.History, label = string(if (isTopList) R.string.last_page else R.string.oldest_gallery)) {
                 if (isTopList) {
                     urlBuilder.page = TOPLIST_PAGES
                 } else {

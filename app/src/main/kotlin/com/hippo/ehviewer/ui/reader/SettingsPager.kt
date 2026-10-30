@@ -1,8 +1,14 @@
 package com.hippo.ehviewer.ui.reader
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.ProvideTextStyle
@@ -16,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.ui.component.TooltipIconButton
 import kotlinx.coroutines.launch
 
 private val tabs = intArrayOf(
@@ -25,7 +32,7 @@ private val tabs = intArrayOf(
 )
 
 @Composable
-fun SettingsPager(isWebtoon: Boolean, modifier: Modifier = Modifier, onPageSelected: (Int) -> Unit) {
+fun SettingsPager(isWebtoon: Boolean, modifier: Modifier = Modifier, onClose: () -> Unit, onPageSelected: (Int) -> Unit) {
     val pagerState = rememberPagerState { tabs.size }
     LaunchedEffect(onPageSelected) {
         snapshotFlow { pagerState.currentPage }.collect { page ->
@@ -33,6 +40,11 @@ fun SettingsPager(isWebtoon: Boolean, modifier: Modifier = Modifier, onPageSelec
         }
     }
     val scope = rememberCoroutineScope()
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+        TooltipIconButton(label = stringResource(R.string.close), onClick = onClose) {
+            Icon(Icons.Default.Close, contentDescription = null)
+        }
+    }
     PrimaryTabRow(
         selectedTabIndex = pagerState.currentPage,
         containerColor = BottomSheetDefaults.ContainerColor,

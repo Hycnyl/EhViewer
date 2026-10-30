@@ -97,6 +97,8 @@
 
 - About page: Relevant links now point to this repository.
 
+- UI/UX improvements.
+
 # Download
 
 | Flavor      | Minimum Android Version | Notes                          |

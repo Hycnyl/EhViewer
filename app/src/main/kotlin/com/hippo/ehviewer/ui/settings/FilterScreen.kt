@@ -31,7 +31,6 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -56,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import com.ehviewer.core.database.model.Filter
 import com.ehviewer.core.database.model.FilterMode
 import com.ehviewer.core.i18n.R
+import com.ehviewer.core.ui.component.TooltipIconButton
 import com.ehviewer.core.ui.util.Await
 import com.ehviewer.core.ui.util.thenIf
 import com.ehviewer.core.util.async
@@ -190,7 +190,8 @@ fun AnimatedVisibilityScope.FilterScreen(navigator: DestinationsNavigator) = Scr
                 title = { Text(text = stringResource(id = R.string.filter)) },
                 navigationIcon = { NavigationIcon() },
                 actions = {
-                    IconButton(
+                    TooltipIconButton(
+                        label = stringResource(R.string.filter_help),
                         onClick = {
                             launch {
                                 awaitConfirmationOrCancel(
@@ -250,7 +251,8 @@ fun AnimatedVisibilityScope.FilterScreen(navigator: DestinationsNavigator) = Scr
                                     onCheckedChange = { filter.trigger { filterCheckBoxRecomposeScope.invalidate() } },
                                 )
                                 Text(text = filter.text, modifier = Modifier.weight(1F))
-                                IconButton(
+                                TooltipIconButton(
+                                    label = stringResource(R.string.delete),
                                     onClick = {
                                         launch {
                                             awaitConfirmationOrCancel(confirmText = R.string.delete) {

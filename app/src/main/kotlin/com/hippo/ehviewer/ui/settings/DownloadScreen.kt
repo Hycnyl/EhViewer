@@ -91,13 +91,14 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = stringResource(id = R.string.settings_download)) },
+                title = { Text(text = stringResource(id = R.string.settings_download_storage)) },
                 navigationIcon = { NavigationIcon() },
                 scrollBehavior = scrollBehavior,
             )
         },
     ) { paddingValues ->
         Column(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).verticalScroll(rememberScrollState()).padding(paddingValues)) {
+            PreferenceSection(R.string.settings_save_location)
             var downloadLocationState by ::downloadLocation.observed
             val cannotGetDownloadLocation = stringResource(id = R.string.settings_download_cant_get_download_location)
             val selectDownloadDirLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { treeUri ->
@@ -175,6 +176,7 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                 summary = if (mediaScan.value) stringResource(id = R.string.settings_download_media_scan_summary_on) else stringResource(id = R.string.settings_download_media_scan_summary_off),
                 state = mediaScan,
             )
+            PreferenceSection(R.string.settings_download_behavior)
             val multiThreadDownload = Settings.multiThreadDownload.asMutableState()
             SimpleMenuPreferenceInt(
                 title = stringResource(id = R.string.settings_download_concurrency),
@@ -211,6 +213,7 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                 summary = stringResource(id = R.string.settings_download_download_origin_image_summary),
                 state = Settings.downloadOriginImage.asMutableState(),
             )
+            PreferenceSection(R.string.settings_file_format)
             SwitchPreference(
                 title = stringResource(id = R.string.settings_download_save_as_cbz),
                 state = Settings.saveAsCbz.asMutableState(),
@@ -220,6 +223,10 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                 summary = stringResource(id = R.string.settings_download_archive_metadata_summary),
                 state = Settings.archiveMetadata.asMutableState(),
             )
+            PreferenceSection(R.string.settings_reading_cache)
+            ReadCacheSizePreference()
+            ReadCacheCleanupPreference()
+            PreferenceSection(R.string.settings_maintenance)
             WorkPreference(
                 title = stringResource(id = R.string.settings_download_reload_metadata),
                 summary = stringResource(id = R.string.settings_download_reload_metadata_summary),

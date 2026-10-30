@@ -3,11 +3,15 @@ package com.hippo.ehviewer.ui.settings
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Adb
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.TravelExplore
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -22,6 +26,8 @@ import com.ehviewer.core.ui.icons.filled.SadPanda
 import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.destinations.AboutScreenDestination
 import com.hippo.ehviewer.ui.destinations.AdvancedScreenDestination
+import com.hippo.ehviewer.ui.destinations.AppearanceScreenDestination
+import com.hippo.ehviewer.ui.destinations.BrowsingScreenDestination
 import com.hippo.ehviewer.ui.destinations.DownloadScreenDestination
 import com.hippo.ehviewer.ui.destinations.EhScreenDestination
 import com.hippo.ehviewer.ui.destinations.PrivacyScreenDestination
@@ -43,16 +49,28 @@ fun AnimatedVisibilityScope.SettingsScreen(navigator: DestinationsNavigator) = S
             )
         },
     ) {
-        Column(modifier = Modifier.padding(it).nestedScroll(scrollBehavior.nestedScrollConnection)) {
+        Column(modifier = Modifier.padding(it).nestedScroll(scrollBehavior.nestedScrollConnection).verticalScroll(rememberScrollState())) {
             PreferenceHeader(
                 icon = EhIcons.Default.SadPanda,
-                title = R.string.settings_eh,
+                title = R.string.settings_account_site,
                 childRoute = EhScreenDestination,
                 navigator = navigator,
             )
             PreferenceHeader(
+                icon = Icons.Default.Palette,
+                title = R.string.settings_appearance,
+                childRoute = AppearanceScreenDestination,
+                navigator = navigator,
+            )
+            PreferenceHeader(
+                icon = Icons.Default.TravelExplore,
+                title = R.string.settings_browsing,
+                childRoute = BrowsingScreenDestination,
+                navigator = navigator,
+            )
+            PreferenceHeader(
                 icon = Icons.Default.Download,
-                title = R.string.settings_download,
+                title = R.string.settings_download_storage,
                 childRoute = DownloadScreenDestination,
                 navigator = navigator,
             )

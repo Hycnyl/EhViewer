@@ -5,6 +5,9 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -45,6 +48,10 @@ inline fun ComponentActivity.setMD3Content(crossinline content: @Composable Dial
     }
 }
 
+private val primaryRoutes = setOf("home_page_screen", "whatshot_screen", "toplist_screen", "subscription_screen", "favourites_screen", "downloads_screen", "history_screen")
+
+private fun Ty.isSiblingNavigation() = initialState.destination.route in primaryRoutes && targetState.destination.route in primaryRoutes
+
 private typealias Ty = AnimatedContentTransitionScope<NavBackStackEntry>
 
 @Composable
@@ -52,10 +59,10 @@ fun rememberEhNavAnim(): NavHostAnimatedDestinationStyle {
     val slideDistance = rememberSlideDistance()
     return remember(slideDistance) {
         object : NavHostAnimatedDestinationStyle() {
-            override val enterTransition: Ty.() -> EnterTransition = { materialSharedAxisXIn(true, slideDistance) }
-            override val exitTransition: Ty.() -> ExitTransition = { materialSharedAxisXOut(true, slideDistance) }
-            override val popEnterTransition: Ty.() -> EnterTransition = { materialSharedAxisXIn(false, slideDistance) }
-            override val popExitTransition: Ty.() -> ExitTransition = { materialSharedAxisXOut(false, slideDistance) }
+            override val enterTransition: Ty.() -> EnterTransition = { if (isSiblingNavigation()) fadeIn(tween(180, delayMillis = 60)) else materialSharedAxisXIn(true, slideDistance) }
+            override val exitTransition: Ty.() -> ExitTransition = { if (isSiblingNavigation()) fadeOut(tween(90)) else materialSharedAxisXOut(true, slideDistance) }
+            override val popEnterTransition: Ty.() -> EnterTransition = { if (isSiblingNavigation()) fadeIn(tween(180, delayMillis = 60)) else materialSharedAxisXIn(false, slideDistance) }
+            override val popExitTransition: Ty.() -> ExitTransition = { if (isSiblingNavigation()) fadeOut(tween(90)) else materialSharedAxisXOut(false, slideDistance) }
         }
     }
 }
