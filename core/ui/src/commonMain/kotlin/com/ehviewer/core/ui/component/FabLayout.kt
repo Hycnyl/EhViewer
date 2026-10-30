@@ -1,9 +1,10 @@
 package com.ehviewer.core.ui.component
 
 import androidx.activity.compose.PredictiveBackHandler
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SmallFloatingActionButton
@@ -30,6 +32,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
@@ -44,6 +48,8 @@ import kotlin.time.Duration.Companion.microseconds
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 
 @Stable
 enum class FabLayoutValue { Hidden, Primary, Expand }
@@ -57,7 +63,7 @@ fun rememberFabLayoutState(initialValue: FabLayoutValue = FabLayoutValue.Primary
 @Stable
 class FabLayoutState(
     initialValue: FabLayoutValue,
-    private val animationSpec: AnimationSpec<Float> = tween(FAB_ANIMATE_TIME),
+    private val animationSpec: AnimationSpec<Float> = spring(dampingRatio = 0.85f, stiffness = 500f),
 ) {
     val mutatorMutex = MutatorMutex()
 
@@ -68,20 +74,18 @@ class FabLayoutState(
         .apply { updateBounds(0f, 1f) }
 
     private suspend fun downTo(value: FabLayoutValue, priority: MutatePriority) = mutatorMutex.mutate(priority) {
-        if (expandProgress.value != 0f) {
-            expandProgress.animateTo(0f, animationSpec)
-        }
-        if (value == FabLayoutValue.Hidden) {
-            appearProgress.animateTo(0f, animationSpec)
+        coroutineScope {
+            val collapse = async { expandProgress.animateTo(0f, animationSpec) }
+            if (value == FabLayoutValue.Hidden) appearProgress.animateTo(0f, animationSpec)
+            collapse.await()
         }
     }
 
     private suspend fun upTo(value: FabLayoutValue, priority: MutatePriority) = mutatorMutex.mutate(priority) {
-        if (appearProgress.value != 1f) {
-            appearProgress.animateTo(1f, animationSpec)
-        }
-        if (value == FabLayoutValue.Expand) {
-            expandProgress.animateTo(1f, animationSpec)
+        coroutineScope {
+            val appear = async { appearProgress.animateTo(1f, animationSpec) }
+            if (value == FabLayoutValue.Expand) expandProgress.animateTo(1f, animationSpec)
+            appear.await()
         }
     }
 
@@ -91,17 +95,20 @@ class FabLayoutState(
     suspend fun expand(priority: MutatePriority = MutatePriority.Default) = upTo(FabLayoutValue.Expand, priority)
 }
 
-private val fabSyncSchedule = Schedule.linear<Throwable>(100.microseconds)
-
 fun interface FabBuilder {
-    fun onClick(icon: ImageVector, autoClose: Boolean, that: suspend () -> Unit)
-    fun onClick(icon: ImageVector, that: suspend () -> Unit) = onClick(icon, true, that)
+    fun add(icon: ImageVector, label: String?, autoClose: Boolean, that: suspend () -> Unit)
+    fun onClick(icon: ImageVector, autoClose: Boolean = true, label: String? = null, that: suspend () -> Unit) = add(icon, label, autoClose, that)
 }
+
+internal data class FabAction(val icon: ImageVector, val label: String?, val autoClose: Boolean, val action: suspend () -> Unit)
 
 @Composable
 context(_: CoroutineScope)
 fun FabLayout(
     hidden: Boolean,
+    label: String,
+    closeLabel: String,
+    singleAction: Boolean = false,
     expanded: Boolean,
     onExpandChanged: (Boolean) -> Unit,
     autoCancel: Boolean,
@@ -116,29 +123,25 @@ fun FabLayout(
     }
     val state = rememberFabLayoutState(newState)
     LaunchedEffect(newState) {
-        fabSyncSchedule.retry {
-            when (newState) {
-                FabLayoutValue.Expand -> state.expand()
-                FabLayoutValue.Hidden -> state.hide()
-                FabLayoutValue.Primary -> {
-                    state.collapse()
-                    state.show()
-                }
+        when (newState) {
+            FabLayoutValue.Expand -> state.expand()
+            FabLayoutValue.Hidden -> state.hide()
+            FabLayoutValue.Primary -> {
+                state.collapse()
+                state.show()
             }
         }
     }
-    val builder by rememberUpdatedState(fabBuilder)
-
-    val secondaryFab by asyncState(
-        produce = { buildFab(builder) },
-        transform = { onEachLatest { state.collapse(MutatePriority.PreventUserInput) } },
-    )
+    LaunchedEffect(hidden) {
+        if (hidden && expanded) onExpandChanged(false)
+    }
+    val secondaryFab = buildFab(fabBuilder)
 
     val density = LocalDensity.current
     val interval = remember(density) { with(density) { FabInterval.roundToPx() } }
     val padding = remember(density) { with(density) { FabPadding.roundToPx() } }
 
-    if (updatedExpanded && autoCancel) {
+    if (updatedExpanded && !updatedHidden && autoCancel) {
         Spacer(
             modifier = Modifier.fillMaxSize().pointerInput(Unit) {
                 detectTapGestures { onExpandChanged(false) }
@@ -147,7 +150,8 @@ fun FabLayout(
     }
 
     val animatedProgress by state.expandProgress.asState()
-    PredictiveBackHandler(updatedExpanded) { flow ->
+    val appearState by state.appearProgress.asState()
+    PredictiveBackHandler(updatedExpanded && !updatedHidden) { flow ->
         try {
             state.mutatorMutex.mutate(MutatePriority.UserInput) {
                 flow.collect {
@@ -157,20 +161,20 @@ fun FabLayout(
             }
             onExpandChanged(false)
         } catch (_: CancellationException) {
-            launch { state.expand() }
+            if (updatedExpanded && !updatedHidden) launch { state.expand() }
         }
     }
     Box(
         modifier = Modifier.fillMaxSize().navigationBarsPadding().snackBarPadding(),
         contentAlignment = Alignment.BottomEnd,
     ) {
-        if (!state.appearProgress.isRunning && !updatedHidden) {
+        if (!singleAction && animatedProgress > 0f && appearState > 0f) {
             Box(
                 modifier = Modifier.fillMaxSize().graphicsLayer { alpha = animatedProgress },
                 contentAlignment = Alignment.BottomEnd,
             ) {
                 with(secondaryFab) {
-                    forEachIndexed { index, (imageVector, autoClose, onClick) ->
+                    forEachIndexed { index, (imageVector, actionLabel, autoClose, onClick) ->
                         SmallFloatingActionButton(
                             onClick = {
                                 launch(Dispatchers.Default) {
@@ -178,7 +182,7 @@ fun FabLayout(
                                     if (autoClose) onExpandChanged(false)
                                 }
                             },
-                            modifier = Modifier.padding(20.dp).offset {
+                            modifier = Modifier.semantics { actionLabel?.let { contentDescription = it } }.padding(20.dp).offset {
                                 val distance = lerp(0, interval * (size - index) + padding, animatedProgress)
                                 IntOffset(0, -distance)
                             },
@@ -189,32 +193,36 @@ fun FabLayout(
                 }
             }
         }
-        val appearState by state.appearProgress.asState()
-        FloatingActionButton(
-            onClick = { onExpandChanged(!updatedExpanded) },
-            modifier = Modifier.padding(16.dp).graphicsLayer {
-                rotationZ = lerp(-90f, 0f, appearState)
-                scaleX = appearState
-                scaleY = appearState
-            },
-        ) {
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = null,
-                modifier = Modifier.graphicsLayer {
-                    rotationZ = lerp(-135f, 0f, animatedProgress)
-                },
-            )
+        if (appearState > 0f) {
+            val action = secondaryFab.singleOrNull().takeIf { singleAction }
+            val tooltip = action?.label ?: if (updatedExpanded) closeLabel else label
+            IconTooltip(tooltip) {
+                FloatingActionButton(
+                    onClick = {
+                        if (action != null) launch { action.action() } else onExpandChanged(!updatedExpanded)
+                    },
+                    modifier = Modifier.padding(16.dp).graphicsLayer {
+                        scaleX = appearState
+                        scaleY = appearState
+                        alpha = appearState
+                    },
+                ) {
+                    AnimatedContent(targetState = updatedExpanded, label = "Quick actions") { open ->
+                        Icon(
+                            imageVector = action?.icon ?: if (open) Icons.Default.Close else Icons.Default.MoreHoriz,
+                            contentDescription = tooltip,
+                            modifier = Modifier.graphicsLayer { rotationZ = if (open) 90f * (1f - animatedProgress) else 0f },
+                        )
+                    }
+                }
+            }
         }
     }
 }
 
-private fun buildFab(builder: FabBuilder.() -> Unit) = buildList {
-    builder { icon, autoClose, action ->
-        add(Triple(icon, autoClose, action))
-    }
+internal fun buildFab(builder: FabBuilder.() -> Unit) = buildList {
+    builder { icon, label, autoClose, action -> add(FabAction(icon, label, autoClose, action)) }
 }
 
 private val FabInterval = 56.dp // Small FAB height + 16 dp
 private val FabPadding = 8.dp // (FAB height - small FAB height) / 2
-const val FAB_ANIMATE_TIME = 300

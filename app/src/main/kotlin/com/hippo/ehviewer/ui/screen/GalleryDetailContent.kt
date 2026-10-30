@@ -11,16 +11,21 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
@@ -38,6 +43,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -89,6 +95,7 @@ import com.ehviewer.core.ui.component.FilledTertiaryIconButton
 import com.ehviewer.core.ui.component.FilledTertiaryIconToggleButton
 import com.ehviewer.core.ui.component.GalleryDetailRating
 import com.ehviewer.core.ui.component.GalleryRatingBar
+import com.ehviewer.core.ui.component.IconTooltip
 import com.ehviewer.core.ui.icons.EhIcons
 import com.ehviewer.core.ui.icons.filled.Magnet
 import com.ehviewer.core.ui.util.LocalWindowSizeClass
@@ -224,9 +231,12 @@ fun GalleryDetailContent(
             dialog { cont ->
                 ModalBottomSheet(
                     onDismissRequest = { cont.cancel() },
+                    modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)),
+                    sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+                    sheetMaxWidth = if (windowSizeClass.isExpanded) 840.dp else 640.dp,
                     contentWindowInsets = { WindowInsets() },
                 ) {
-                    GalleryInfoBottomSheet(galleryDetail)
+                    GalleryInfoBottomSheet(galleryDetail, onClose = { cont.cancel() })
                 }
             }
         }
@@ -401,11 +411,10 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
         text: String,
         onClick: () -> Unit,
     ) = Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        FilledTertiaryIconButton(onClick = onClick) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-            )
+        IconTooltip(text) {
+            FilledTertiaryIconButton(onClick = onClick) {
+                Icon(imageVector = icon, contentDescription = text)
+            }
         }
         Text(text = text)
     }
@@ -475,9 +484,10 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
         }
         Spacer(modifier = Modifier.size(keylineMargin))
     }
-    Row(
-        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         val favSlot by FavouriteStatusRouter.collectAsState(galleryDetail) { it }
         val favButtonText = if (favSlot != NOT_FAVORITED) {
@@ -491,31 +501,33 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
             val addSucceed = stringResource(R.string.add_to_favorite_success)
             // val removeFailed = stringResource(R.string.remove_from_favorite_failure)
             val addFailed = stringResource(R.string.add_to_favorite_failure)
-            FilledTertiaryIconToggleButton(
-                checked = favSlot != NOT_FAVORITED,
-                onCheckedChange = {
-                    launchIO {
-                        favoritesLock.mutate {
-                            runSuspendCatching {
-                                modifyFavorites(galleryDetail)
-                            }.onSuccess { add ->
-                                if (add) {
-                                    snackbar(addSucceed)
-                                } else {
-                                    snackbar(removeSucceed)
+            IconTooltip(favButtonText) {
+                FilledTertiaryIconToggleButton(
+                    checked = favSlot != NOT_FAVORITED,
+                    onCheckedChange = {
+                        launchIO {
+                            favoritesLock.mutate {
+                                runSuspendCatching {
+                                    modifyFavorites(galleryDetail)
+                                }.onSuccess { add ->
+                                    if (add) {
+                                        snackbar(addSucceed)
+                                    } else {
+                                        snackbar(removeSucceed)
+                                    }
+                                }.onFailure {
+                                    // TODO: We don't know if it's add or remove
+                                    snackbar(addFailed)
                                 }
-                            }.onFailure {
-                                // TODO: We don't know if it's add or remove
-                                snackbar(addFailed)
                             }
                         }
-                    }
-                },
-            ) {
-                Icon(
-                    imageVector = getFavoriteIcon(favSlot != NOT_FAVORITED),
-                    contentDescription = null,
-                )
+                    },
+                ) {
+                    Icon(
+                        imageVector = getFavoriteIcon(favSlot != NOT_FAVORITED),
+                        contentDescription = favButtonText,
+                    )
+                }
             }
             Text(text = favButtonText)
         }

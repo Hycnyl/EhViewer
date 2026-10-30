@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -17,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.ehviewer.core.i18n.R
 import com.ehviewer.core.network.EhCookieStore
+import com.ehviewer.core.ui.component.TooltipIconButton
 import com.ehviewer.core.util.launch
 import com.google.accompanist.web.WebView
 import com.google.accompanist.web.rememberWebViewNavigator
@@ -43,7 +43,8 @@ fun AnimatedVisibilityScope.UConfigScreen(navigator: DestinationsNavigator) = Sc
                 title = { Text(text = stringResource(id = R.string.u_config)) },
                 navigationIcon = { NavigationIcon() },
                 actions = {
-                    IconButton(
+                    TooltipIconButton(
+                        label = stringResource(android.R.string.ok),
                         onClick = {
                             wvNavigator.loadUrl(APPLY_JS)
                             navigator.popBackStack()

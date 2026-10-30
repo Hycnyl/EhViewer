@@ -1,7 +1,9 @@
 package com.hippo.ehviewer.ui.screen
 
 import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,9 +13,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ClearAll
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.fork.SwipeToDismissBox
 import androidx.compose.material3.fork.rememberSwipeToDismissBoxState
@@ -44,6 +48,8 @@ import androidx.paging.compose.itemKey
 import androidx.paging.map
 import com.ehviewer.core.i18n.R
 import com.ehviewer.core.ui.component.FastScrollLazyColumn
+import com.ehviewer.core.ui.component.StatePanel
+import com.ehviewer.core.ui.component.TooltipIconButton
 import com.ehviewer.core.ui.icons.EhIcons
 import com.ehviewer.core.ui.icons.big.History
 import com.ehviewer.core.ui.util.Await
@@ -63,13 +69,18 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlin.math.roundToInt
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import moe.tarsin.navigate
 
 @Destination<RootGraph>
 @Composable
 fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = Screen(navigator) {
+    val undoLabel = stringResource(R.string.undo)
+    val removedLabel = stringResource(R.string.history_removed)
+    val snackbarHost = contextOf<SnackbarHostState>()
     val title = stringResource(id = R.string.history)
     val hint = stringResource(R.string.search_bar_hint, title)
     val animateItems by Settings.animateItems.collectAsState()
@@ -107,7 +118,8 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = Sc
         searchFieldHint = hint,
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
-            IconButton(
+            TooltipIconButton(
+                label = stringResource(R.string.clear_all),
                 onClick = {
                     launch {
                         awaitConfirmationOrCancel(
@@ -155,7 +167,14 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = Sc
                         backgroundContent = {},
                         modifier = Modifier.thenIf(animateItems) { animateItem() },
                         enableDismissFromStartToEnd = false,
-                        onDismiss = { EhDB.deleteHistoryInfo(info) },
+                        onDismiss = {
+                            launch {
+                                val removed = EhDB.removeHistoryInfoForUndo(info) ?: return@launch
+                                if (snackbarHost.showSnackbar(removedLabel, undoLabel, withDismissAction = true, duration = SnackbarDuration.Short) == SnackbarResult.ActionPerformed) {
+                                    withContext(NonCancellable) { EhDB.restoreHistoryInfoAfterUndo(info, removed) }
+                                }
+                            }
+                        },
                     ) {
                         GalleryInfoListItem(
                             onClick = { navigate(info.asDst()) },
@@ -173,26 +192,9 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = Sc
         }
         Await(keyword, { delay(200) }) {
             if (historyData.itemCount == 0) {
-                Column(
-                    modifier = Modifier.padding(paddingValues).padding(horizontal = marginH).fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Icon(
-                        imageVector = EhIcons.Big.Default.History,
-                        contentDescription = null,
-                        modifier = Modifier.padding(16.dp),
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
-                    val emptyHint = if (keyword.isEmpty()) {
-                        stringResource(id = R.string.no_history)
-                    } else {
-                        stringResource(id = R.string.gallery_list_empty_hit)
-                    }
-                    Text(
-                        text = emptyHint,
-                        style = MaterialTheme.typography.headlineMedium,
-                    )
+                val emptyHint = if (keyword.isEmpty()) stringResource(R.string.no_history) else stringResource(R.string.gallery_list_empty_hit)
+                Box(Modifier.padding(paddingValues)) {
+                    StatePanel(icon = EhIcons.Big.Default.History, text = emptyHint)
                 }
             }
         }

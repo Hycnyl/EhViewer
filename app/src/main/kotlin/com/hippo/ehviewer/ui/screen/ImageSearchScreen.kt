@@ -38,6 +38,7 @@ import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_IMAGE_SEARCH
 import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.main.ImageSearch
+import com.hippo.ehviewer.ui.main.NavigationIcon
 import com.hippo.ehviewer.util.pickVisualMedia
 import com.hippo.ehviewer.util.sha1
 import com.ramcosta.composedestinations.annotation.Destination
@@ -58,6 +59,7 @@ fun AnimatedVisibilityScope.ImageSearchScreen(navigator: DestinationsNavigator) 
         topBar = {
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.image_search)) },
+                navigationIcon = { NavigationIcon() },
             )
         },
         floatingActionButton = {

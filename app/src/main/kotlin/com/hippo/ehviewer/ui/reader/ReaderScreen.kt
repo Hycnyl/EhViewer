@@ -254,7 +254,7 @@ fun ReaderScreen(pageLoader: PageLoader, info: BaseGalleryInfo?) {
                         val state = rememberModalBottomSheetState()
                         ModalBottomSheet(
                             onDismissRequest = { dispose() },
-                            modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
+                            modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)),
                             sheetState = state,
                             contentWindowInsets = { WindowInsets() },
                         ) {
@@ -357,13 +357,13 @@ fun ReaderScreen(pageLoader: PageLoader, info: BaseGalleryInfo?) {
                         )
                         ModalBottomSheet(
                             onDismissRequest = { dispose() },
-                            modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
+                            modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)),
                             // Yeah, I know color state should not be read here, but we have to do it...
                             scrimColor = scrim,
-                            dragHandle = null,
+                            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
                             contentWindowInsets = { WindowInsets() },
                         ) {
-                            SettingsPager(isWebtoon = isWebtoon, modifier = Modifier.fillMaxSize()) { page ->
+                            SettingsPager(isWebtoon = isWebtoon, modifier = Modifier.weight(1f), onClose = { dispose() }) { page ->
                                 isColorFilter = page == 2
                                 appbarVisible = !isColorFilter
                             }

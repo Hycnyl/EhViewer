@@ -2,23 +2,42 @@ package com.hippo.ehviewer.ui
 
 import android.content.Context
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.plus
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
@@ -27,13 +46,17 @@ import androidx.compose.ui.unit.dp
 import com.ehviewer.core.i18n.R
 import com.ehviewer.core.model.GalleryDetail
 import com.ehviewer.core.model.GalleryInfo.Companion.LOCAL_FAVORITED
+import com.ehviewer.core.ui.component.TooltipIconButton
+import com.ehviewer.core.util.isAtLeastT
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.thumbUrl
 import com.hippo.ehviewer.ui.screen.navWithUrl
 import com.hippo.ehviewer.util.addTextToClipboard
+import com.hippo.ehviewer.util.copyTextToClipboard
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.coroutines.launch
 
 private const val INDEX_URL = 2
 private const val INDEX_PARENT = 9
@@ -64,37 +87,73 @@ private fun GalleryDetail.content() = arrayOf(
 
 @Composable
 context(_: Context, _: DestinationsNavigator)
-fun GalleryInfoBottomSheet(detail: GalleryDetail) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = stringResource(id = R.string.gallery_info),
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            style = MaterialTheme.typography.titleLarge,
+fun GalleryInfoBottomSheet(detail: GalleryDetail, onClose: () -> Unit) {
+    val snackbarHost = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    val copied = stringResource(R.string.copied_to_clipboard)
+    val data = remember(detail) { detail.content() }
+    val groups = remember {
+        listOf(
+            R.string.gallery_info_identity to listOf(0, 1, 2, 5),
+            R.string.gallery_info_titles to listOf(3, 4),
+            R.string.gallery_info_publication to listOf(6, 7, 8, 9, 10, 11),
+            R.string.gallery_info_statistics to (12..20).toList(),
         )
-        val data = remember(detail) { detail.content() }
-        ProvideTextStyle(MaterialTheme.typography.labelLarge) {
-            LazyColumn(contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues()) {
-                itemsIndexed(data) { index, (key, content) ->
-                    Row(
-                        modifier = Modifier.padding(horizontal = dimensionResource(id = com.hippo.ehviewer.R.dimen.keyline_margin)).clickable {
-                            if (index == INDEX_PARENT) {
-                                if (content != null) {
-                                    navWithUrl(content)
-                                }
-                            } else {
-                                addTextToClipboard(content, true)
-                                if (index == INDEX_URL) {
-                                    // Save it to avoid detect the gallery
-                                    Settings.clipboardTextHashCode = data[index].hashCode()
+    }
+    Box(Modifier.fillMaxWidth().fillMaxHeight(.9f)) {
+        Column(Modifier.fillMaxSize()) {
+            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(R.string.gallery_info), Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)
+                TooltipIconButton(label = stringResource(R.string.close), onClick = onClose) {
+                    Icon(Icons.Default.Close, contentDescription = null)
+                }
+            }
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(280.dp),
+                modifier = Modifier.weight(1f),
+                contentPadding = PaddingValues(16.dp) + WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                groups.forEach { (title, fields) ->
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Text(stringResource(title), Modifier.padding(top = 12.dp, bottom = 4.dp), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                    }
+                    fields.forEach { index ->
+                        item(key = index, span = { GridItemSpan(if (index in listOf(2, 3, 4, 5, 9, 19)) maxLineSpan else 1) }) {
+                            val (key, content) = data[index]
+                            val copyLabel = stringResource(R.string.copy_text)
+                            val isLink = index == INDEX_PARENT && content != null
+                            Surface(color = MaterialTheme.colorScheme.surfaceContainerLow, shape = MaterialTheme.shapes.medium) {
+                                Row(
+                                    Modifier.fillMaxWidth().clickable(onClickLabel = if (isLink) stringResource(R.string.open_link) else copyLabel) {
+                                        if (isLink) {
+                                            navWithUrl(content)
+                                        } else {
+                                            copyTextToClipboard(content, false)
+                                            if (!isAtLeastT) scope.launch { snackbarHost.showSnackbar(copied) }
+                                            if (index == INDEX_URL) Settings.clipboardTextHashCode = data[index].hashCode()
+                                        }
+                                    }.padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Column(Modifier.weight(1f)) {
+                                        Text(stringResource(key), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        Text(content.orEmpty(), style = MaterialTheme.typography.bodyMedium)
+                                    }
+                                    Icon(
+                                        if (isLink) Icons.AutoMirrored.Default.OpenInNew else Icons.Default.ContentCopy,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp).padding(start = 4.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
                                 }
                             }
-                        }.fillMaxWidth(),
-                    ) {
-                        Text(stringResource(id = key), modifier = Modifier.width(90.dp).padding(8.dp))
-                        Text(content.orEmpty(), modifier = Modifier.padding(8.dp))
+                        }
                     }
                 }
             }
         }
+        SnackbarHost(snackbarHost, Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(16.dp))
     }
 }

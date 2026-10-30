@@ -39,7 +39,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
@@ -88,6 +87,7 @@ import com.ehviewer.core.database.model.Filter
 import com.ehviewer.core.database.model.FilterMode
 import com.ehviewer.core.i18n.R
 import com.ehviewer.core.model.GalleryComment
+import com.ehviewer.core.ui.component.TooltipIconButton
 import com.ehviewer.core.ui.util.animateFloatMergePredictiveBackAsState
 import com.ehviewer.core.ui.util.snackBarPadding
 import com.ehviewer.core.ui.util.thenIf
@@ -493,7 +493,8 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
                         textStyle = MaterialTheme.typography.bodyLarge.merge(color = color),
                         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                     )
-                    IconButton(
+                    TooltipIconButton(
+                        label = stringResource(R.string.send_comment),
                         onClick = { launchIO { sendComment() } },
                         shapes = IconButtonDefaults.shapes(),
                         modifier = Modifier.align(Alignment.CenterVertically).padding(16.dp),

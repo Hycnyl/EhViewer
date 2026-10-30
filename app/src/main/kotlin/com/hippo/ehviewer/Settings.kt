@@ -75,6 +75,7 @@ object Settings : DataStorePreferences(null) {
     val defaultFavSlot = intPref("default_favorite_slot", -2)
     val theme = intPref("theme_2", -1).observed(::updateWhenThemeChanges)
     val blackDarkTheme = boolPref("black_dark_theme", false)
+    val paletteMode = intPref("palette_mode", 0)
     val harmonizeCategoryColor = boolPref("harmonize_category_color", true)
     val launchPage = intPref("launch_page_2", 0)
     val listMode = intPref("list_mode_2", 0)

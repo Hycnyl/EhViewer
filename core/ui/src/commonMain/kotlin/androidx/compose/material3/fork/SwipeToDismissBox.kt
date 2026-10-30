@@ -31,7 +31,9 @@ import androidx.compose.material3.SwipeToDismissBoxDefaults
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -216,10 +218,11 @@ fun SwipeToDismissBox(
             },
         )
     }
-    LaunchedEffect(state.settledValue, onDismiss) {
+    val currentOnDismiss by rememberUpdatedState(onDismiss)
+    LaunchedEffect(state.settledValue) {
         // Only call when state is settled in a dismissed direction.
         if (state.settledValue != SwipeToDismissBoxValue.Settled) {
-            onDismiss(state.dismissDirection)
+            currentOnDismiss(state.dismissDirection)
         }
     }
 }

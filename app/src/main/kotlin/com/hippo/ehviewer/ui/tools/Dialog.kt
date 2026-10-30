@@ -46,7 +46,6 @@ import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.ListItem
@@ -96,6 +95,7 @@ import arrow.core.right
 import com.ehviewer.core.i18n.R
 import com.ehviewer.core.ui.component.FastScrollLazyColumn
 import com.ehviewer.core.ui.component.LabeledCheckbox
+import com.ehviewer.core.ui.component.TooltipIconButton
 import com.ehviewer.core.ui.util.ifNotNullThen
 import com.ehviewer.core.ui.util.ifTrueThen
 import com.hippo.ehviewer.client.EhTagDatabase
@@ -248,7 +248,8 @@ suspend fun awaitSelectTags(): List<String> = dialog { cont ->
                         state = state,
                         label = { Text(text = stringResource(id = R.string.action_add_tag_tip)) },
                         trailingIcon = {
-                            IconButton(
+                            TooltipIconButton(
+                                label = stringResource(R.string.action_add_tag),
                                 onClick = {
                                     val text = state.text.toString().trim()
                                     if (text.isNotEmpty()) {
@@ -310,6 +311,7 @@ suspend fun awaitSelectTags(): List<String> = dialog { cont ->
             }
         },
         idleIcon = Icons.Default.NewLabel,
+        idleLabel = stringResource(R.string.action_add_tag),
     )
 }
 
@@ -714,7 +716,7 @@ suspend fun awaitSelectItemWithIconAndTextField(
                 label = { Text(text = stringResource(id = hint)) },
                 trailingIcon = {
                     if (note.text.isNotEmpty()) {
-                        IconButton(onClick = { note.clearText() }, shapes = IconButtonDefaults.shapes()) {
+                        TooltipIconButton(label = stringResource(R.string.clear_text), onClick = { note.clearText() }, shapes = IconButtonDefaults.shapes()) {
                             Icon(imageVector = Icons.Default.Close, contentDescription = null)
                         }
                     }

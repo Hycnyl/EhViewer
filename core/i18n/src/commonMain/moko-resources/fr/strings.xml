@@ -68,7 +68,7 @@
     <string name="gallery_list_search_bar_hint_e_hentai">Chercher sur E-Hentai</string>
     <string name="gallery_list_search_bar_open_gallery">Ouvrir la galerie spécifiée</string>
     <string name="gallery_list_empty_hit">Le monde est grand et le panda s\'assied tout seul.</string>
-    <string name="gallery_list_empty_hit_subscription">Vous pouvez suivre des tags à Paramètres -> EH -> Mes tags.</string>
+    <string name="gallery_list_empty_hit_subscription">Vous pouvez suivre des tags à Paramètres -> Account and site -> Mes tags.</string>
 
     <string name="keyword_search">Recherche du mot-clé</string>
     <string name="image_search">Recherche d\'une image</string>
