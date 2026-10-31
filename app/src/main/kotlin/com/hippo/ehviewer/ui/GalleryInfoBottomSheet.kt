@@ -2,18 +2,12 @@ package com.hippo.ehviewer.ui
 
 import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.plus
@@ -22,20 +16,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
-import androidx.compose.material.icons.filled.AccountTree
+import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.DataUsage
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.HowToVote
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material3.Badge
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,7 +34,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -102,33 +90,33 @@ fun GalleryInfoBottomSheet(detail: GalleryDetail, onNavigate: (String) -> Unit) 
     }
     fun copyField(field: GalleryInfoField) = copyValue(field.value.raw, field.isGalleryLink)
     val visibleNodes = chain.visibleNodes(expanded)
-    LazyColumn(contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues() + PaddingValues(16.dp)) {
+    LazyColumn(contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues() + PaddingValues(12.dp)) {
         item("title") {
-            Text(stringResource(R.string.gallery_info), Modifier.fillMaxWidth().padding(bottom = 20.dp), textAlign = TextAlign.Center, style = MaterialTheme.typography.titleLarge)
+            Text(stringResource(R.string.gallery_info), Modifier.fillMaxWidth().padding(bottom = 12.dp), textAlign = TextAlign.Center, style = MaterialTheme.typography.titleMedium)
         }
         item("overview") {
-            GalleryInfoCard(R.string.gallery_info_overview) {
-                for (key in listOf(GalleryInfoFieldKey.TITLE, GalleryInfoFieldKey.TITLE_JPN)) {
+            GalleryInfoOverview(fields, ::copyField, links.gallery?.let { { onNavigate(it) } })
+        }
+        item("details") {
+            GalleryInfoCard(R.string.gallery_info_basic, rowGap = 2.dp) {
+                val remaining = listOf(
+                    GalleryInfoFieldKey.POSTED,
+                    GalleryInfoFieldKey.PARENT,
+                    GalleryInfoFieldKey.VISIBLE,
+                    GalleryInfoFieldKey.FAVORITED,
+                    GalleryInfoFieldKey.FAVORITE_NAME,
+                    GalleryInfoFieldKey.URL,
+                    GalleryInfoFieldKey.THUMB,
+                    GalleryInfoFieldKey.TORRENT_COUNT,
+                    GalleryInfoFieldKey.TORRENT_URL,
+                )
+                remaining.forEach { key ->
                     val field = fields.getValue(key)
-                    GalleryInfoValueRow(
-                        stringResource(key.label),
-                        field.value,
-                        { copyField(field) },
-                        valueStyle = if (key == GalleryInfoFieldKey.TITLE) MaterialTheme.typography.headlineSmall else MaterialTheme.typography.bodyMedium,
-                    )
-                }
-                val category = fields.getValue(GalleryInfoFieldKey.CATEGORY)
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(stringResource(category.key.label), style = MaterialTheme.typography.labelMedium)
-                    Badge(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer) {
-                        Text(category.value.text, Modifier.padding(horizontal = 8.dp, vertical = 4.dp), style = MaterialTheme.typography.bodyMedium)
-                    }
-                    Spacer(Modifier.weight(1f))
-                    GalleryInfoCopyButton(stringResource(category.key.label), category.value.raw != null) { copyField(category) }
+                    val url = field.value.raw?.takeIf { field.isGalleryLink && GalleryDetailUrlParser.parse(it) != null }
+                    GalleryInfoValueRow(stringResource(key.label), field.value, { copyField(field) }, url?.let { { onNavigate(it) } })
                 }
             }
         }
-        item("statistics") { GalleryCoreMetrics(fields, ::copyField) }
         item("versions_header") {
             GalleryVersionHeader(
                 chain,
@@ -153,86 +141,39 @@ fun GalleryInfoBottomSheet(detail: GalleryDetail, onNavigate: (String) -> Unit) 
                 solidBefore = index > 0 && chain.isDirectParent(visibleNodes[index - 1].ref.gid, node.ref.gid),
                 solidAfter = index < visibleNodes.lastIndex && chain.isDirectParent(node.ref.gid, visibleNodes[index + 1].ref.gid),
                 onNavigate = onNavigate,
-                onCopy = { text, isUrl -> copyValue(text, isUrl) },
+                onCopy = { copyValue(it) },
             )
         }
         item("versions_footer") { GalleryVersionFooter() }
-        item("basic") {
-            GalleryInfoCard(R.string.gallery_info_basic) {
-                val basic = GalleryInfoFieldKey.entries.filter { it.group == GalleryInfoGroup.BASIC }
-                basic.forEachIndexed { index, key ->
-                    val field = fields.getValue(key)
-                    val url = field.value.raw?.takeIf { field.isGalleryLink && GalleryDetailUrlParser.parse(it) != null }
-                    GalleryInfoValueRow(stringResource(key.label), field.value, { copyField(field) }, basicIcon(key), url?.let { { onNavigate(it) } })
-                    if (index != basic.lastIndex) HorizontalDivider()
-                }
-            }
-        }
-        item("favorites") {
-            GalleryInfoCard(R.string.gallery_info_favorites) {
-                GalleryInfoFieldKey.entries.filter { it.group == GalleryInfoGroup.FAVORITES }.forEach { key ->
-                    val field = fields.getValue(key)
-                    GalleryInfoValueRow(stringResource(key.label), field.value, { copyField(field) })
-                }
-            }
-        }
-        item("resources") {
-            GalleryInfoCard(R.string.gallery_info_resources, rowGap = 4.dp) {
-                val resources = GalleryInfoFieldKey.entries.filter { it.group == GalleryInfoGroup.RESOURCES }
-                resources.forEachIndexed { index, key ->
-                    val field = fields.getValue(key)
-                    val url = field.value.raw?.takeIf { field.isGalleryLink && GalleryDetailUrlParser.parse(it) != null }
-                    GalleryInfoIdentifierRow(stringResource(key.label), field.value, { copyField(field) }, onNavigate = url?.let { { onNavigate(it) } })
-                    if (index != resources.lastIndex) HorizontalDivider()
-                }
-            }
-        }
     }
 }
 
 @Composable
-private fun GalleryCoreMetrics(fields: Map<GalleryInfoFieldKey, GalleryInfoField>, onCopy: (GalleryInfoField) -> Unit) {
-    GalleryInfoCard(R.string.gallery_info_statistics) {
-        val metrics = listOf(GalleryInfoFieldKey.PAGES, GalleryInfoFieldKey.SIZE, GalleryInfoFieldKey.FAVORITE_COUNT, GalleryInfoFieldKey.RATING, GalleryInfoFieldKey.RATING_COUNT)
-        BoxWithConstraints {
-            val columns = if (maxWidth >= 560.dp) 3 else 2
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                metrics.chunked(columns).forEach { row ->
-                    Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        row.forEach { key ->
-                            val field = fields.getValue(key)
-                            Surface(Modifier.weight(1f).fillMaxHeight(), shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surfaceContainerHigh) {
-                                Column(Modifier.padding(12.dp)) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(metricIcon(key), contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                                        Spacer(Modifier.weight(1f))
-                                        GalleryInfoCopyButton(stringResource(key.label), field.value.raw != null) { onCopy(field) }
-                                    }
-                                    Text(field.value.display(), style = MaterialTheme.typography.headlineSmall)
-                                    Text(stringResource(key.label), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                }
-                            }
-                        }
-                        repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
-                    }
+private fun GalleryInfoOverview(fields: Map<GalleryInfoFieldKey, GalleryInfoField>, onCopy: (GalleryInfoField) -> Unit, onNavigate: (() -> Unit)?) {
+    GalleryInfoCard {
+        for (key in listOf(GalleryInfoFieldKey.TITLE, GalleryInfoFieldKey.TITLE_JPN)) {
+            GalleryInfoTitle(stringResource(key.label), fields.getValue(key).value, onNavigate, secondary = key == GalleryInfoFieldKey.TITLE_JPN)
+        }
+        val rows = listOf(
+            listOf(GalleryInfoFieldKey.CATEGORY to Icons.Default.Category, GalleryInfoFieldKey.LANGUAGE to Icons.Default.Language),
+            listOf(GalleryInfoFieldKey.PAGES to Icons.AutoMirrored.Default.MenuBook, GalleryInfoFieldKey.SIZE to Icons.Default.DataUsage, GalleryInfoFieldKey.FAVORITE_COUNT to Icons.Default.Favorite),
+            listOf(GalleryInfoFieldKey.RATING to Icons.Default.Star, GalleryInfoFieldKey.RATING_COUNT to Icons.Default.HowToVote, GalleryInfoFieldKey.UPLOADER to Icons.Default.Person),
+        )
+        for (row in rows) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                for ((key, icon) in row) {
+                    val field = fields.getValue(key)
+                    val weight = if (key == GalleryInfoFieldKey.UPLOADER) 1.5f else 1f
+                    GalleryInfoCompactValue(stringResource(key.label), field.value, { onCopy(field) }, Modifier.weight(weight), icon)
                 }
             }
         }
+        HorizontalDivider()
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            for (key in listOf(GalleryInfoFieldKey.GID, GalleryInfoFieldKey.TOKEN)) {
+                val field = fields.getValue(key)
+                GalleryInfoCompactValue(stringResource(key.label), field.value, { onCopy(field) }, Modifier.weight(1f))
+            }
+        }
     }
-}
-
-private fun metricIcon(key: GalleryInfoFieldKey) = when (key) {
-    GalleryInfoFieldKey.PAGES -> Icons.AutoMirrored.Default.MenuBook
-    GalleryInfoFieldKey.SIZE -> Icons.Default.DataUsage
-    GalleryInfoFieldKey.FAVORITE_COUNT -> Icons.Default.Favorite
-    GalleryInfoFieldKey.RATING -> Icons.Default.Star
-    else -> Icons.Default.HowToVote
-}
-
-private fun basicIcon(key: GalleryInfoFieldKey) = when (key) {
-    GalleryInfoFieldKey.UPLOADER -> Icons.Default.Person
-    GalleryInfoFieldKey.POSTED -> Icons.Default.Schedule
-    GalleryInfoFieldKey.PARENT -> Icons.Default.AccountTree
-    GalleryInfoFieldKey.VISIBLE -> Icons.Default.Visibility
-    else -> Icons.Default.Language
 }

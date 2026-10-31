@@ -52,8 +52,8 @@ android {
 
     defaultConfig {
         applicationId = "moe.hycnyl.ehviewer"
-        versionCode = 180075
-        versionName = "1.17.0"
+        versionCode = 180076
+        versionName = "1.17.1"
         // versionNameSuffix = "-SNAPSHOT"
         buildConfigField("String", "RAW_VERSION_NAME", "\"$versionName${versionNameSuffix.orEmpty()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"$commitSha\"")
