@@ -93,6 +93,8 @@
 
 ## Other
 
+- Settings categories reorganized.
+
 - Package name: Changed to `moe.hycnyl.ehviewer`;
 
 - About page: Relevant links now point to this repository.

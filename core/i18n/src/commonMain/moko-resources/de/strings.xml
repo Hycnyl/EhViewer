@@ -214,6 +214,7 @@
     <string name="share_image">Das Bild teilen</string>
     <string name="image_saved">Das Bild wurde zu %s gespeichert</string>
     <string name="settings_eh">EH</string>
+    <string name="settings_theme">Design</string>
     <string name="settings_eh_sign_out">Abmelden</string>
     <string name="settings_u_config">EHentai-Einstellungen</string>
     <string name="settings_u_config_summary">Einstellung auf der Webseite EHentais</string>

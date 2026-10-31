@@ -11,6 +11,7 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -34,7 +35,6 @@ import com.ehviewer.core.util.isAtLeastT
 import com.ehviewer.core.util.launch
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
-import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.Screen
@@ -132,6 +132,11 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                     summary = stringResource(id = R.string.settings_my_tags_summary),
                 ) { navigate(MyTagsScreenDestination) }
             }
+            Preference(
+                title = stringResource(id = R.string.settings_eh_filter),
+                summary = stringResource(id = R.string.settings_eh_filter_summary),
+            ) { navigate(FilterScreenDestination) }
+            HorizontalDivider()
             var defaultFavSlot by Settings.defaultFavSlot.asMutableState()
             val disabled = stringResource(id = R.string.disabled_nav)
             val localFav = stringResource(id = R.string.local_favorites)
@@ -160,109 +165,22 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                 }
             }
             SimpleMenuPreferenceInt(
-                title = stringResource(id = R.string.dark_theme),
-                entry = com.hippo.ehviewer.R.array.night_mode_entries,
-                entryValueRes = com.hippo.ehviewer.R.array.night_mode_values,
-                state = Settings.theme.asMutableState(),
-            )
-            SwitchPreference(
-                title = stringResource(id = R.string.black_dark_theme),
-                state = Settings.blackDarkTheme.asMutableState(),
-            )
-            SwitchPreference(
-                title = stringResource(id = R.string.harmonize_category_color),
-                state = Settings.harmonizeCategoryColor.asMutableState(),
-            )
-            SimpleMenuPreferenceInt(
                 title = stringResource(id = R.string.settings_eh_launch_page),
                 entry = com.hippo.ehviewer.R.array.launch_page_entries,
                 entryValueRes = com.hippo.ehviewer.R.array.launch_page_entry_values,
                 state = Settings.launchPage.asMutableState(),
             )
-            val listMode = Settings.listMode.asMutableState()
-            SimpleMenuPreferenceInt(
-                title = stringResource(id = R.string.settings_eh_list_mode),
-                entry = com.hippo.ehviewer.R.array.list_mode_entries,
-                entryValueRes = com.hippo.ehviewer.R.array.list_mode_entry_values,
-                state = listMode,
-            )
-            AnimatedVisibility(visible = listMode.value == 0) {
-                Column {
-                    IntSliderPreference(
-                        maxValue = 60,
-                        minValue = 20,
-                        step = 7,
-                        title = stringResource(id = R.string.list_tile_thumb_size),
-                        state = Settings.listThumbSize.asMutableState(),
-                    )
-                    SimpleMenuPreferenceInt(
-                        title = stringResource(id = R.string.settings_eh_detail_size),
-                        entry = com.hippo.ehviewer.R.array.detail_size_entries,
-                        entryValueRes = com.hippo.ehviewer.R.array.detail_size_entry_values,
-                        state = Settings.detailSize.asMutableState(),
-                    )
-                }
-            }
-            IntSliderPreference(
-                maxValue = 10,
-                minValue = 1,
-                title = stringResource(id = R.string.settings_eh_thumb_columns),
-                state = Settings.thumbColumns.asMutableState(),
-            )
             SwitchPreference(
-                title = stringResource(id = R.string.settings_eh_show_gallery_pages),
-                summary = stringResource(id = R.string.settings_eh_show_gallery_pages_summary),
-                state = Settings.showGalleryPages.asMutableState(),
+                title = stringResource(id = R.string.desktop_site),
+                summary = stringResource(id = R.string.desktop_site_summary),
+                state = Settings.desktopSite.asMutableState(),
             )
-            SwitchPreference(
-                title = stringResource(id = R.string.settings_eh_show_reading_progress),
-                summary = stringResource(id = R.string.settings_eh_show_reading_progress_summary),
-                state = Settings.showReadingProgress.asMutableState(),
-            )
-            SwitchPreference(
-                title = stringResource(id = R.string.settings_eh_show_vote_status),
-                state = Settings.showVoteStatus.asMutableState(),
-            )
-            val showComments = Settings.showComments.asMutableState()
-            SwitchPreference(
-                title = stringResource(id = R.string.settings_eh_show_gallery_comments),
-                summary = stringResource(id = R.string.settings_eh_show_gallery_comments_summary),
-                state = showComments,
-            )
-            AnimatedVisibility(visible = showComments.value) {
-                IntSliderPreference(
-                    maxValue = 100,
-                    minValue = -101,
-                    title = stringResource(id = R.string.settings_eh_show_gallery_comment_threshold),
-                    summary = stringResource(id = R.string.settings_eh_show_gallery_comment_threshold_summary),
-                    state = Settings.commentThreshold.asMutableState(),
-                )
-            }
-            if (EhTagDatabase.translatable) {
-                SwitchPreference(
-                    title = stringResource(id = R.string.settings_eh_show_tag_translations),
-                    summary = stringResource(id = R.string.settings_eh_show_tag_translations_summary),
-                    state = Settings.showTagTranslations.asMutableState(),
-                )
-                UrlPreference(
-                    title = stringResource(id = R.string.settings_eh_tag_translations_source),
-                    url = stringResource(id = R.string.settings_eh_tag_translations_source_url),
-                )
-            }
-            Preference(
-                title = stringResource(id = R.string.settings_eh_filter),
-                summary = stringResource(id = R.string.settings_eh_filter_summary),
-            ) { navigate(FilterScreenDestination) }
+            HorizontalDivider()
             SwitchPreference(
                 title = stringResource(id = R.string.settings_eh_metered_network_warning),
                 state = Settings.meteredNetworkWarning.asMutableState(),
             )
             if (hasSignedIn) {
-                SwitchPreference(
-                    title = stringResource(id = R.string.settings_eh_show_jpn_title),
-                    summary = stringResource(id = R.string.settings_eh_show_jpn_title_summary),
-                    state = Settings.showJpnTitle.asMutableState(),
-                )
                 val reqNews = Settings.requestNews.asMutableState()
                 SwitchPreference(
                     title = stringResource(id = R.string.settings_eh_request_news),

@@ -269,6 +269,7 @@
     <string name="image_saved">Image sauvegardée à %s</string>
 
     <string name="settings_eh">EH</string>
+    <string name="settings_theme">Thème</string>
     <string name="settings_eh_sign_out">Se déconnecter</string>
     <string name="settings_u_config">Paramètres EHentai</string>
     <string name="settings_u_config_summary">Paramètres sur le site Web EHentai</string>
