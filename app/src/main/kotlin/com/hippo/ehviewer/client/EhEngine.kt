@@ -278,6 +278,13 @@ object EhEngine {
         }
     }
 
+    // Read only the First page's GND; never run detail parsing, fillInfo or event handling.
+    suspend fun getGalleryVersionCandidates(ref: GalleryVersionRef, referer: String?) = run {
+        require(ref.canRequest)
+        ehRequest(EhUrl.getGalleryDetailUrl(ref.gid, ref.token!!), referer)
+            .fetchUsingAsByteBuffer(GalleryDetailParser::parseVersionCandidates)
+    }
+
     suspend fun getPreviewList(url: String) = ehRequest(url, EhUrl.referer).fetchUsingAsByteBuffer(GalleryDetailParser::parsePreviews)
 
     suspend fun getFavorites(url: String) = ehRequest(url, EhUrl.referer).fetchUsingAsByteBuffer(FavoritesParser::parse)

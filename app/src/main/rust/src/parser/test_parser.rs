@@ -2,12 +2,93 @@
 mod tests {
     use crate::parser::api::parse_vote_tag;
     use crate::parser::archive::{parse_archive_url, parse_archives_with_funds};
-    use crate::parser::detail::parse_gallery_detail;
+    use crate::parser::detail::{parse_gallery_detail, parse_gallery_version_candidates};
     use crate::parser::list::parse_info_list;
     use crate::parser::profile::{parse_profile, parse_profile_url};
     use reqwest::get;
     use std::fs;
     use tl::ParserOptions;
+
+    #[test]
+    fn gnd_parses_identity_title_and_added_time() {
+        let dom = tl::parse(
+            include_str!("../../test_data/gallery_versions.html"),
+            ParserOptions::default().track_ids(),
+        )
+        .unwrap();
+        let items = parse_gallery_version_candidates(&dom, dom.parser()).unwrap();
+        assert_eq!(items.len(), 2);
+        assert_eq!(items[0].gid, 42);
+        assert_eq!(items[0].token, "0123456789");
+        assert_eq!(items[0].title, "A & B");
+        assert_eq!(items[0].posted, "2024-01-02 03:04");
+        assert_eq!(items[1].gid, 7);
+        assert_eq!(items[1].token, "abcdef0123");
+        assert_eq!(items[1].posted, "2024-02-03 04:05");
+    }
+
+    #[test]
+    fn gnd_empty_is_a_successful_empty_list() {
+        let dom = tl::parse(
+            include_str!("../../test_data/gallery_versions_empty.html"),
+            ParserOptions::default().track_ids(),
+        )
+        .unwrap();
+        assert!(
+            parse_gallery_version_candidates(&dom, dom.parser())
+                .unwrap()
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn gnd_missing_is_not_an_empty_list() {
+        let dom = tl::parse(
+            include_str!("../../test_data/gallery_versions_missing.html"),
+            ParserOptions::default().track_ids(),
+        )
+        .unwrap();
+        assert!(parse_gallery_version_candidates(&dom, dom.parser()).is_none());
+    }
+
+    #[test]
+    fn gnd_ignores_invalid_links_and_decodes_title_entities() {
+        let dom = tl::parse(
+            include_str!("../../test_data/gallery_versions.html"),
+            ParserOptions::default().track_ids(),
+        )
+        .unwrap();
+        let items = parse_gallery_version_candidates(&dom, dom.parser()).unwrap();
+        assert_eq!(
+            items.iter().map(|item| item.gid).collect::<Vec<_>>(),
+            vec![42, 7]
+        );
+        assert_eq!(items[1].title, "日本 \"edition\"");
+    }
+
+    #[test]
+    fn gnd_cbor_keeps_missing_and_valid_empty_distinct() {
+        let empty = tl::parse(
+            include_str!("../../test_data/gallery_versions_empty.html"),
+            ParserOptions::default().track_ids(),
+        )
+        .unwrap();
+        let missing = tl::parse(
+            include_str!("../../test_data/gallery_versions_missing.html"),
+            ParserOptions::default().track_ids(),
+        )
+        .unwrap();
+        let empty =
+            serde_cbor::value::to_value(parse_gallery_version_candidates(&empty, empty.parser()))
+                .unwrap();
+        let missing = serde_cbor::value::to_value(parse_gallery_version_candidates(
+            &missing,
+            missing.parser(),
+        ))
+        .unwrap();
+        assert_eq!(empty, serde_cbor::Value::Array(Vec::new()));
+        assert_eq!(missing, serde_cbor::Value::Null);
+    }
 
     #[tokio::test]
     async fn test_parse_info() {

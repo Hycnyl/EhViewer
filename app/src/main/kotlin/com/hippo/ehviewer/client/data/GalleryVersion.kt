@@ -31,6 +31,7 @@ data class GalleryVersionNode(
     val parent: GalleryVersionLink = GalleryVersionLink.Unknown,
     val expunged: Boolean? = null,
     val metadataLoaded: Boolean = false,
+    val parentVerified: Boolean = metadataLoaded && parent.known,
 )
 
 data class GalleryVersionMetadata(
@@ -39,6 +40,8 @@ data class GalleryVersionMetadata(
     val first: GalleryVersionLink = GalleryVersionLink.Unknown,
     val latest: GalleryVersionLink = GalleryVersionLink.Unknown,
 )
+
+data class GalleryVersionCandidates(val found: Boolean, val items: List<GalleryVersionNode> = emptyList())
 
 data class GalleryVersionSeed(val viewed: GalleryVersionNode, val newer: List<GalleryVersionNode> = emptyList()) {
     companion object {
@@ -99,7 +102,7 @@ data class GalleryVersionChain(
         return gids.mapNotNull(nodes::get)
     }
 
-    fun isDirectParent(older: Long, newer: Long) = !hasCycle && nodes[newer]?.parent?.let { it.known && it.ref?.gid == older } == true
+    fun isDirectParent(older: Long, newer: Long) = !hasCycle && nodes[newer]?.let { it.parentVerified && it.parent.ref?.gid == older } == true
 }
 
 internal fun versionMiddleState(
@@ -143,40 +146,65 @@ internal fun versionMiddleState(
     }
 }
 
-/** Parent edges determine order. Role/HTML anchors order gaps without asserting direct ancestry. */
+/** Only API parent edges locate candidates; anchors keep their established relative roles. */
 internal fun orderGalleryVersions(
     nodes: Map<Long, GalleryVersionNode>,
     viewedGid: Long,
     firstGid: Long?,
+    parentGid: Long?,
     latestGid: Long?,
-    upstream: Set<Long>,
-    downstream: Set<Long>,
 ): Pair<List<Long>, Boolean> {
-    val edges = nodes.keys.associateWith { mutableSetOf<Long>() }
-    fun edge(a: Long?, b: Long?) {
-        if (a != null && b != null && a != b && a in nodes && b in nodes) edges.getValue(a).add(b)
+    val anchors = listOfNotNull(firstGid, parentGid, viewedGid, latestGid).distinct().filter { it in nodes }
+    fun parent(gid: Long) = nodes[gid]?.takeIf { it.parentVerified }?.parent?.ref?.gid?.takeIf { it in nodes }
+    val checked = mutableSetOf<Long>()
+    for (gid in nodes.keys) {
+        val path = mutableSetOf<Long>()
+        var current: Long? = gid
+        while (current != null && current !in checked) {
+            if (!path.add(current)) return anchors to true
+            current = parent(current)
+        }
+        checked.addAll(path)
     }
-    nodes.values.forEach { edge(it.parent.ref?.gid, it.ref.gid) }
-    nodes.keys.forEach {
-        edge(firstGid, it)
-        edge(it, latestGid)
-    }
-    upstream.forEach { edge(it, viewedGid) }
-    downstream.forEach { edge(viewedGid, it) }
-    val degrees = nodes.keys.associateWith { 0 }.toMutableMap()
-    edges.values.forEach { children -> children.forEach { degrees[it] = degrees.getValue(it) + 1 } }
-    val ready = java.util.PriorityQueue<Long>()
-    degrees.filterValues { it == 0 }.keys.forEach(ready::add)
-    val order = mutableListOf<Long>()
-    while (ready.isNotEmpty()) {
-        val gid = ready.remove()
-        order.add(gid)
-        edges.getValue(gid).forEach {
-            degrees[it] = degrees.getValue(it) - 1
-            if (degrees[it] == 0) ready.add(it)
+    fun ancestors(gid: Long?): List<Long> = buildList {
+        var current = gid
+        while (current != null && current in nodes) {
+            add(current)
+            current = parent(current)
         }
     }
-    val cyclic = order.size != nodes.size || nodes.values.any { it.parent.ref?.gid == it.ref.gid }
-    if (cyclic) order.addAll(nodes.keys.minus(order.toSet()).sorted())
-    return order to cyclic
+    val viewedPath = ancestors(viewedGid)
+    val parentPath = ancestors(parentGid)
+    if ((latestGid != viewedGid && latestGid in viewedPath) ||
+        (firstGid in viewedPath && viewedPath.lastOrNull() != firstGid) ||
+        (parentGid != viewedGid && viewedGid in parentPath)
+    ) {
+        return anchors to true
+    }
+
+    val order = mutableListOf<Long>()
+    val included = mutableSetOf<Long>()
+    fun append(gid: Long?) {
+        if (gid != null && gid in nodes && included.add(gid)) order.add(gid)
+    }
+    append(firstGid)
+    if (parentGid !in viewedPath) parentPath.asReversed().forEach(::append)
+    viewedPath.asReversed().forEach(::append)
+
+    val latestPath = ancestors(latestGid)
+    if (viewedGid in latestPath) {
+        latestPath.takeWhile { it != viewedGid }.asReversed().forEach(::append)
+    } else {
+        // A unique continuation is ordered by verified parent edges, never by GND/GID order.
+        val children = nodes.values.filter { it.parentVerified && it.parent.ref != null }.groupBy { it.parent.ref!!.gid }
+        var current = viewedGid
+        while (current != latestGid) {
+            val next = children[current]?.singleOrNull()?.ref?.gid ?: break
+            if (next in included) break
+            append(next)
+            current = next
+        }
+        append(latestGid)
+    }
+    return order to false
 }
