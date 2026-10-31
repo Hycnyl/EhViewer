@@ -231,7 +231,7 @@
     <string name="stat_download_action_stop_all">すべて停止</string>
     <string name="default_download_label_name">デフォルト</string>
     <string name="download_move_dialog_title">移動</string>
-    <string name="download_labels">ダウンロードラベル</string>
+    <string name="download_labels">ダウンロードの絞り込み</string>
     <string name="download_start_all">すべて開始</string>
     <string name="download_stop_all">すべて停止</string>
     <string name="download_reset_reading_progress">閲覧進捗をリセット</string>
@@ -242,8 +242,8 @@
     <string name="remember_download_label">ダウンロードラベルを記憶</string>
     <string name="default_download_label">デフォルトのダウンロードラベル</string>
     <string name="added_to_download_list">ダウンロードリストに追加しました</string>
-    <string name="select_grouping_mode">グループモードを選択</string>
-    <string name="select_grouping_mode_custom">カスタム</string>
+    <string name="select_grouping_mode">絞り込み条件の切り替え</string>
+    <string name="select_grouping_mode_custom">ラベル</string>
     <string name="select_grouping_mode_artist">アーティスト</string>
     <string name="unknown_artists">不明</string>
     <!-- Download label -->
@@ -404,7 +404,7 @@
     <string name="move_favorites_dialog_title">お気に入りを移動</string>
     <string name="default_favorites_collection">デフォルトのお気に入りリスト</string>
     <string name="default_favorites_warning">これを有効化するとお気に入りのメモを追加することができなくなります</string>
-    <string name="let_me_select">手動で選択</string>
+    <string name="let_me_select">毎回確認</string>
     <string name="favorite_note">お気に入りのメモ</string>
     <string name="collections">コレクション</string>
     <!-- Progress Scene -->

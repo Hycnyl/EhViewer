@@ -231,7 +231,7 @@
     <string name="stat_download_action_stop_all">全部停止</string>
     <string name="default_download_label_name">默認</string>
     <string name="download_move_dialog_title">移動</string>
-    <string name="download_labels">下載標籤</string>
+    <string name="download_labels">下載篩選</string>
     <string name="download_start_all">全部開始</string>
     <string name="download_stop_all">全部停止</string>
     <string name="download_reset_reading_progress">重置阅读进度</string>
@@ -386,7 +386,7 @@
     <string name="delete_favorites_dialog_message">刪除 %d 項收藏？</string>
     <string name="move_favorites_dialog_title">移動收藏</string>
     <string name="default_favorites_collection">默認收藏夾</string>
-    <string name="let_me_select">讓我選擇</string>
+    <string name="let_me_select">每次詢問</string>
     <string name="collections">收藏夾</string>
 
     <!-- Progress Scene -->
@@ -546,4 +546,7 @@
     <string name="read_cache_cleanup_running">清理中…</string>
     <string name="read_cache_cleanup_done">已清理 %1$d 項快取</string>
     <string name="read_cache_cleanup_failed">清理失敗，請重試</string>
+    <string name="select_grouping_mode">切換篩選依據</string>
+    <string name="select_grouping_mode_custom">標籤</string>
+    <string name="select_grouping_mode_artist">作者</string>
 </resources>

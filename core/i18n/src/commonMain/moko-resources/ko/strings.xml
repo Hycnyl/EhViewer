@@ -197,7 +197,7 @@
     <string name="stat_download_action_stop_all">모두 중지</string>
     <string name="default_download_label_name">기본</string>
     <string name="download_move_dialog_title">이동</string>
-    <string name="download_labels">다운로드 레이블</string>
+    <string name="download_labels">다운로드 필터</string>
     <string name="download_start_all">모두 시작</string>
     <string name="download_stop_all">모두 중지</string>
     <string name="download_reset_reading_progress">독서 진행도 초기화</string>
@@ -335,7 +335,7 @@
     <string name="delete_favorites_dialog_message">%d개 항목을 즐겨찾기에서 삭제하시겠습니까?</string>
     <string name="move_favorites_dialog_title">즐겨찾기 이동</string>
     <string name="default_favorites_collection">기본 즐겨찾기 컬렉션</string>
-    <string name="let_me_select">직접 선택</string>
+    <string name="let_me_select">매번 묻기</string>
     <string name="collections">컬렉션</string>
 
     <!-- Progress Scene -->
@@ -402,4 +402,7 @@
     <string name="read_cache_cleanup_running">정리 중…</string>
     <string name="read_cache_cleanup_done">캐시 %1$d개를 정리했습니다</string>
     <string name="read_cache_cleanup_failed">캐시를 정리하지 못했습니다. 다시 시도하세요.</string>
+    <string name="select_grouping_mode">필터 기준 변경</string>
+    <string name="select_grouping_mode_custom">레이블</string>
+    <string name="select_grouping_mode_artist">작가</string>
 </resources>

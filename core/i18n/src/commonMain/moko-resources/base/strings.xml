@@ -245,7 +245,7 @@
     <string name="stat_download_action_stop_all">Stop all</string>
     <string name="default_download_label_name">Default</string>
     <string name="download_move_dialog_title">Move</string>
-    <string name="download_labels">Download labels</string>
+    <string name="download_labels">Download filters</string>
     <string name="download_start_all">Start all</string>
     <string name="download_stop_all">Stop all</string>
     <string name="download_reset_reading_progress">Reset reading progress</string>
@@ -256,8 +256,8 @@
     <string name="remember_download_label">Remember download label</string>
     <string name="default_download_label">Default download label</string>
     <string name="added_to_download_list">Added to download list</string>
-    <string name="select_grouping_mode">Select Grouping Mode</string>
-    <string name="select_grouping_mode_custom">Custom</string>
+    <string name="select_grouping_mode">Filter by</string>
+    <string name="select_grouping_mode_custom">Labels</string>
     <string name="select_grouping_mode_artist">Artist</string>
     <string name="unknown_artists">Unknown</string>
     <!-- Download label -->
@@ -422,7 +422,7 @@
     <string name="move_favorites_dialog_title">Move favorites</string>
     <string name="default_favorites_collection">Default favorites collection</string>
     <string name="default_favorites_warning">You won\'t be able to add favorite notes if you enable this</string>
-    <string name="let_me_select">Let me select</string>
+    <string name="let_me_select">Ask every time</string>
     <string name="favorite_note">Favorite Note</string>
     <string name="collections">Collections</string>
     <!-- Progress Scene -->
