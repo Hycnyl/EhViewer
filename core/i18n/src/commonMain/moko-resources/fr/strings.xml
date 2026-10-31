@@ -220,7 +220,7 @@
     <string name="stat_download_action_stop_all">Arrêter tout</string>
     <string name="default_download_label_name">Défaut</string>
     <string name="download_move_dialog_title">Déplacer</string>
-    <string name="download_labels">Labels de téléchargement</string>
+    <string name="download_labels">Filtres de téléchargement</string>
     <string name="download_start_all">Commencer tout</string>
     <string name="download_stop_all">Arrêter tout</string>
     <string name="download_reset_reading_progress">Réinitialiser les progrès de lecture</string>
@@ -362,7 +362,7 @@
     <string name="delete_favorites_dialog_message">Effacer %d objets de favoris ?</string>
     <string name="move_favorites_dialog_title">Déplacer favoris</string>
     <string name="default_favorites_collection">Collection favoris par défaut</string>
-    <string name="let_me_select">Sélectionner manuellement</string>
+    <string name="let_me_select">Toujours demander</string>
     <string name="collections">Collections</string>
 
     <!-- Progress Scene -->
@@ -432,4 +432,7 @@
     <string name="read_cache_cleanup_running">Suppression…</string>
     <string name="read_cache_cleanup_done">%1$d entrées du cache supprimées</string>
     <string name="read_cache_cleanup_failed">Impossible de vider le cache. Veuillez réessayer.</string>
+    <string name="select_grouping_mode">Filtrer par</string>
+    <string name="select_grouping_mode_custom">Étiquettes</string>
+    <string name="select_grouping_mode_artist">Artiste</string>
 </resources>

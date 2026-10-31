@@ -20,12 +20,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.plus
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
@@ -36,6 +38,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.MoreVert
@@ -45,8 +48,10 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Reorder
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shuffle
+import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
+import androidx.compose.material3.DrawerDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -203,7 +208,8 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
 
     val newLabel = stringResource(R.string.new_label_title)
     val renameLabel = stringResource(R.string.rename_label_title)
-    val labelsStr = stringResource(R.string.download_labels)
+    val filtersTitle = stringResource(R.string.download_labels)
+    val custom = stringResource(R.string.select_grouping_mode_custom)
     val labelEmpty = stringResource(R.string.label_text_is_empty)
     val defaultInvalid = stringResource(R.string.label_text_is_invalid)
     val labelExists = stringResource(R.string.label_text_exist)
@@ -240,7 +246,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
     ProvideSideSheetContent { drawerState ->
         fun closeSheet() = launch { drawerState.close() }
         TopAppBar(
-            title = { Text(text = labelsStr) },
+            title = { Text(text = filtersTitle) },
             windowInsets = WindowInsets(),
             colors = topBarOnDrawerColor(),
             actions = {
@@ -248,7 +254,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                     IconButton(
                         onClick = {
                             launch {
-                                val text = awaitInputText(title = newLabel, hint = labelsStr) { text ->
+                                val text = awaitInputText(title = newLabel, hint = custom) { text ->
                                     when {
                                         text.isBlank() -> raise(labelEmpty)
                                         text == defaultName -> raise(defaultInvalid)
@@ -260,7 +266,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                         },
                         shapes = IconButtonDefaults.shapes(),
                     ) {
-                        Icon(imageVector = Icons.Default.NewLabel, contentDescription = null)
+                        Icon(imageVector = Icons.Default.NewLabel, contentDescription = newLabel)
                     }
                     val letMeSelect = stringResource(R.string.let_me_select)
                     IconButton(
@@ -290,10 +296,23 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                         },
                         shapes = IconButtonDefaults.shapes(),
                     ) {
-                        Icon(imageVector = Icons.Default.Download, contentDescription = null)
+                        Box(modifier = Modifier.size(24.dp)) {
+                            Icon(
+                                imageVector = Icons.Default.Download,
+                                contentDescription = stringResource(R.string.default_download_label),
+                                modifier = Modifier.align(Alignment.TopStart).size(20.dp),
+                            )
+                            Icon(
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .align(Alignment.BottomEnd)
+                                    .size(12.dp)
+                                    .background(DrawerDefaults.modalContainerColor, CircleShape),
+                            )
+                        }
                     }
                 }
-                val custom = stringResource(R.string.select_grouping_mode_custom)
                 val artist = stringResource(R.string.select_grouping_mode_artist)
                 IconButton(
                     onClick = {
@@ -304,14 +323,14 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                                     Settings.downloadFilterMode.value = mode.flag
                                     Settings.recentDownloadLabel.value = ""
                                 }
-                                onSelect(custom) { select(DownloadsFilterMode.CUSTOM) }
                                 onSelect(artist) { select(DownloadsFilterMode.ARTIST) }
+                                onSelect(custom) { select(DownloadsFilterMode.CUSTOM) }
                             }()
                         }
                     },
                     shapes = IconButtonDefaults.shapes(),
                 ) {
-                    Icon(imageVector = Icons.Default.Settings, contentDescription = null)
+                    Icon(imageVector = Icons.Default.SwapHoriz, contentDescription = stringResource(R.string.select_grouping_mode))
                 }
             },
         )
@@ -415,7 +434,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                                     IconButton(
                                         onClick = {
                                             launch {
-                                                val new = awaitInputText(initial = item, title = renameLabel, hint = labelsStr) { text ->
+                                                val new = awaitInputText(initial = item, title = renameLabel, hint = custom) { text ->
                                                     when {
                                                         text.isBlank() -> raise(labelEmpty)
                                                         text == defaultName -> raise(defaultInvalid)
@@ -502,17 +521,13 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                 val icon = if (gridView) Icons.AutoMirrored.Default.ViewList else Icons.Default.GridView
                 Icon(imageVector = icon, contentDescription = null)
             }
+            IconButton(onClick = { launch { sideSheetState.open() } }, shapes = IconButtonDefaults.shapes()) {
+                Icon(imageVector = Icons.Default.FilterAlt, contentDescription = filtersTitle)
+            }
             IconButton(onClick = { expanded = !expanded }, shapes = IconButtonDefaults.shapes()) {
                 Icon(imageVector = Icons.Default.MoreVert, contentDescription = null)
             }
             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                DropdownMenuItem(
-                    text = { Text(text = stringResource(id = R.string.download_labels)) },
-                    onClick = {
-                        expanded = false
-                        launch { sideSheetState.open() }
-                    },
-                )
                 DropdownMenuItem(
                     text = { Text(text = stringResource(id = R.string.download_start_all)) },
                     onClick = {

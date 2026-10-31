@@ -205,7 +205,7 @@
     <string name="stat_download_action_stop_all">Detener todo</string>
     <string name="default_download_label_name">Predeterminado</string>
     <string name="download_move_dialog_title">Mover</string>
-    <string name="download_labels">Descargar etiquetas</string>
+    <string name="download_labels">Filtros de descarga</string>
     <string name="download_start_all">Iniciar todo</string>
     <string name="download_stop_all">Detener todo</string>
     <string name="download_service_label">Servicio de descarga EhViewer</string>
@@ -323,7 +323,7 @@
     <string name="delete_favorites_dialog_message">¿Eliminar %d galerías de favoritos?</string>
     <string name="move_favorites_dialog_title">Mover favoritos</string>
     <string name="default_favorites_collection">Colección de favoritos por defecto</string>
-    <string name="let_me_select">Déjame elegir</string>
+    <string name="let_me_select">Preguntar siempre</string>
     <string name="collections">Colección</string>
 
     <!-- Progress Scene -->
@@ -408,4 +408,7 @@
     <string name="read_cache_cleanup_running">Limpiando…</string>
     <string name="read_cache_cleanup_done">Se eliminaron %1$d entradas de caché</string>
     <string name="read_cache_cleanup_failed">No se pudo limpiar la caché. Vuelve a intentarlo.</string>
+    <string name="select_grouping_mode">Filtrar por</string>
+    <string name="select_grouping_mode_custom">Etiquetas</string>
+    <string name="select_grouping_mode_artist">Artista</string>
 </resources>

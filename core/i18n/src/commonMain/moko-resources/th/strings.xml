@@ -212,7 +212,7 @@
     <string name="stat_download_action_stop_all">หยุดทั้งหมด</string>
     <string name="default_download_label_name">ค่าเริ่มต้น</string>
     <string name="download_move_dialog_title">ย้าย</string>
-    <string name="download_labels">ป้ายชื่อดาวน์โหลด</string>
+    <string name="download_labels">ตัวกรองการดาวน์โหลด</string>
     <string name="download_start_all">เริ่มทั้งหมด</string>
     <string name="download_stop_all">หยุดทั้งหมด</string>
     <string name="download_reset_reading_progress">รีเซ็ตตำแหน่งที่อ่าน</string>
@@ -350,7 +350,7 @@
     <string name="delete_favorites_dialog_message">ต้องการลบ %d รายการออกจากรายการโปรดหรือไม่?</string>
     <string name="move_favorites_dialog_title">ย้ายรายการโปรด</string>
     <string name="default_favorites_collection">ค่าเริ่มต้นของที่เก็บรายการโปรด</string>
-    <string name="let_me_select">ขอให้ฉันเลือกนะ</string>
+    <string name="let_me_select">ถามทุกครั้ง</string>
     <string name="collections">คอลเลคชั่น</string>
 
     <!-- Progress Scene -->
@@ -413,4 +413,7 @@
     <string name="read_cache_cleanup_running">กำลังล้าง…</string>
     <string name="read_cache_cleanup_done">ล้างแคชแล้ว %1$d รายการ</string>
     <string name="read_cache_cleanup_failed">ล้างแคชไม่สำเร็จ โปรดลองอีกครั้ง</string>
+    <string name="select_grouping_mode">เปลี่ยนเกณฑ์การกรอง</string>
+    <string name="select_grouping_mode_custom">ป้ายกำกับ</string>
+    <string name="select_grouping_mode_artist">ผู้สร้าง</string>
 </resources>

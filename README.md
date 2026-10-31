@@ -93,6 +93,8 @@
 
 ## Other
 
+- Download filter controls improved.
+
 - Settings categories reorganized.
 
 - Package name: Changed to `moe.hycnyl.ehviewer`;

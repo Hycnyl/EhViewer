@@ -226,7 +226,7 @@
     <string name="stat_download_action_stop_all">全部停止</string>
     <string name="default_download_label_name">預設</string>
     <string name="download_move_dialog_title">移動</string>
-    <string name="download_labels">下載標籤</string>
+    <string name="download_labels">下載篩選</string>
     <string name="download_start_all">全部開始</string>
     <string name="download_stop_all">全部停止</string>
     <string name="download_reset_reading_progress">重置閱讀進度</string>
@@ -237,8 +237,8 @@
     <string name="remember_download_label">記住下載標籤</string>
     <string name="default_download_label">預設下載標籤</string>
     <string name="added_to_download_list">已新增至下載列表</string>
-    <string name="select_grouping_mode">選擇分組依據</string>
-    <string name="select_grouping_mode_custom">自定義標籤</string>
+    <string name="select_grouping_mode">切換篩選依據</string>
+    <string name="select_grouping_mode_custom">標籤</string>
     <string name="select_grouping_mode_artist">作者</string>
     <string name="unknown_artists">未知</string>
     <!-- Download label -->
@@ -390,7 +390,7 @@
     <string name="move_favorites_dialog_title">移動收藏</string>
     <string name="default_favorites_collection">預設收藏夾</string>
     <string name="default_favorites_warning">若啟用此項將無法新增收藏備註</string>
-    <string name="let_me_select">讓我每次都選擇</string>
+    <string name="let_me_select">每次詢問</string>
     <string name="favorite_note">收藏備註</string>
     <string name="collections">收藏夾</string>
     <!-- Progress Scene -->

@@ -113,7 +113,7 @@
     <string name="download_state_wait">Venter</string>
     <string name="download_state_failed">Mislykket</string>
     <string name="download_state_failed_2">%d ufullstendig</string>
-    <string name="download_labels">Last ned etiketter</string>
+    <string name="download_labels">Nedlastingsfiltre</string>
     <string name="download_start_all">Start alle</string>
     <string name="edit_comment">Rediger kommentar</string>
     <string name="stat_509_alert_title">509-advarsel</string>
@@ -175,7 +175,7 @@
     <string name="error_something_wrong_happened">Noe gikk galt</string>
     <string name="just_now">Akkurat nå</string>
     <string name="move_favorites_dialog_title">Flytt favoritter</string>
-    <string name="let_me_select">La meg velge</string>
+    <string name="let_me_select">Spør hver gang</string>
     <string name="toplist_pastmonth">Forrige måned</string>
     <string name="delete_search_history">Slett «%s» fra søkehistorikk\?</string>
     <string name="collections">Samlinger</string>
@@ -227,4 +227,7 @@
     <string name="read_cache_cleanup_done">Fjernet %1$d bufferoppføringer</string>
     <string name="read_cache_cleanup_failed">Kunne ikke tømme bufferen. Prøv igjen.</string>
     <string name="settings_theme">Tema</string>
+    <string name="select_grouping_mode">Filtrer etter</string>
+    <string name="select_grouping_mode_custom">Etiketter</string>
+    <string name="select_grouping_mode_artist">Kunstner</string>
 </resources>

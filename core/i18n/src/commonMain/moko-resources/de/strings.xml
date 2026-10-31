@@ -181,7 +181,7 @@
     <string name="stat_download_action_stop_all">Alle stopppen</string>
     <string name="default_download_label_name">Standard</string>
     <string name="download_move_dialog_title">Verschieben</string>
-    <string name="download_labels">Download-Etikette</string>
+    <string name="download_labels">Downloadfilter</string>
     <string name="download_start_all">Alle starten</string>
     <string name="download_stop_all">Alle stoppen</string>
     <string name="download_service_label">EhViewer-Download-Dienst</string>
@@ -273,7 +273,7 @@
     <string name="delete_favorites_dialog_message">%d Elemente aus Favoriten löschen?</string>
     <string name="move_favorites_dialog_title">Favoriten verschieben</string>
     <string name="default_favorites_collection">Standard-Favoriten</string>
-    <string name="let_me_select">Manuell auswählen</string>
+    <string name="let_me_select">Jedes Mal fragen</string>
     <string name="collections">Kollektionen</string>
     <string name="error_something_wrong_happened">Ein Fehler ist aufgetreten</string>
     <string name="from_the_future">Von der Zukunft</string>
@@ -360,4 +360,7 @@
     <string name="read_cache_cleanup_running">Wird geleert…</string>
     <string name="read_cache_cleanup_done">%1$d Cacheeinträge entfernt</string>
     <string name="read_cache_cleanup_failed">Der Cache konnte nicht geleert werden. Bitte erneut versuchen.</string>
+    <string name="select_grouping_mode">Filtern nach</string>
+    <string name="select_grouping_mode_custom">Etiketten</string>
+    <string name="select_grouping_mode_artist">Künstler</string>
 </resources>
