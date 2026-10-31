@@ -29,6 +29,8 @@ import com.ehviewer.core.util.logcat
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
+import com.hippo.ehviewer.client.data.GalleryVersionMetadata
+import com.hippo.ehviewer.client.data.GalleryVersionRef
 import com.hippo.ehviewer.client.data.fillInfo
 import com.hippo.ehviewer.client.data.filterComments
 import com.hippo.ehviewer.client.exception.CloudflareBypassException
@@ -81,6 +83,8 @@ import kotlin.math.ceil
 import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
@@ -94,9 +98,13 @@ import okio.sink
 import splitties.init.appCtx
 
 // https://ehwiki.org/wiki/API#Basics
-private const val MAX_REQUEST_SIZE = 25
+internal const val MAX_REQUEST_SIZE = 25
 private const val MAX_SEQUENTIAL_REQUESTS = 5
 private const val REQUEST_INTERVAL = 5000L
+
+private val versionMetadataMutex = Mutex()
+private var versionMetadataRequests = 0
+private var versionMetadataLastRequest: Long? = null
 
 private val Url.isLogin get() = segments.firstOrNull() == "bounce_login.php"
 
@@ -404,6 +412,37 @@ object EhEngine {
             put("rating", ceil((rating * 2).toDouble()).toInt())
         }
     }.fetchUsingAsText(String::parseAs)
+
+    // A separate read-only path: never fill GalleryInfo or update gallery/download records.
+    suspend fun getGalleryVersionMetadata(refs: List<GalleryVersionRef>, referer: String? = null): List<GalleryVersionMetadata> = buildList {
+        for (batch in refs.filter { it.canRequest }.distinctBy { it.gid }.chunked(MAX_REQUEST_SIZE)) {
+            val result = versionMetadataMutex.withLock {
+                val elapsed = versionMetadataLastRequest?.let { (System.nanoTime() - it) / 1_000_000 } ?: REQUEST_INTERVAL
+                if (elapsed >= REQUEST_INTERVAL) versionMetadataRequests = 0
+                if (versionMetadataRequests >= MAX_SEQUENTIAL_REQUESTS) {
+                    delay((REQUEST_INTERVAL - elapsed).coerceAtLeast(0))
+                    versionMetadataRequests = 0
+                }
+                versionMetadataRequests++
+                versionMetadataLastRequest = System.nanoTime()
+                ehRequest(EhUrl.apiUrl, referer, EhUrl.origin) {
+                    jsonBody {
+                        put("method", "gdata")
+                        array("gidlist") {
+                            batch.forEach { ref ->
+                                addJsonArray {
+                                    add(ref.gid)
+                                    add(ref.token!!)
+                                }
+                            }
+                        }
+                        put("namespace", 1)
+                    }
+                }.fetchUsingAsText { GalleryApiParser.parseVersionMetadata(this) }
+            }
+            addAll(result)
+        }
+    }
 
     suspend fun fillGalleryListByApi(galleryInfoList: List<GalleryInfo>, referer: String? = null) = galleryInfoList.chunked(MAX_REQUEST_SIZE).chunked(MAX_SEQUENTIAL_REQUESTS).forEachIndexed { index, chunk ->
         if (index != 0) {

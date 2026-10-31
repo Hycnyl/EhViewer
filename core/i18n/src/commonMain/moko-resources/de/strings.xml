@@ -363,4 +363,19 @@
     <string name="select_grouping_mode">Filtern nach</string>
     <string name="select_grouping_mode_custom">Etiketten</string>
     <string name="select_grouping_mode_artist">Künstler</string>
+    <string name="gallery_info_overview">Übersicht</string>
+    <string name="gallery_info_statistics">Kennzahlen</string>
+    <string name="gallery_info_versions">Versionsverlauf</string>
+    <string name="gallery_info_basic">Allgemeine Informationen</string>
+    <string name="gallery_info_favorites">Favoriten</string>
+    <string name="gallery_info_resources">Ressourcen und Kennungen</string>
+    <string name="gallery_version_first">Erste</string>
+    <string name="gallery_version_viewed">Aktuell geöffnet</string>
+    <string name="gallery_version_latest">Neueste</string>
+    <string name="gallery_version_expand">Zwischenversionen anzeigen</string>
+    <string name="gallery_version_collapse">Zwischenversionen ausblenden</string>
+    <string name="gallery_version_incomplete">Versionsinformationen sind unvollständig.</string>
+    <string name="gallery_version_loading">Versionsinformationen werden geladen…</string>
+    <string name="gallery_info_copy_field">%1$s kopieren</string>
+    <string name="gallery_version_expunged">Expunged</string>
 </resources>

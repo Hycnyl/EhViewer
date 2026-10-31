@@ -653,4 +653,19 @@
     <string name="read_cache_cleanup_running">削除中…</string>
     <string name="read_cache_cleanup_done">%1$d 件のキャッシュを削除しました</string>
     <string name="read_cache_cleanup_failed">キャッシュを削除できませんでした。もう一度お試しください。</string>
+    <string name="gallery_info_overview">作品概要</string>
+    <string name="gallery_info_statistics">主要データ</string>
+    <string name="gallery_info_versions">バージョン履歴</string>
+    <string name="gallery_info_basic">基本情報</string>
+    <string name="gallery_info_favorites">お気に入り</string>
+    <string name="gallery_info_resources">リソースと識別情報</string>
+    <string name="gallery_version_first">最初</string>
+    <string name="gallery_version_viewed">表示中</string>
+    <string name="gallery_version_latest">最新</string>
+    <string name="gallery_version_expand">中間バージョンを表示</string>
+    <string name="gallery_version_collapse">中間バージョンを隠す</string>
+    <string name="gallery_version_incomplete">バージョン情報はまだ完全ではありません。</string>
+    <string name="gallery_version_loading">バージョン情報を読み込み中…</string>
+    <string name="gallery_info_copy_field">%1$sをコピー</string>
+    <string name="gallery_version_expunged">除外済み</string>
 </resources>

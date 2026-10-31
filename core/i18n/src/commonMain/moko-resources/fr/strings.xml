@@ -435,4 +435,19 @@
     <string name="select_grouping_mode">Filtrer par</string>
     <string name="select_grouping_mode_custom">Étiquettes</string>
     <string name="select_grouping_mode_artist">Artiste</string>
+    <string name="gallery_info_overview">Aperçu</string>
+    <string name="gallery_info_statistics">Statistiques</string>
+    <string name="gallery_info_versions">Historique des versions</string>
+    <string name="gallery_info_basic">Informations générales</string>
+    <string name="gallery_info_favorites">Favoris</string>
+    <string name="gallery_info_resources">Ressources et identifiants</string>
+    <string name="gallery_version_first">Première</string>
+    <string name="gallery_version_viewed">Version affichée</string>
+    <string name="gallery_version_latest">Dernière</string>
+    <string name="gallery_version_expand">Afficher les versions intermédiaires</string>
+    <string name="gallery_version_collapse">Masquer les versions intermédiaires</string>
+    <string name="gallery_version_incomplete">Les informations de version sont incomplètes.</string>
+    <string name="gallery_version_loading">Chargement des versions…</string>
+    <string name="gallery_info_copy_field">Copier %1$s</string>
+    <string name="gallery_version_expunged">Expunged</string>
 </resources>

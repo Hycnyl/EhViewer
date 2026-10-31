@@ -666,4 +666,19 @@
     <string name="read_cache_cleanup_running">清理中…</string>
     <string name="read_cache_cleanup_done">已清理 %1$d 项缓存</string>
     <string name="read_cache_cleanup_failed">清理失败，请重试</string>
+    <string name="gallery_info_overview">作品概览</string>
+    <string name="gallery_info_statistics">核心数据</string>
+    <string name="gallery_info_versions">版本链</string>
+    <string name="gallery_info_basic">基本信息</string>
+    <string name="gallery_info_favorites">收藏信息</string>
+    <string name="gallery_info_resources">资源与标识</string>
+    <string name="gallery_version_first">最初版本</string>
+    <string name="gallery_version_viewed">正在查看</string>
+    <string name="gallery_version_latest">最新版本</string>
+    <string name="gallery_version_expand">展开中间版本</string>
+    <string name="gallery_version_collapse">收起中间版本</string>
+    <string name="gallery_version_incomplete">版本信息尚未完整加载。</string>
+    <string name="gallery_version_loading">正在加载版本信息…</string>
+    <string name="gallery_info_copy_field">复制%1$s</string>
+    <string name="gallery_version_expunged">已除名</string>
 </resources>

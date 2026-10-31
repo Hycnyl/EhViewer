@@ -93,6 +93,8 @@
 
 ## Other
 
+- Gallery information and version history improved.
+
 - Download filter controls improved.
 
 - Settings categories reorganized.

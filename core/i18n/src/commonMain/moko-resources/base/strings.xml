@@ -684,4 +684,19 @@
     <string name="read_cache_cleanup_running">Clearing…</string>
     <string name="read_cache_cleanup_done">Cleared %1$d cache entries</string>
     <string name="read_cache_cleanup_failed">Could not clear the cache. Please try again.</string>
+    <string name="gallery_info_overview">Overview</string>
+    <string name="gallery_info_statistics">Key statistics</string>
+    <string name="gallery_info_versions">Version history</string>
+    <string name="gallery_info_basic">Basic information</string>
+    <string name="gallery_info_favorites">Favorites</string>
+    <string name="gallery_info_resources">Resources &amp; identifiers</string>
+    <string name="gallery_version_first">First</string>
+    <string name="gallery_version_viewed">Viewing</string>
+    <string name="gallery_version_latest">Latest</string>
+    <string name="gallery_version_expand">Show intermediate versions</string>
+    <string name="gallery_version_collapse">Hide intermediate versions</string>
+    <string name="gallery_version_incomplete">Version information is incomplete.</string>
+    <string name="gallery_version_loading">Loading version information…</string>
+    <string name="gallery_info_copy_field">Copy %1$s</string>
+    <string name="gallery_version_expunged">Expunged</string>
 </resources>

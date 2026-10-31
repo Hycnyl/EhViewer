@@ -416,4 +416,19 @@
     <string name="select_grouping_mode">เปลี่ยนเกณฑ์การกรอง</string>
     <string name="select_grouping_mode_custom">ป้ายกำกับ</string>
     <string name="select_grouping_mode_artist">ผู้สร้าง</string>
+    <string name="gallery_info_overview">ภาพรวม</string>
+    <string name="gallery_info_statistics">ข้อมูลหลัก</string>
+    <string name="gallery_info_versions">ประวัติเวอร์ชัน</string>
+    <string name="gallery_info_basic">ข้อมูลทั่วไป</string>
+    <string name="gallery_info_favorites">รายการโปรด</string>
+    <string name="gallery_info_resources">ทรัพยากรและรหัสระบุ</string>
+    <string name="gallery_version_first">แรกสุด</string>
+    <string name="gallery_version_viewed">กำลังดู</string>
+    <string name="gallery_version_latest">ล่าสุด</string>
+    <string name="gallery_version_expand">แสดงเวอร์ชันระหว่างกลาง</string>
+    <string name="gallery_version_collapse">ซ่อนเวอร์ชันระหว่างกลาง</string>
+    <string name="gallery_version_incomplete">ข้อมูลเวอร์ชันยังไม่ครบถ้วน</string>
+    <string name="gallery_version_loading">กำลังโหลดข้อมูลเวอร์ชัน…</string>
+    <string name="gallery_info_copy_field">คัดลอก %1$s</string>
+    <string name="gallery_version_expunged">Expunged</string>
 </resources>
