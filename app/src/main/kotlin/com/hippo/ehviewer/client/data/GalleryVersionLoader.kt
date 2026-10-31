@@ -14,15 +14,18 @@ class GalleryVersionLoader(
     private val seed: GalleryVersionSeed,
     private val fetch: suspend (List<GalleryVersionRef>) -> List<GalleryVersionMetadata>,
     private val requestBudget: Int = 50,
+    private val fetchCandidates: (suspend (GalleryVersionRef) -> GalleryVersionCandidates)? = null,
 ) {
     private val mutex = Mutex()
     private val nodes = (seed.newer + seed.viewed).associateBy { it.ref.gid }.toMutableMap()
     private val attempts = mutableMapOf<GalleryVersionRef, GalleryVersionMetadata>()
+    private val apiRefs = mutableMapOf<Long, GalleryVersionRef>()
+    private val candidatePages = mutableMapOf<GalleryVersionRef, GalleryVersionCandidates>()
+    private val candidates = seed.newer.mapTo(mutableSetOf()) { it.ref.gid }
+    private val fallbackRetried = mutableSetOf<GalleryVersionRef>()
     private var first = if (seed.viewed.parent == GalleryVersionLink.None) GalleryVersionLink.to(seed.viewed.ref) else GalleryVersionLink.Unknown
     private var parent = seed.viewed.parent
     private var latest = GalleryVersionLink.Unknown
-    private val upstream = mutableSetOf<Long>()
-    private val downstream = seed.newer.mapTo(mutableSetOf()) { it.ref.gid }
     private var loading = false
     private var expansionAttempted = false
     private var traced = false
@@ -34,55 +37,21 @@ class GalleryVersionLoader(
     suspend fun expand(retry: Boolean = false) = load(retry, expand = true)
 
     private suspend fun load(retry: Boolean, expand: Boolean) = mutex.withLock {
-        if (retry) {
-            // Only explicit retry can repeat unavailable/inconsistent responses; walks use the cache.
-            val cycle = mutableState.value.hasCycle
-            val retryable = attempts.filterValues { value ->
-                cycle || value.node == null || listOf(value.node.parent, value.first, value.latest).any { !it.known || it.ref?.canRequest == false }
-            }.keys
-            retryable.forEach { ref ->
-                attempts.remove(ref)
-                nodes[ref.gid]?.let { nodes[ref.gid] = it.copy(metadataLoaded = false) }
-            }
-        }
+        if (retry) invalidateFailedAttempts()
         remaining = requestBudget
         loading = true
         if (expand) expansionAttempted = true
         publish()
         try {
-            ensure(listOf(seed.viewed.ref))
-            attempts[seed.viewed.ref]?.takeIf { it.node != null }?.let {
-                first = it.first.takeIf { link -> link.known } ?: first
-                parent = it.node!!.parent.takeIf { link -> link.known } ?: parent
-                latest = it.latest.takeIf { link -> link.known } ?: latest
-            }
-            ensure(listOfNotNull(first.ref, parent.ref, latest.ref))
-            val parentMetadata = attempts.values.firstOrNull { it.gid == parent.ref?.gid && it.node != null }
-            if (!first.known && parentMetadata?.first?.ref != null) first = parentMetadata.first
-            if (!latest.known && parentMetadata?.latest?.ref?.gid?.let { it != parent.ref?.gid } == true) latest = parentMetadata.latest
-            enrichKnownTokens()
-            ensure(listOfNotNull(first.ref, parent.ref, latest.ref))
+            loadKeyMetadata()
             if (expand) {
-                ensure(seed.newer.map { it.ref })
-                // HTML establishes that these are newer versions, even if the viewed token no longer works.
-                if (!latest.known) {
-                    val candidates = seed.newer.mapNotNull { n -> attempts[n.ref]?.takeIf { it.node != null }?.latest?.ref }.distinctBy { it.gid }
-                    if (candidates.size == 1) latest = GalleryVersionLink.to(candidates.single())
-                }
-                if (!first.known) {
-                    val candidates = seed.newer.mapNotNull { n -> attempts[n.ref]?.takeIf { it.node != null }?.first?.ref }.distinctBy { it.gid }
-                    if (candidates.size == 1) first = GalleryVersionLink.to(candidates.single())
-                }
+                val found = loadCandidates()
+                loadCandidateMetadata()
+                inferMissingRoles()
                 enrichKnownTokens()
                 ensure(listOfNotNull(first.ref, parent.ref, latest.ref))
-                val upPath = mutableSetOf<Long>()
-                val downPath = mutableSetOf<Long>()
-                val upComplete = walk(seed.viewed.ref, first.ref?.gid, upPath, upstreamWalk = true)
-                val downComplete = latest.ref?.let { walk(it, seed.viewed.ref.gid, downPath, upstreamWalk = false) } ?: false
-                upstream.addAll(upPath)
-                downstream.addAll(downPath)
-                val pathNodes = upPath + downPath + seed.viewed.ref.gid
-                traced = upComplete && downComplete && seed.newer.all { it.ref.gid in pathNodes && nodes[it.ref.gid]?.metadataLoaded == true }
+                traced = found && validateCandidateChain()
+                if (!traced) traceWithExistingWalk()
             }
         } finally {
             loading = false
@@ -90,27 +59,148 @@ class GalleryVersionLoader(
         }
     }
 
-    private suspend fun walk(start: GalleryVersionRef, target: Long?, path: MutableSet<Long>, upstreamWalk: Boolean): Boolean {
+    private fun invalidateFailedAttempts() {
+        val cycle = mutableState.value.hasCycle
+        val retryable = attempts.filterValues { value ->
+            cycle || value.node == null || listOf(value.node.parent, value.first, value.latest).any { !it.known || it.ref?.canRequest == false }
+        }.keys.toList()
+        retryable.forEach { ref ->
+            attempts.remove(ref)
+            fallbackRetried.remove(ref)
+            nodes[ref.gid]?.let { nodes[ref.gid] = it.copy(metadataLoaded = false) }
+        }
+        candidatePages.entries.removeAll { !it.value.found }
+    }
+
+    private suspend fun loadKeyMetadata() {
+        ensure(listOf(seed.viewed.ref))
+        attempts.values.firstOrNull { it.gid == seed.viewed.ref.gid && it.node != null }?.let {
+            first = it.first.takeIf { link -> link.known } ?: first
+            parent = it.node!!.parent.takeIf { link -> link.known } ?: parent
+            latest = it.latest.takeIf { link -> link.known } ?: latest
+        }
+        ensure(listOfNotNull(first.ref, parent.ref, latest.ref))
+        val parentMetadata = attempts.values.firstOrNull { it.gid == parent.ref?.gid && it.node != null }
+        if (!first.known && parentMetadata?.first?.ref != null) first = parentMetadata.first
+        if (!latest.known && parentMetadata?.latest?.ref?.gid?.let { it != parent.ref?.gid } == true) latest = parentMetadata.latest
+        enrichKnownTokens()
+        ensure(listOfNotNull(first.ref, parent.ref, latest.ref))
+    }
+
+    private suspend fun loadCandidates(): Boolean {
+        val ref = first.ref?.let(::resolveRef)
+        val result = when {
+            ref?.gid == seed.viewed.ref.gid -> GalleryVersionCandidates(true, seed.newer)
+            ref == null || !ref.canRequest -> GalleryVersionCandidates(false)
+            ref in candidatePages -> candidatePages.getValue(ref)
+            fetchCandidates == null || remaining <= 0 -> GalleryVersionCandidates(false)
+            else -> {
+                remaining--
+                val fetched = try {
+                    fetchCandidates.invoke(ref)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (_: Exception) {
+                    GalleryVersionCandidates(false)
+                }
+                candidatePages[ref] = fetched
+                fetched
+            }
+        }
+        result.items.forEach(::mergeCandidate)
+        seed.newer.forEach(::mergeCandidate)
+        publish()
+        return result.found
+    }
+
+    private fun mergeCandidate(candidate: GalleryVersionNode) {
+        val gid = candidate.ref.gid
+        if (gid <= 0) return
+        candidates.add(gid)
+        val previous = nodes[gid]
+        val ref = when {
+            previous?.metadataLoaded == true -> previous.ref
+            gid in apiRefs -> apiRefs.getValue(gid)
+            candidate.ref.canRequest -> candidate.ref
+            else -> previous?.ref ?: candidate.ref
+        }
+        // GND may supply identity/title/date, but never parent edges or API metadata.
+        nodes[gid] = previous?.copy(ref = ref, title = previous.title ?: candidate.title, posted = previous.posted ?: candidate.posted)
+            ?: GalleryVersionNode(ref, title = candidate.title, posted = candidate.posted)
+    }
+
+    private suspend fun loadCandidateMetadata() = ensure(candidates.mapNotNull { nodes[it]?.ref })
+
+    private fun inferMissingRoles() {
+        val known = attempts.values.filter { it.node != null }
+        if (!first.known) {
+            val refs = known.mapNotNull { it.first.ref }.distinctBy { it.gid }
+            if (refs.size == 1) first = GalleryVersionLink.to(refs.single())
+        }
+        if (!latest.known) {
+            val refs = known.mapNotNull { it.latest.ref }.distinctBy { it.gid }
+            if (refs.size == 1) latest = GalleryVersionLink.to(refs.single())
+        }
+    }
+
+    /** A complete, unbranched Parent path must cover every expected candidate and all key roles. */
+    private fun validateCandidateChain(): Boolean {
+        val firstGid = first.ref?.gid ?: return false
+        var gid = latest.ref?.gid ?: return false
+        if (!parent.known) return false
+        val path = mutableSetOf<Long>()
+        while (path.add(gid)) {
+            val node = nodes[gid] ?: return false
+            if (!node.metadataLoaded || !node.parentVerified || !node.parent.known) return false
+            val metadata = attempts.values.firstOrNull { it.node?.ref == node.ref }
+            if (metadata?.first?.known == true && metadata.first.ref?.gid != firstGid) return false
+            if (metadata?.latest?.known == true && metadata.latest.ref?.gid != latest.ref?.gid) return false
+            if (gid == firstGid) {
+                if (node.parent != GalleryVersionLink.None) return false
+                val expected = candidates + listOfNotNull(first.ref?.gid, parent.ref?.gid, seed.viewed.ref.gid, latest.ref?.gid)
+                return expected.all { it in path } && nodes[seed.viewed.ref.gid]?.parent?.let { it.known && it.ref?.gid == parent.ref?.gid } == true
+            }
+            gid = node.parent.ref?.gid ?: return false
+        }
+        return false
+    }
+
+    private suspend fun traceWithExistingWalk() {
+        walk(seed.viewed.ref, first.ref?.gid, upstreamWalk = true)
+        latest.ref?.let { walk(it, seed.viewed.ref.gid, upstreamWalk = false) }
+        traced = validateCandidateChain()
+    }
+
+    private suspend fun walk(start: GalleryVersionRef, target: Long?, upstreamWalk: Boolean) {
         var ref = start
         val visited = mutableSetOf<Long>()
         while (visited.add(ref.gid)) {
             currentCoroutineContext().ensureActive()
-            if (ref.gid != seed.viewed.ref.gid) path.add(ref.gid)
+            ref = resolveRef(ref)
+            val cachedFailure = ref in attempts && (nodes[ref.gid]?.metadataLoaded != true || nodes[ref.gid]?.parentVerified != true)
             ensure(listOf(ref))
-            if (ref.gid == target) return true
-            val link = nodes[ref.gid]?.parent ?: return false
-            if (!link.known) return false
+            ref = resolveRef(ref)
+            // A batch failure/partial parent gets one automatic retry, only if this walk needs it.
+            if (remaining > 0 && cachedFailure && fallbackRetried.add(ref)) {
+                attempts.remove(ref)
+                nodes[ref.gid]?.let { nodes[ref.gid] = it.copy(metadataLoaded = false) }
+                ensure(listOf(ref))
+            }
+            if (ref.gid == target) return
+            val link = nodes[ref.gid]?.parent ?: return
+            if (!link.known) return
             if (link.ref == null) {
-                if (upstreamWalk && target == null) {
-                    first = GalleryVersionLink.to(ref)
-                    return true
+                if (upstreamWalk && target == null && nodes[ref.gid]?.parentVerified == true) {
+                    first = GalleryVersionLink.to(resolveRef(ref))
+                    publish()
                 }
-                return false
+                return
             }
             ref = link.ref
         }
-        return false
     }
+
+    private fun resolveRef(ref: GalleryVersionRef) = apiRefs[ref.gid] ?: nodes[ref.gid]?.ref?.takeIf { it.canRequest } ?: ref
 
     private fun enrichKnownTokens() {
         val known = buildList {
@@ -121,6 +211,7 @@ class GalleryVersionLoader(
         }
         fun enrich(link: GalleryVersionLink): GalleryVersionLink {
             val ref = link.ref ?: return link
+            apiRefs[ref.gid]?.let { return GalleryVersionLink.to(it) }
             if (ref.canRequest) return link
             val supplied = known.firstOrNull { it.gid == ref.gid && it.canRequest } ?: return link
             return GalleryVersionLink.to(supplied)
@@ -130,15 +221,28 @@ class GalleryVersionLoader(
         latest = enrich(latest)
     }
 
-    private suspend fun ensure(refs: List<GalleryVersionRef>) {
-        refs.forEach { ref ->
-            if (ref.gid > 0 && ref.gid !in nodes) {
-                nodes[ref.gid] = GalleryVersionNode(ref)
-            } else if (ref.canRequest && nodes[ref.gid]?.ref?.canRequest == false) {
-                nodes[ref.gid] = nodes.getValue(ref.gid).copy(ref = ref)
-            }
+    private fun rememberRef(ref: GalleryVersionRef) {
+        if (ref.gid <= 0) return
+        val previous = nodes[ref.gid]
+        if (previous == null) {
+            nodes[ref.gid] = GalleryVersionNode(ref)
+        } else if (!previous.ref.canRequest && ref.canRequest) {
+            nodes[ref.gid] = previous.copy(ref = ref)
         }
-        val missing = refs.map { ref -> if (ref.canRequest) ref else nodes[ref.gid]?.ref ?: ref }
+    }
+
+    private fun rememberApiRef(ref: GalleryVersionRef) {
+        rememberRef(ref)
+        if (!ref.canRequest) return
+        val previous = nodes.getValue(ref.gid)
+        val supplied = if (previous.metadataLoaded) previous.ref else ref
+        apiRefs[ref.gid] = supplied
+        if (!previous.metadataLoaded) nodes[ref.gid] = previous.copy(ref = supplied)
+    }
+
+    private suspend fun ensure(refs: List<GalleryVersionRef>) {
+        refs.forEach(::rememberRef)
+        val missing = refs.map(::resolveRef)
             .filter { it.canRequest && nodes[it.gid]?.metadataLoaded != true && it !in attempts }.distinctBy { it.gid }
         for (batch in missing.chunked(MAX_REQUEST_SIZE)) {
             currentCoroutineContext().ensureActive()
@@ -166,8 +270,11 @@ class GalleryVersionLoader(
                         sizeText = previous?.sizeText ?: incoming.sizeText,
                         uploader = previous?.uploader ?: incoming.uploader,
                         parent = incoming.parent.takeIf { it.known } ?: previous?.parent ?: GalleryVersionLink.Unknown,
+                        parentVerified = if (incoming.parent.known) incoming.parentVerified else previous?.parentVerified ?: false,
                         expunged = incoming.expunged ?: previous?.expunged,
                     )
+                    rememberApiRef(incoming.ref)
+                    listOfNotNull(metadata.first.ref, metadata.latest.ref, incoming.parent.ref).forEach(::rememberApiRef)
                 }
             }
             publish()
@@ -176,9 +283,8 @@ class GalleryVersionLoader(
 
     private fun snapshot(): GalleryVersionChain {
         val keyRefs = listOfNotNull(first.ref, parent.ref, seed.viewed.ref, latest.ref).distinctBy { it.gid }
-        keyRefs.forEach { ref -> nodes.putIfAbsent(ref.gid, GalleryVersionNode(ref)) }
-        val visible = if (expansionAttempted) nodes.toMap() else nodes.filterKeys { gid -> keyRefs.any { it.gid == gid } }
-        val (order, cycle) = orderGalleryVersions(visible, seed.viewed.ref.gid, first.ref?.gid, latest.ref?.gid, upstream, downstream)
+        keyRefs.forEach(::rememberRef)
+        val (order, cycle) = orderGalleryVersions(nodes, seed.viewed.ref.gid, first.ref?.gid, parent.ref?.gid, latest.ref?.gid)
         val middle = if (cycle) null else versionMiddleState(seed.viewed.ref.gid, first, parent, latest, nodes, seed.newer.mapTo(mutableSetOf()) { it.ref.gid })
         val completeKeys = first.known && parent.known && latest.known && middle != null && keyRefs.all { nodes[it.gid]?.metadataLoaded == true } && !cycle
         return GalleryVersionChain(

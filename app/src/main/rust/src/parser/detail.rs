@@ -207,8 +207,17 @@ fn parse_detail(gd: &mut GalleryDetail, dom: &VDom, parser: &Parser, body: &str)
         })
         .unwrap_or(-2);
 
-    gd.newerVersions = dom
-        .get_element_by_id("gnd")
+    gd.newerVersions = parse_gallery_version_candidates(dom, parser).unwrap_or_default();
+
+    Some(())
+}
+
+// Keep missing GND distinct from a present, empty list. Full detail parsing uses the same parser.
+pub fn parse_gallery_version_candidates(
+    dom: &VDom,
+    parser: &Parser,
+) -> Option<Vec<BaseGalleryInfo>> {
+    dom.get_element_by_id("gnd")
         .and_then(|n| n.get(parser))
         .map(|gnd_node| {
             let newer_versions_regex = regex!(r#"<a href="([^"]+)">([^<]+)</a>, added ([^<]+)<"#);
@@ -226,9 +235,6 @@ fn parse_detail(gd: &mut GalleryDetail, dom: &VDom, parser: &Parser, body: &str)
                 })
                 .collect()
         })
-        .unwrap_or_default();
-
-    Some(())
 }
 
 pub fn parse_gallery_detail(dom: &mut VDom, body: &str) -> Result<GalleryDetail> {

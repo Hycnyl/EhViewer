@@ -17,9 +17,13 @@ package com.hippo.ehviewer.client.parser
 
 import arrow.core.Either
 import arrow.core.getOrElse
+import com.ehviewer.core.model.BaseGalleryInfo
 import com.ehviewer.core.model.GalleryCommentList
 import com.ehviewer.core.model.GalleryDetail
 import com.ehviewer.core.model.GalleryPreviewList
+import com.hippo.ehviewer.client.data.GalleryVersionCandidates
+import com.hippo.ehviewer.client.data.GalleryVersionNode
+import com.hippo.ehviewer.client.data.GalleryVersionRef
 import com.hippo.ehviewer.client.exception.ParseException
 import java.nio.ByteBuffer
 import kotlinx.serialization.Serializable
@@ -38,6 +42,18 @@ object GalleryDetailParser {
         throw ParseException("Failed to parse comments", it)
     }
 
+    fun parseVersionCandidates(body: ByteBuffer) = Either.catch {
+        val items = unmarshalParsingAs<List<BaseGalleryInfo>?>(body, ::nativeParseVersionCandidates)
+        GalleryVersionCandidates(
+            found = items != null,
+            items = items.orEmpty().map {
+                GalleryVersionNode(GalleryVersionRef(it.gid, it.token), title = it.title?.takeIf(String::isNotBlank), posted = it.posted?.takeIf(String::isNotBlank))
+            },
+        )
+    }.getOrElse {
+        throw ParseException("Failed to parse version candidates", it)
+    }
+
     fun parsePreviews(body: ByteBuffer) = Either.catch {
         unmarshalParsingAs<GalleryPreviewList>(body, ::nativeParsePreviews)
     }.getOrElse {
@@ -49,6 +65,7 @@ object GalleryDetailParser {
     class Result(val detail: GalleryDetail, val event: String?)
 
     private external fun nativeParse(body: ByteBuffer, size: Int = body.limit()): Int
+    private external fun nativeParseVersionCandidates(body: ByteBuffer, size: Int = body.limit()): Int
     private external fun nativeParseComments(body: ByteBuffer, size: Int = body.limit()): Int
     private external fun nativeParsePreviews(body: ByteBuffer, size: Int = body.limit()): Int
 }

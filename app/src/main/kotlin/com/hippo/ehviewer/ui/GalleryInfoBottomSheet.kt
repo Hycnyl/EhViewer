@@ -63,6 +63,8 @@ fun GalleryInfoBottomSheet(detail: GalleryDetail, onNavigate: (String) -> Unit) 
     val loader = remember(detail.gid, detail.token) {
         GalleryVersionLoader(GalleryVersionSeed.from(detail), fetch = { refs ->
             EhEngine.getGalleryVersionMetadata(refs, GalleryVersionRef(detail.gid, detail.token).galleryUrl())
+        }, fetchCandidates = { ref ->
+            EhEngine.getGalleryVersionCandidates(ref, GalleryVersionRef(detail.gid, detail.token).galleryUrl())
         })
     }
     val chain by loader.state.collectAsState()
