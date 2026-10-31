@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -169,6 +170,7 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                     }
                 }
             }
+            HorizontalDivider()
             val mediaScan = Settings.mediaScan.asMutableState()
             SwitchPreference(
                 title = stringResource(id = R.string.settings_download_media_scan),
@@ -211,6 +213,7 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                 summary = stringResource(id = R.string.settings_download_download_origin_image_summary),
                 state = Settings.downloadOriginImage.asMutableState(),
             )
+            HorizontalDivider()
             SwitchPreference(
                 title = stringResource(id = R.string.settings_download_save_as_cbz),
                 state = Settings.saveAsCbz.asMutableState(),
@@ -220,6 +223,7 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                 summary = stringResource(id = R.string.settings_download_archive_metadata_summary),
                 state = Settings.archiveMetadata.asMutableState(),
             )
+            HorizontalDivider()
             WorkPreference(
                 title = stringResource(id = R.string.settings_download_reload_metadata),
                 summary = stringResource(id = R.string.settings_download_reload_metadata_summary),

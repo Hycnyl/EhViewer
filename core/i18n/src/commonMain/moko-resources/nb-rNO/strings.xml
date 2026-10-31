@@ -226,4 +226,5 @@
     <string name="read_cache_cleanup_running">Tømmer…</string>
     <string name="read_cache_cleanup_done">Fjernet %1$d bufferoppføringer</string>
     <string name="read_cache_cleanup_failed">Kunne ikke tømme bufferen. Prøv igjen.</string>
+    <string name="settings_theme">Tema</string>
 </resources>

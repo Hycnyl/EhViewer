@@ -234,6 +234,7 @@
     <string name="image_saved">Imagen guardada en  %s</string>
 
     <string name="settings_eh">EH</string>
+    <string name="settings_theme">Tema</string>
     <string name="settings_eh_sign_out">Cerrar sesión</string>
     <string name="settings_u_config">Configuración de EHentai</string>
     <string name="settings_u_config_summary">Configurar en la página de EHentai</string>

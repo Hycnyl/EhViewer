@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -83,6 +84,11 @@ fun AnimatedVisibilityScope.AboutScreen(navigator: DestinationsNavigator) = Scre
                 title = stringResource(id = R.string.settings_about_author),
                 summary = author(),
             )
+            Preference(
+                title = stringResource(id = R.string.settings_about_version),
+                summary = versionCode(),
+            )
+            HorizontalDivider()
             UrlPreference(
                 title = stringResource(id = R.string.settings_about_latest_release),
                 url = RELEASE_URL,
@@ -94,10 +100,7 @@ fun AnimatedVisibilityScope.AboutScreen(navigator: DestinationsNavigator) = Scre
             Preference(title = stringResource(id = R.string.license)) {
                 navigate(LicenseScreenDestination)
             }
-            Preference(
-                title = stringResource(id = R.string.settings_about_version),
-                summary = versionCode(),
-            )
+            HorizontalDivider()
             SwitchPreference(
                 title = stringResource(id = R.string.backup_before_update),
                 state = Settings.backupBeforeUpdate.asMutableState(),

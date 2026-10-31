@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -67,6 +68,7 @@ fun AnimatedVisibilityScope.PrivacyScreen(navigator: DestinationsNavigator) = Sc
                 summary = stringResource(id = R.string.settings_privacy_secure_summary),
                 state = Settings.enabledSecurity.asMutableState(),
             )
+            HorizontalDivider()
             val searchHistoryCleared = stringResource(id = R.string.search_history_cleared)
             Preference(
                 title = stringResource(id = R.string.clear_search_history),
