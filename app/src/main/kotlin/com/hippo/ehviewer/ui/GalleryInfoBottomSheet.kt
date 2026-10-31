@@ -136,9 +136,9 @@ fun GalleryInfoBottomSheet(detail: GalleryDetail, onNavigate: (String) -> Unit) 
                     if (expanded) expansionJob = scope.launch { loader.expand() } else expansionJob?.cancel()
                 },
                 onRetry = {
-                    val retryTrace = expanded || (chain.expansionAttempted && !chain.traceComplete && chain.hasMiddleVersions == true)
+                    val retryTrace = chain.needsFullRetry(expanded)
                     if (retryTrace) expanded = true
-                    expansionJob = scope.launch { if (retryTrace) loader.expand(retry = true) else loader.loadKeys(retry = true) }
+                    expansionJob = scope.launch { loader.retry(retryTrace) }
                 },
             )
         }
