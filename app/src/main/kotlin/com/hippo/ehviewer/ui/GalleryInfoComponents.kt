@@ -26,12 +26,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ehviewer.core.i18n.R
@@ -58,6 +60,24 @@ internal fun GalleryInfoCard(@StringRes title: Int? = null, rowGap: Dp = 6.dp, c
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(rowGap)) {
             if (title != null) Text(stringResource(title), Modifier.padding(bottom = 4.dp), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             content()
+        }
+    }
+}
+
+/** Measure the tallest value once, then give every cell the same width and height. */
+@Composable
+internal fun GalleryInfoGrid(columns: Int, columnGap: Dp = 6.dp, content: @Composable () -> Unit) {
+    Layout(content, Modifier.fillMaxWidth()) { measurables, constraints ->
+        val gap = columnGap.roundToPx()
+        val rowGap = 6.dp.roundToPx()
+        val cellWidth = ((constraints.maxWidth - gap * (columns - 1)) / columns).coerceAtLeast(0)
+        val cellHeight = measurables.maxOfOrNull { it.minIntrinsicHeight(cellWidth) } ?: 0
+        val rows = (measurables.size + columns - 1) / columns
+        val placeables = measurables.map { it.measure(Constraints.fixed(cellWidth, cellHeight)) }
+        layout(constraints.maxWidth, rows * cellHeight + (rows - 1).coerceAtLeast(0) * rowGap) {
+            placeables.forEachIndexed { index, placeable ->
+                placeable.placeRelative((index % columns) * (cellWidth + gap), (index / columns) * (cellHeight + rowGap))
+            }
         }
     }
 }
@@ -105,7 +125,7 @@ internal fun GalleryInfoCompactValue(
 }
 
 @Composable
-internal fun GalleryInfoValueRow(label: String, value: GalleryInfoValue, onCopy: () -> Unit, onNavigate: (() -> Unit)? = null) {
+internal fun GalleryInfoValueRow(label: String, value: GalleryInfoValue, onCopy: () -> Unit, onNavigate: (() -> Unit)? = null, displayText: String? = null) {
     Row(
         Modifier.fillMaxWidth().clip(MaterialTheme.shapes.extraSmall)
             .combinedClickable(
@@ -119,6 +139,6 @@ internal fun GalleryInfoValueRow(label: String, value: GalleryInfoValue, onCopy:
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(label, Modifier.width(80.dp), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(value.display(), Modifier.weight(1f), style = MaterialTheme.typography.bodySmall, color = if (onNavigate != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
+        Text(displayText ?: value.display(), Modifier.weight(1f), style = MaterialTheme.typography.bodySmall, color = if (onNavigate != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
     }
 }

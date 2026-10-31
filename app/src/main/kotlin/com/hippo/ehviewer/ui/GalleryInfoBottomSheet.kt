@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.HowToVote
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -50,6 +51,7 @@ import com.hippo.ehviewer.client.data.GalleryVersionSeed
 import com.hippo.ehviewer.client.parser.GalleryDetailUrlParser
 import com.hippo.ehviewer.client.thumbUrl
 import com.hippo.ehviewer.util.addTextToClipboard
+import java.util.Locale
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -90,6 +92,7 @@ fun GalleryInfoBottomSheet(detail: GalleryDetail, onNavigate: (String) -> Unit) 
     }
     fun copyField(field: GalleryInfoField) = copyValue(field.value.raw, field.isGalleryLink)
     val visibleNodes = chain.visibleNodes(expanded)
+    val versionColumnWidth = rememberGalleryVersionColumnWidth(visibleNodes.mapNotNull { it.posted }.maxByOrNull(String::length))
     LazyColumn(contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues() + PaddingValues(12.dp)) {
         item("title") {
             Text(stringResource(R.string.gallery_info), Modifier.fillMaxWidth().padding(bottom = 12.dp), textAlign = TextAlign.Center, style = MaterialTheme.typography.titleMedium)
@@ -100,12 +103,11 @@ fun GalleryInfoBottomSheet(detail: GalleryDetail, onNavigate: (String) -> Unit) 
         item("details") {
             GalleryInfoCard(R.string.gallery_info_basic, rowGap = 2.dp) {
                 val remaining = listOf(
-                    GalleryInfoFieldKey.POSTED,
-                    GalleryInfoFieldKey.PARENT,
+                    GalleryInfoFieldKey.URL,
                     GalleryInfoFieldKey.VISIBLE,
+                    GalleryInfoFieldKey.PARENT,
                     GalleryInfoFieldKey.FAVORITED,
                     GalleryInfoFieldKey.FAVORITE_NAME,
-                    GalleryInfoFieldKey.URL,
                     GalleryInfoFieldKey.THUMB,
                     GalleryInfoFieldKey.TORRENT_COUNT,
                     GalleryInfoFieldKey.TORRENT_URL,
@@ -113,7 +115,13 @@ fun GalleryInfoBottomSheet(detail: GalleryDetail, onNavigate: (String) -> Unit) 
                 remaining.forEach { key ->
                     val field = fields.getValue(key)
                     val url = field.value.raw?.takeIf { field.isGalleryLink && GalleryDetailUrlParser.parse(it) != null }
-                    GalleryInfoValueRow(stringResource(key.label), field.value, { copyField(field) }, url?.let { { onNavigate(it) } })
+                    GalleryInfoValueRow(
+                        stringResource(key.label),
+                        field.value,
+                        { copyField(field) },
+                        url?.let { { onNavigate(it) } },
+                        displayText = if (key == GalleryInfoFieldKey.PARENT) field.value.raw?.trimEnd('/') else null,
+                    )
                 }
             }
         }
@@ -136,6 +144,7 @@ fun GalleryInfoBottomSheet(detail: GalleryDetail, onNavigate: (String) -> Unit) 
             GalleryVersionTimelineNode(
                 node,
                 chain.roles(node.ref.gid),
+                columnWidth = versionColumnWidth,
                 first = index == 0,
                 last = index == visibleNodes.lastIndex,
                 solidBefore = index > 0 && chain.isDirectParent(visibleNodes[index - 1].ref.gid, node.ref.gid),
@@ -155,17 +164,15 @@ private fun GalleryInfoOverview(fields: Map<GalleryInfoFieldKey, GalleryInfoFiel
             GalleryInfoTitle(stringResource(key.label), fields.getValue(key).value, onNavigate, secondary = key == GalleryInfoFieldKey.TITLE_JPN)
         }
         val rows = listOf(
-            listOf(GalleryInfoFieldKey.CATEGORY to Icons.Default.Category, GalleryInfoFieldKey.LANGUAGE to Icons.Default.Language),
-            listOf(GalleryInfoFieldKey.PAGES to Icons.AutoMirrored.Default.MenuBook, GalleryInfoFieldKey.SIZE to Icons.Default.DataUsage, GalleryInfoFieldKey.FAVORITE_COUNT to Icons.Default.Favorite),
-            listOf(GalleryInfoFieldKey.RATING to Icons.Default.Star, GalleryInfoFieldKey.RATING_COUNT to Icons.Default.HowToVote, GalleryInfoFieldKey.UPLOADER to Icons.Default.Person),
+            listOf(GalleryInfoFieldKey.CATEGORY to Icons.Default.Category, GalleryInfoFieldKey.LANGUAGE to Icons.Default.Language, GalleryInfoFieldKey.RATING to Icons.Default.Star),
+            listOf(GalleryInfoFieldKey.SIZE to Icons.Default.DataUsage, GalleryInfoFieldKey.PAGES to Icons.AutoMirrored.Default.MenuBook, GalleryInfoFieldKey.FAVORITE_COUNT to Icons.Default.Favorite),
+            listOf(GalleryInfoFieldKey.RATING_COUNT to Icons.Default.HowToVote, GalleryInfoFieldKey.POSTED to Icons.Default.Schedule, GalleryInfoFieldKey.UPLOADER to Icons.Default.Person),
         )
-        for (row in rows) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                for ((key, icon) in row) {
-                    val field = fields.getValue(key)
-                    val weight = if (key == GalleryInfoFieldKey.UPLOADER) 1.5f else 1f
-                    GalleryInfoCompactValue(stringResource(key.label), field.value, { onCopy(field) }, Modifier.weight(weight), icon)
-                }
+        GalleryInfoGrid(columns = 3) {
+            for ((key, icon) in rows.flatten()) {
+                val field = fields.getValue(key)
+                val value = if (key == GalleryInfoFieldKey.CATEGORY) field.value.copy(raw = field.value.raw?.uppercase(Locale.ROOT)) else field.value
+                GalleryInfoCompactValue(stringResource(key.label), value, { onCopy(field) }, icon = icon)
             }
         }
         HorizontalDivider()
