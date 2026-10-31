@@ -230,4 +230,19 @@
     <string name="select_grouping_mode">Filtrer etter</string>
     <string name="select_grouping_mode_custom">Etiketter</string>
     <string name="select_grouping_mode_artist">Kunstner</string>
+    <string name="gallery_info_overview">Oversikt</string>
+    <string name="gallery_info_statistics">Nøkkeltall</string>
+    <string name="gallery_info_versions">Versjonshistorikk</string>
+    <string name="gallery_info_basic">Grunninformasjon</string>
+    <string name="gallery_info_favorites">Favoritter</string>
+    <string name="gallery_info_resources">Ressurser og identifikatorer</string>
+    <string name="gallery_version_first">Første</string>
+    <string name="gallery_version_viewed">Viser nå</string>
+    <string name="gallery_version_latest">Nyeste</string>
+    <string name="gallery_version_expand">Vis mellomliggende versjoner</string>
+    <string name="gallery_version_collapse">Skjul mellomliggende versjoner</string>
+    <string name="gallery_version_incomplete">Versjonsinformasjonen er ufullstendig.</string>
+    <string name="gallery_version_loading">Laster versjonsinformasjon…</string>
+    <string name="gallery_info_copy_field">Kopier %1$s</string>
+    <string name="gallery_version_expunged">Expunged</string>
 </resources>

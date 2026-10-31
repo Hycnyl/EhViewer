@@ -226,7 +226,9 @@ fun GalleryDetailContent(
                     onDismissRequest = { cont.cancel() },
                     contentWindowInsets = { WindowInsets() },
                 ) {
-                    GalleryInfoBottomSheet(galleryDetail)
+                    GalleryInfoBottomSheet(galleryDetail) { url ->
+                        if (navWithUrl(url)) cont.cancel()
+                    }
                 }
             }
         }

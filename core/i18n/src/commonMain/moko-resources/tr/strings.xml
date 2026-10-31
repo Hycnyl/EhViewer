@@ -119,4 +119,19 @@
     <string name="select_grouping_mode_custom">Etiketler</string>
     <string name="select_grouping_mode_artist">Sanatçı</string>
     <string name="let_me_select">Her seferinde sor</string>
+    <string name="gallery_info_overview">Genel bakış</string>
+    <string name="gallery_info_statistics">Temel istatistikler</string>
+    <string name="gallery_info_versions">Sürüm geçmişi</string>
+    <string name="gallery_info_basic">Temel bilgiler</string>
+    <string name="gallery_info_favorites">Favoriler</string>
+    <string name="gallery_info_resources">Kaynaklar ve kimlikler</string>
+    <string name="gallery_version_first">İlk</string>
+    <string name="gallery_version_viewed">Görüntülenen</string>
+    <string name="gallery_version_latest">En son</string>
+    <string name="gallery_version_expand">Ara sürümleri göster</string>
+    <string name="gallery_version_collapse">Ara sürümleri gizle</string>
+    <string name="gallery_version_incomplete">Sürüm bilgileri eksik.</string>
+    <string name="gallery_version_loading">Sürüm bilgileri yükleniyor…</string>
+    <string name="gallery_info_copy_field">%1$s kopyala</string>
+    <string name="gallery_version_expunged">Expunged</string>
 </resources>
