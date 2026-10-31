@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
@@ -27,17 +28,20 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ehviewer.core.i18n.R
 import com.hippo.ehviewer.client.data.GalleryVersionChain
-import com.hippo.ehviewer.client.data.GalleryVersionLink
 import com.hippo.ehviewer.client.data.GalleryVersionNode
 import com.hippo.ehviewer.client.data.GalleryVersionRole
 
@@ -51,6 +55,21 @@ private fun versionRoleName(role: GalleryVersionRole) = stringResource(
     },
 )
 
+/** Use the timestamp's text width, keeping both columns compact even on a wide sheet. */
+@Composable
+internal fun rememberGalleryVersionColumnWidth(posted: String?): Dp {
+    val textMeasurer = rememberTextMeasurer()
+    val style = MaterialTheme.typography.bodySmall
+    val width = remember(textMeasurer, style, posted) {
+        maxOf(
+            textMeasurer.measure("2000-12-31 23:59", style).size.width,
+            posted?.let { textMeasurer.measure(it, style).size.width } ?: 0,
+        )
+    }
+    // Compact values use a 16dp icon, 5dp gap and 4dp horizontal padding.
+    return with(LocalDensity.current) { width.toDp() } + 25.dp
+}
+
 @Composable
 internal fun GalleryVersionHeader(chain: GalleryVersionChain, expanded: Boolean, onToggle: () -> Unit, onRetry: () -> Unit) {
     Surface(Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.large.copy(bottomStart = CornerSize(0.dp), bottomEnd = CornerSize(0.dp)), color = MaterialTheme.colorScheme.surfaceContainerLow) {
@@ -61,18 +80,6 @@ internal fun GalleryVersionHeader(chain: GalleryVersionChain, expanded: Boolean,
                     TextButton(onClick = onToggle, enabled = expanded || !chain.isLoading) {
                         Text(stringResource(if (expanded) R.string.gallery_version_collapse else R.string.gallery_version_expand), style = MaterialTheme.typography.labelMedium)
                     }
-                }
-            }
-            val roles = listOf(
-                GalleryVersionRole.FIRST to chain.first,
-                GalleryVersionRole.PARENT to chain.parent,
-                GalleryVersionRole.VIEWED to GalleryVersionLink.to(chain.nodes.getValue(chain.viewedGid).ref),
-                GalleryVersionRole.LATEST to chain.latest,
-            )
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                roles.forEach { (role, link) ->
-                    val value = link.ref?.gid?.takeIf { it > 0 }?.toString() ?: if (link == GalleryVersionLink.None) "None" else "Null"
-                    Text(versionRoleName(role) + ": " + value, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             if (chain.isLoading) {
@@ -99,6 +106,7 @@ internal fun GalleryVersionFooter() {
 internal fun GalleryVersionTimelineNode(
     node: GalleryVersionNode,
     roles: List<GalleryVersionRole>,
+    columnWidth: Dp,
     first: Boolean,
     last: Boolean,
     solidBefore: Boolean,
@@ -134,7 +142,7 @@ internal fun GalleryVersionTimelineNode(
             Row(Modifier.fillMaxWidth()) {
                 Spacer(Modifier.width(24.dp))
                 Surface(
-                    modifier = Modifier.weight(1f).padding(start = 6.dp, bottom = 8.dp),
+                    modifier = Modifier.weight(1f, fill = false).padding(start = 6.dp, bottom = 8.dp).widthIn(max = columnWidth * 2 + 28.dp),
                     shape = MaterialTheme.shapes.medium,
                     color = if (isViewed) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
                     border = if (isViewed) BorderStroke(1.dp, primary) else null,
@@ -160,17 +168,15 @@ internal fun GalleryVersionTimelineNode(
                             )
                         }
                         GalleryInfoTitle(stringResource(R.string.key_title), GalleryInfoValue.text(node.title), url?.let { { onNavigate(it) } })
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        GalleryInfoGrid(columns = 2, columnGap = 8.dp) {
                             val gid = GalleryInfoValue(node.ref.gid.takeIf { it > 0 }?.toString())
-                            GalleryInfoCompactValue(stringResource(R.string.key_gid), gid, { onCopy(gid.raw) }, Modifier.weight(0.8f))
+                            GalleryInfoCompactValue(stringResource(R.string.key_gid), gid, { onCopy(gid.raw) })
                             val posted = GalleryInfoValue.text(node.posted)
-                            GalleryInfoCompactValue(stringResource(R.string.key_posted), posted, { onCopy(posted.raw) }, Modifier.weight(1.5f), Icons.Default.Schedule)
-                        }
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            GalleryInfoCompactValue(stringResource(R.string.key_posted), posted, { onCopy(posted.raw) }, icon = Icons.Default.Schedule)
                             val pages = GalleryInfoValue.number(node.pages)
-                            GalleryInfoCompactValue(stringResource(R.string.key_pages), pages, { onCopy(pages.raw) }, Modifier.weight(1f), Icons.AutoMirrored.Default.MenuBook)
+                            GalleryInfoCompactValue(stringResource(R.string.key_pages), pages, { onCopy(pages.raw) }, icon = Icons.AutoMirrored.Default.MenuBook)
                             val size = node.sizeText?.let(GalleryInfoValue::text) ?: GalleryInfoValue.bytes(node.fileSizeBytes)
-                            GalleryInfoCompactValue(stringResource(R.string.key_size), size, { onCopy(size.raw) }, Modifier.weight(1f), Icons.Default.DataUsage)
+                            GalleryInfoCompactValue(stringResource(R.string.key_size), size, { onCopy(size.raw) }, icon = Icons.Default.DataUsage)
                         }
                     }
                 }
