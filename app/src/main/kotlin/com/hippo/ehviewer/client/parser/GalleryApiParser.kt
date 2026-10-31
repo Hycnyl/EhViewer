@@ -18,10 +18,12 @@ package com.hippo.ehviewer.client.parser
 import com.ehviewer.core.model.GalleryInfo
 import com.ehviewer.core.util.unescapeXml
 import com.hippo.ehviewer.client.EhUtils.getCategory
+import com.hippo.ehviewer.client.data.GalleryVersionIssueCode
 import com.hippo.ehviewer.client.data.GalleryVersionLink
 import com.hippo.ehviewer.client.data.GalleryVersionMetadata
 import com.hippo.ehviewer.client.data.GalleryVersionNode
 import com.hippo.ehviewer.client.data.GalleryVersionRef
+import com.hippo.ehviewer.client.data.GalleryVersionRowStatus
 import com.hippo.ehviewer.client.getThumbKey
 import com.hippo.ehviewer.client.json
 import com.hippo.ehviewer.client.parseAs
@@ -48,7 +50,15 @@ object GalleryApiParser {
             val gid = number("gid")?.takeIf { it > 0 } ?: return@mapNotNull null
             val error = text("error")
             val ref = GalleryVersionRef(gid, text("token"))
-            if (error != null || !ref.canRequest || listOf("title", "posted", "filecount", "filesize", "category").none(row::containsKey)) {
+            if (error != null) {
+                val invalidToken = (error.contains("key", ignoreCase = true) || error.contains("token", ignoreCase = true)) &&
+                    listOf("missing", "incorrect", "invalid").any { error.contains(it, ignoreCase = true) }
+                return@mapNotNull GalleryVersionMetadata(gid, rowStatus = GalleryVersionRowStatus.API_ERROR, errorCode = if (invalidToken) GalleryVersionIssueCode.TOKEN_INVALID else GalleryVersionIssueCode.API_ROW_ERROR)
+            }
+            if (!ref.canRequest) {
+                return@mapNotNull GalleryVersionMetadata(gid, rowStatus = GalleryVersionRowStatus.TOKEN_INVALID)
+            }
+            if (listOf("title", "posted", "filecount", "filesize", "category").none(row::containsKey)) {
                 return@mapNotNull GalleryVersionMetadata(gid)
             }
             val completeRecord = text("category") != null && number("posted") != null && number("filecount") != null
@@ -91,6 +101,7 @@ object GalleryApiParser {
                 ),
                 first = first,
                 latest = latest,
+                rowStatus = if (completeRecord) GalleryVersionRowStatus.VALID else GalleryVersionRowStatus.METADATA_MISSING,
             )
         }
     }

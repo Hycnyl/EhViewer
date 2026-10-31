@@ -7,6 +7,7 @@ import com.hippo.ehviewer.client.data.GalleryVersionMetadata
 import com.hippo.ehviewer.client.data.GalleryVersionNode
 import com.hippo.ehviewer.client.data.GalleryVersionRef
 import com.hippo.ehviewer.client.data.GalleryVersionRole
+import com.hippo.ehviewer.client.data.GalleryVersionRowStatus
 import com.hippo.ehviewer.client.data.GalleryVersionSeed
 import com.hippo.ehviewer.client.parser.GalleryApiParser
 import kotlinx.coroutines.CompletableDeferred
@@ -735,12 +736,18 @@ class GalleryVersionTest {
     @Test
     fun aLaterPartialResponseDoesNotEraseAnAlreadyVerifiedParent() = runBlocking {
         var partial = false
+        var viewedRequests = 0
         val loader = GalleryVersionLoader(
             GalleryVersionSeed(GalleryVersionNode(ref(3), title = "HTML")),
             fetch = { refs ->
                 refs.map {
                     val item = metadata(it.gid, if (it.gid == 1L) null else it.gid - 1, latest = 6)
-                    if (it.gid == 3L) item.copy(first = GalleryVersionLink.Unknown, node = item.node!!.let { n -> if (partial) n.copy(parent = GalleryVersionLink.Unknown, parentVerified = false) else n }) else item
+                    if (it.gid == 3L) {
+                        viewedRequests++
+                        item.copy(first = GalleryVersionLink.Unknown, node = item.node!!.let { n -> if (partial) n.copy(parent = GalleryVersionLink.Unknown, parentVerified = false) else n }, rowStatus = GalleryVersionRowStatus.METADATA_MISSING)
+                    } else {
+                        item
+                    }
                 }
             },
             fetchCandidates = { gnd(2L..6L) },
@@ -751,6 +758,7 @@ class GalleryVersionTest {
         val before = loader.state.value.orderedGids
         partial = true
         loader.expand(retry = true)
+        assertEquals(2, viewedRequests)
         assertTrue(loader.state.value.isDirectParent(2, 3))
         assertEquals(before, loader.state.value.orderedGids)
         assertEquals("HTML", loader.state.value.nodes.getValue(3).title)

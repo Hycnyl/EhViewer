@@ -39,7 +39,56 @@ data class GalleryVersionMetadata(
     val node: GalleryVersionNode? = null,
     val first: GalleryVersionLink = GalleryVersionLink.Unknown,
     val latest: GalleryVersionLink = GalleryVersionLink.Unknown,
+    val rowStatus: GalleryVersionRowStatus = if (node == null) GalleryVersionRowStatus.METADATA_MISSING else GalleryVersionRowStatus.VALID,
+    val errorCode: GalleryVersionIssueCode? = null,
 )
+
+enum class GalleryVersionRowStatus { VALID, API_ERROR, METADATA_MISSING, TOKEN_INVALID }
+
+enum class GalleryVersionStage { KEY_METADATA, FIRST_HTML, CANDIDATE_METADATA, PARENT_TRACE, CHAIN_VALIDATION }
+
+enum class GalleryVersionIssueCode {
+    NETWORK_ERROR,
+    HTTP_ERROR,
+    LOGIN_REQUIRED,
+    IP_BANNED,
+    CLOUDFLARE_CHALLENGE,
+    PARSE_ERROR,
+    GND_MISSING,
+    API_ROW_ERROR,
+    METADATA_MISSING,
+    TOKEN_INVALID,
+    REQUEST_BUDGET_EXHAUSTED,
+    PARENT_UNKNOWN,
+    CANDIDATE_UNLINKED,
+    CYCLE_DETECTED,
+    ROLE_UNRESOLVED,
+    UNKNOWN_ERROR,
+}
+
+data class GalleryVersionIssue(
+    val stage: GalleryVersionStage,
+    val code: GalleryVersionIssueCode,
+    val affectedGids: List<Long> = emptyList(),
+    val retryable: Boolean = false,
+)
+
+data class GalleryVersionDiagnostics(
+    val currentStage: GalleryVersionStage? = null,
+    val issues: List<GalleryVersionIssue> = emptyList(),
+    val requestBudget: Int = 0,
+    val requestsUsed: Int = 0,
+    val pendingMetadataCount: Int? = null,
+)
+
+sealed interface ChainValidationResult {
+    data object Complete : ChainValidationResult
+    data class Incomplete(
+        val reason: GalleryVersionIssueCode,
+        val affectedGids: List<Long> = emptyList(),
+        val retryable: Boolean = false,
+    ) : ChainValidationResult
+}
 
 data class GalleryVersionCandidates(val found: Boolean, val items: List<GalleryVersionNode> = emptyList())
 
@@ -87,8 +136,10 @@ data class GalleryVersionChain(
     val expansionAttempted: Boolean = false,
     val traceComplete: Boolean = false,
     val hasCycle: Boolean = false,
+    val diagnostics: GalleryVersionDiagnostics = GalleryVersionDiagnostics(),
 ) {
     val isComplete get() = keyInfoComplete && (!expansionAttempted || traceComplete)
+    fun needsFullRetry(expanded: Boolean) = expanded || expansionAttempted
 
     fun roles(gid: Long) = buildList {
         if (first.ref?.gid == gid) add(GalleryVersionRole.FIRST)

@@ -85,13 +85,15 @@ internal fun GalleryVersionHeader(chain: GalleryVersionChain, expanded: Boolean,
             if (chain.isLoading) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
-                    Text(stringResource(R.string.gallery_version_loading), style = MaterialTheme.typography.bodySmall)
+                    val stage = chain.diagnostics.currentStage
+                    Text(stringResource(R.string.gallery_version_loading) + (stage?.let { " · " + galleryVersionStageLabel(it) } ?: ""), style = MaterialTheme.typography.bodySmall)
                 }
-            } else if (!chain.isComplete) {
+            } else if (!chain.isComplete || chain.diagnostics.issues.isNotEmpty()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(stringResource(R.string.gallery_version_incomplete), Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(if (chain.isComplete) R.string.gallery_version_data_issue else R.string.gallery_version_incomplete), Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
                     TextButton(onClick = onRetry) { Text(stringResource(R.string.action_retry)) }
                 }
+                GalleryVersionDiagnosticsContent(chain.diagnostics)
             }
         }
     }

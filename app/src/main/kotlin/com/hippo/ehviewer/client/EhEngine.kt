@@ -29,10 +29,13 @@ import com.ehviewer.core.util.logcat
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
+import com.hippo.ehviewer.client.data.GalleryVersionIssueCode
 import com.hippo.ehviewer.client.data.GalleryVersionMetadata
 import com.hippo.ehviewer.client.data.GalleryVersionRef
+import com.hippo.ehviewer.client.data.GalleryVersionRequestException
 import com.hippo.ehviewer.client.data.fillInfo
 import com.hippo.ehviewer.client.data.filterComments
+import com.hippo.ehviewer.client.data.galleryVersionHttpFailure
 import com.hippo.ehviewer.client.exception.CloudflareBypassException
 import com.hippo.ehviewer.client.exception.EhError
 import com.hippo.ehviewer.client.exception.EhException
@@ -107,6 +110,12 @@ private var versionMetadataRequests = 0
 private var versionMetadataLastRequest: Long? = null
 
 private val Url.isLogin get() = segments.firstOrNull() == "bounce_login.php"
+
+private fun HttpResponse.checkGalleryVersionResponse() {
+    galleryVersionHttpFailure(status.value, request.url.isLogin, headers["cf-mitigated"] == "challenge")?.let {
+        throw GalleryVersionRequestException(it)
+    }
+}
 
 private fun Either<String, ByteBuffer>.saveParseError(e: Throwable) {
     val dir = AppConfig.externalParseErrorDir ?: return
@@ -282,7 +291,27 @@ object EhEngine {
     suspend fun getGalleryVersionCandidates(ref: GalleryVersionRef, referer: String?) = run {
         require(ref.canRequest)
         ehRequest(EhUrl.getGalleryDetailUrl(ref.gid, ref.token!!), referer)
-            .fetchUsingAsByteBuffer(GalleryDetailParser::parseVersionCandidates)
+            .executeSafely { response ->
+                response.checkGalleryVersionResponse()
+                httpContentPool.useInstance { buffer ->
+                    with(response.bodyAsChannel()) { while (!isClosedForRead) readAvailable(buffer) }
+                    buffer.flip()
+                    try {
+                        GalleryDetailParser.parseVersionCandidates(buffer)
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        buffer.rewind()
+                        val nativeError = runCatching { Cbor.decodeFromByteArray<EhError>(buffer.moveToByteArray()) }.getOrNull()
+                        val code = when (nativeError) {
+                            EhError.NeedLogin -> GalleryVersionIssueCode.LOGIN_REQUIRED
+                            is EhError.IpBanned -> GalleryVersionIssueCode.IP_BANNED
+                            else -> GalleryVersionIssueCode.PARSE_ERROR
+                        }
+                        throw GalleryVersionRequestException(code, e)
+                    }
+                }
+            }
     }
 
     suspend fun getPreviewList(url: String) = ehRequest(url, EhUrl.referer).fetchUsingAsByteBuffer(GalleryDetailParser::parsePreviews)
@@ -445,7 +474,10 @@ object EhEngine {
                         }
                         put("namespace", 1)
                     }
-                }.fetchUsingAsText { GalleryApiParser.parseVersionMetadata(this) }
+                }.executeSafely { response ->
+                    response.checkGalleryVersionResponse()
+                    GalleryApiParser.parseVersionMetadata(response.bodyAsUtf8Text())
+                }
             }
             addAll(result)
         }
