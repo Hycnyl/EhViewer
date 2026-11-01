@@ -19,7 +19,7 @@
 </p>
 
 <h1 align="center">
-  <img src="https://github.com/FooIbar/EhViewer-art/blob/master/launcher_icon-web.svg" width="200" alt="EhViewer">
+  <img src="https://github.com/Hycnyl/EhViewer-Art/blob/main/launcher_icon-web.svg?raw=true" width="200" alt="EhViewer">
   <br>EhViewer<br>
 </h1>
 
@@ -155,13 +155,13 @@
 *執行 Android 6 的裝置需安裝 [ISRG Root X1](https://letsencrypt.org/certs/isrgrootx1.pem) 憑證
 
 <a href="https://github.com/Hycnyl/EhViewer/releases">
-<img alt="Get it on GitHub" src="https://github.com/FooIbar/EhViewer-art/blob/master/get-it-on-github.svg" width="200px"/>
+<img alt="Get it on GitHub" src="https://github.com/Hycnyl/EhViewer-Art/blob/main/get-it-on-github.svg?raw=true" width="200px"/>
 </a>
 
 # 截圖
 
-![screenshots-01](https://raw.githubusercontent.com/Hycnyl/EhViewer-Art/main/Screenshot-01.png)
-![screenshots-02](https://raw.githubusercontent.com/Hycnyl/EhViewer-Art/main/Screenshot-02.png)
+![screenshots-01](https://github.com/Hycnyl/EhViewer-Art/blob/main/Screenshot-01.png?raw=true)
+![screenshots-02](https://github.com/Hycnyl/EhViewer-Art/blob/main/Screenshot-02.png?raw=true)
 
 # 鳴謝
 
@@ -177,7 +177,7 @@
 
 - "Tachiyomi" (https://github.com/tachiyomiorg)：感謝 Tachiyomi 開源社群提供的閱讀器實作與相關程式碼。
 - "EhTagTranslation" (https://github.com/EhTagTranslation/Database)：感謝專案維護者及翻譯貢獻者為中文標籤翻譯所付出的努力。
-- "FooIbar / EhViewer-art" (https://github.com/FooIbar/EhViewer-art)：提供本專案 README 所引用的圖示及其他視覺資源。
+- "FooIbar / EhViewer-art" (https://github.com/FooIbar/EhViewer-art)：軟體圖示及「在 GitHub 取得」圖片的原始來源；副本存放於 [Hycnyl / EhViewer-Art](https://github.com/Hycnyl/EhViewer-Art)。
 - EhViewer 的所有貢獻者：感謝歷代開發者、翻譯人員、問題回報者和社群成員的貢獻。
 
 ## 主要開源依賴

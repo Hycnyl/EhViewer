@@ -19,7 +19,7 @@
 </p>
 
 <h1 align="center">
-  <img src="https://github.com/FooIbar/EhViewer-art/blob/master/launcher_icon-web.svg" width="200" alt="EhViewer">
+  <img src="https://github.com/Hycnyl/EhViewer-Art/blob/main/launcher_icon-web.svg?raw=true" width="200" alt="EhViewer">
   <br>EhViewer<br>
 </h1>
 
@@ -155,13 +155,13 @@
 *Android 6 を実行するデバイスには [ISRG Root X1](https://letsencrypt.org/certs/isrgrootx1.pem) 証明書のインストールが必要です
 
 <a href="https://github.com/Hycnyl/EhViewer/releases">
-<img alt="Get it on GitHub" src="https://github.com/FooIbar/EhViewer-art/blob/master/get-it-on-github.svg" width="200px"/>
+<img alt="Get it on GitHub" src="https://github.com/Hycnyl/EhViewer-Art/blob/main/get-it-on-github.svg?raw=true" width="200px"/>
 </a>
 
 # スクリーンショット
 
-![screenshots-01](https://raw.githubusercontent.com/Hycnyl/EhViewer-Art/main/Screenshot-01.png)
-![screenshots-02](https://raw.githubusercontent.com/Hycnyl/EhViewer-Art/main/Screenshot-02.png)
+![screenshots-01](https://github.com/Hycnyl/EhViewer-Art/blob/main/Screenshot-01.png?raw=true)
+![screenshots-02](https://github.com/Hycnyl/EhViewer-Art/blob/main/Screenshot-02.png?raw=true)
 
 # 謝辞
 
@@ -177,7 +177,7 @@
 
 - "Tachiyomi" (https://github.com/tachiyomiorg)：リーダーの実装と関連コードを提供してくださった Tachiyomi のオープンソースコミュニティに感謝します。
 - "EhTagTranslation" (https://github.com/EhTagTranslation/Database)：中国語のタグ翻訳に尽力してくださったプロジェクトのメンテナーと翻訳の貢献者に感謝します。
-- "FooIbar / EhViewer-art" (https://github.com/FooIbar/EhViewer-art)：本プロジェクトの README で参照しているアイコンなどのビジュアル素材を提供しています。
+- "FooIbar / EhViewer-art" (https://github.com/FooIbar/EhViewer-art)：アプリアイコンと「Get it on GitHub」画像の元の提供元です。コピーは [Hycnyl / EhViewer-Art](https://github.com/Hycnyl/EhViewer-Art) に保存しています。
 - EhViewer のすべての貢献者：歴代の開発者、翻訳者、問題の報告者、コミュニティメンバーの貢献に感謝します。
 
 ## 主なオープンソースの依存関係

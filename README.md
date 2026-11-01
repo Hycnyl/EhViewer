@@ -19,7 +19,7 @@
 </p>
 
 <h1 align="center">
-  <img src="https://github.com/FooIbar/EhViewer-art/blob/master/launcher_icon-web.svg" width="200" alt="EhViewer">
+  <img src="https://github.com/Hycnyl/EhViewer-Art/blob/main/launcher_icon-web.svg?raw=true" width="200" alt="EhViewer">
   <br>EhViewer<br>
 </h1>
 
@@ -155,13 +155,13 @@
 *Devices running Android 6 need to have the [ISRG Root X1](https://letsencrypt.org/certs/isrgrootx1.pem) certificate installed
 
 <a href="https://github.com/Hycnyl/EhViewer/releases">
-<img alt="Get it on GitHub" src="https://github.com/FooIbar/EhViewer-art/blob/master/get-it-on-github.svg" width="200px"/>
+<img alt="Get it on GitHub" src="https://github.com/Hycnyl/EhViewer-Art/blob/main/get-it-on-github.svg?raw=true" width="200px"/>
 </a>
 
 # Screenshots
 
-![screenshots-01](https://raw.githubusercontent.com/Hycnyl/EhViewer-Art/main/Screenshot-01.png)
-![screenshots-02](https://raw.githubusercontent.com/Hycnyl/EhViewer-Art/main/Screenshot-02.png)
+![screenshots-01](https://github.com/Hycnyl/EhViewer-Art/blob/main/Screenshot-01.png?raw=true)
+![screenshots-02](https://github.com/Hycnyl/EhViewer-Art/blob/main/Screenshot-02.png?raw=true)
 
 # Acknowledgments
 
@@ -177,7 +177,7 @@
 
 - "Tachiyomi" (https://github.com/tachiyomiorg): Thanks to the Tachiyomi open-source community for the reader implementation and related code.
 - "EhTagTranslation" (https://github.com/EhTagTranslation/Database): Thanks to the project maintainers and translation contributors for their efforts in translating tags into Chinese.
-- "FooIbar / EhViewer-art" (https://github.com/FooIbar/EhViewer-art): Provides the icons and other visual assets referenced in this project’s README.
+- "FooIbar / EhViewer-art" (https://github.com/FooIbar/EhViewer-art): Original source of the app icon and “Get it on GitHub” image; copies are hosted in [Hycnyl / EhViewer-Art](https://github.com/Hycnyl/EhViewer-Art).
 - All EhViewer contributors: Thanks to developers, translators, issue reporters, and community members throughout the project’s history for their contributions.
 
 ## Main Open-Source Dependencies
