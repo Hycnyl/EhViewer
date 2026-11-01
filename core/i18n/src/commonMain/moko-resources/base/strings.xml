@@ -727,7 +727,6 @@
     <string name="gallery_version_hide_diagnostics">Hide details</string>
     <string name="gallery_version_budget_details">Request budget: %1$d · Used: %2$d\nMetadata still needed: %3$d nodes</string>
     <string name="gallery_version_load_strategy">Version chain loading</string>
-    <string name="gallery_version_load_strategy_summary">GND first: find candidates quickly, then fall back to Parent Walk if validation fails.\nParent Walk first: follow Parent relationships directly; this may need more requests.</string>
     <string name="gallery_version_load_gnd_first">GND first (recommended)</string>
     <string name="gallery_version_load_parent_first">Parent Walk first</string>
     <string name="gallery_newer_versions">Newer versions</string>

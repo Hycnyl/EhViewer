@@ -230,7 +230,8 @@ class GalleryVersionLoader(
             if (!node.parentVerified || !node.parent.known) return incomplete(GalleryVersionIssueCode.PARENT_UNKNOWN, listOf(gid))
             val metadata = metadataByGid[gid]
             if (metadata?.first?.known == true && metadata.first.ref?.gid != firstGid) return incomplete(GalleryVersionIssueCode.ROLE_UNRESOLVED, listOf(gid), false)
-            if (metadata?.latest?.known == true && metadata.latest.ref?.gid != latest.ref?.gid) return incomplete(GalleryVersionIssueCode.ROLE_UNRESOLVED, listOf(gid), false)
+            // current_gid can retain an earlier tip. The visited suffix proves it is a descendant on this chain.
+            if (metadata?.latest?.known == true && metadata.latest.ref?.gid !in path) return incomplete(GalleryVersionIssueCode.ROLE_UNRESOLVED, listOf(gid), false)
             if (gid == firstGid) {
                 if (node.parent != GalleryVersionLink.None) return incomplete(GalleryVersionIssueCode.ROLE_UNRESOLVED, listOf(gid), false)
                 val missingKeys = keyGids().filter { it !in path }

@@ -229,9 +229,12 @@ class GalleryNewerVersionLoader(
             prefix.toList()
         }
         val issues = mutableListOf<GalleryVersionIssue>()
+        val descendants = mutableSetOf<Long>()
         val conflictingRoles = if (reachedCurrent) {
             backwards.filter { gid ->
-                metadata[gid]?.latest?.let { it.known && it.ref?.gid != latest?.gid } == true
+                descendants.add(gid)
+                // A cached tip is consistent when the verified Parent path already reaches it.
+                metadata[gid]?.latest?.let { it.known && it.ref?.gid !in descendants } == true
             }
         } else {
             emptyList()

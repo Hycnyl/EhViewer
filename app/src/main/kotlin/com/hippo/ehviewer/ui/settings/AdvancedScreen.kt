@@ -168,7 +168,6 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
             HorizontalDivider()
             SimpleMenuPreferenceInt(
                 title = stringResource(R.string.gallery_version_load_strategy),
-                summary = stringResource(R.string.gallery_version_load_strategy_summary),
                 entry = com.hippo.ehviewer.R.array.gallery_version_load_strategy_entries,
                 entryValueRes = com.hippo.ehviewer.R.array.gallery_version_load_strategy_entry_values,
                 state = Settings.galleryVersionLoadStrategy.asMutableState(),
