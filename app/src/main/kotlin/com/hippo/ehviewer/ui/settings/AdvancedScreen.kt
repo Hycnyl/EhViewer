@@ -166,6 +166,13 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
             ReadCacheSizePreference()
             ReadCacheCleanupPreference()
             HorizontalDivider()
+            SimpleMenuPreferenceInt(
+                title = stringResource(R.string.gallery_version_load_strategy),
+                summary = stringResource(R.string.gallery_version_load_strategy_summary),
+                entry = com.hippo.ehviewer.R.array.gallery_version_load_strategy_entries,
+                entryValueRes = com.hippo.ehviewer.R.array.gallery_version_load_strategy_entry_values,
+                state = Settings.galleryVersionLoadStrategy.asMutableState(),
+            )
             if (isCronetAvailable) {
                 val enableCronet = Settings.enableCronet.asMutableState()
                 if (BuildConfig.DEBUG || !enableCronet.value) {

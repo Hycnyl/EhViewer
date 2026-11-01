@@ -153,7 +153,6 @@
     <string name="filter_the_tag">Block the tag \"%s\"?</string>
     <string name="filter_added">Blocker added</string>
     <string name="newer_version_available">There are newer versions of this gallery available.</string>
-    <string name="newer_version_title">%1$s, added %2$s</string>
     <!-- Rating -->
     <string name="rating10">MASTERPIECE</string>
     <string name="rating9">AMAZING</string>
@@ -727,4 +726,11 @@
     <string name="gallery_version_show_diagnostics">Details</string>
     <string name="gallery_version_hide_diagnostics">Hide details</string>
     <string name="gallery_version_budget_details">Request budget: %1$d · Used: %2$d\nMetadata still needed: %3$d nodes</string>
+    <string name="gallery_version_load_strategy">Version chain loading</string>
+    <string name="gallery_version_load_strategy_summary">GND first: find candidates quickly, then fall back to Parent Walk if validation fails.\nParent Walk first: follow Parent relationships directly; this may need more requests.</string>
+    <string name="gallery_version_load_gnd_first">GND first (recommended)</string>
+    <string name="gallery_version_load_parent_first">Parent Walk first</string>
+    <string name="gallery_newer_versions">Newer versions</string>
+    <string name="gallery_newer_versions_incomplete">Newer versions have not finished loading.</string>
+    <string name="gallery_version_open_gallery">Open gallery</string>
 </resources>

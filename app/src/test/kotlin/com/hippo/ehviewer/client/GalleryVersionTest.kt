@@ -1,7 +1,9 @@
 package com.hippo.ehviewer.client
 
 import com.hippo.ehviewer.client.data.GalleryVersionCandidates
+import com.hippo.ehviewer.client.data.GalleryVersionIssueCode
 import com.hippo.ehviewer.client.data.GalleryVersionLink
+import com.hippo.ehviewer.client.data.GalleryVersionLoadStrategy
 import com.hippo.ehviewer.client.data.GalleryVersionLoader
 import com.hippo.ehviewer.client.data.GalleryVersionMetadata
 import com.hippo.ehviewer.client.data.GalleryVersionNode
@@ -11,7 +13,9 @@ import com.hippo.ehviewer.client.data.GalleryVersionRowStatus
 import com.hippo.ehviewer.client.data.GalleryVersionSeed
 import com.hippo.ehviewer.client.parser.GalleryApiParser
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -531,11 +535,12 @@ class GalleryVersionTest {
         assertFalse(50L in loader.state.value.orderedGids)
         assertFalse(49L in loader.state.value.orderedGids)
         assertEquals((1L..6L).toList(), loader.state.value.visibleNodes(true).map { it.ref.gid })
-        assertFalse(loader.state.value.traceComplete)
+        assertTrue(loader.state.value.traceComplete)
+        assertTrue(loader.state.value.diagnostics.issues.isEmpty())
     }
 
     @Test
-    fun branchesAndCyclesCannotBeReportedAsACompleteSingleChain() = runBlocking {
+    fun isolatedBranchesAndCyclesDoNotInvalidateTheMainChain() = runBlocking {
         for (cycle in listOf(false, true)) {
             val loader = GalleryVersionLoader(
                 GalleryVersionSeed(GalleryVersionNode(ref(3))),
@@ -557,10 +562,11 @@ class GalleryVersionTest {
             )
             loader.loadKeys()
             loader.expand()
-            assertFalse(loader.state.value.traceComplete)
+            assertTrue(loader.state.value.traceComplete)
             assertFalse(50L in loader.state.value.orderedGids)
-            assertEquals(cycle, loader.state.value.hasCycle)
-            if (cycle) assertFalse(loader.state.value.isDirectParent(3, 4))
+            assertFalse(loader.state.value.hasCycle)
+            assertTrue(loader.state.value.diagnostics.issues.isEmpty())
+            assertTrue(loader.state.value.isDirectParent(3, 4))
         }
     }
 
@@ -789,5 +795,265 @@ class GalleryVersionTest {
         assertEquals(listOf(ref(5)), queried.filter { it.gid == 5L })
         assertEquals(ref(5), loader.state.value.nodes.getValue(5).ref)
         assertTrue(loader.state.value.traceComplete)
+    }
+
+    @Test
+    fun orphanFailuresNeverPolluteMainChainDiagnosticsOrRetries() = runBlocking {
+        for (kind in 0..4) {
+            fun candidatesWithInvalidToken() = gnd(2L..6L).items + GalleryVersionNode(GalleryVersionRef(50, null))
+            val calls = mutableMapOf<Long, Int>()
+            val loader = GalleryVersionLoader(
+                GalleryVersionSeed(GalleryVersionNode(ref(3))),
+                fetch = { refs ->
+                    refs.map { candidate ->
+                        calls[candidate.gid] = calls.getOrDefault(candidate.gid, 0) + 1
+                        if (candidate.gid != 50L) {
+                            metadata(candidate.gid, if (candidate.gid == 1L) null else candidate.gid - 1, latest = 6)
+                        } else {
+                            when (kind) {
+                                0 -> GalleryVersionMetadata(50, rowStatus = GalleryVersionRowStatus.API_ERROR)
+                                1 -> GalleryVersionMetadata(50, rowStatus = GalleryVersionRowStatus.TOKEN_INVALID)
+                                2 -> GalleryVersionMetadata(50)
+                                else -> metadata(50, 49, first = 49, latest = 51)
+                            }
+                        }
+                    }
+                },
+                fetchCandidates = { if (kind == 4) GalleryVersionCandidates(true, candidatesWithInvalidToken()) else gnd((2L..6L).toList() + 50) },
+            )
+            loader.loadKeys()
+            loader.expand()
+            assertTrue(loader.state.value.isComplete)
+            assertTrue(loader.state.value.diagnostics.issues.isEmpty())
+            assertEquals((1L..6L).toList(), loader.state.value.orderedGids)
+            assertFalse(49L in calls)
+            val before = calls.toMap()
+            loader.retry(expanded = false)
+            assertEquals(before, calls)
+            assertTrue(loader.state.value.diagnostics.issues.isEmpty())
+        }
+    }
+
+    @Test
+    fun fastSuccessSkipsParentWalkAndFallbackNeverPublishesAnOrphanFailure() = runBlocking {
+        for (orphan in listOf(false, true)) {
+            val stages = mutableSetOf<com.hippo.ehviewer.client.data.GalleryVersionStage>()
+            val problems = mutableSetOf<GalleryVersionIssueCode>()
+            val loader = GalleryVersionLoader(
+                GalleryVersionSeed(GalleryVersionNode(ref(400))),
+                fetch = { refs ->
+                    refs.map {
+                        metadata(
+                            it.gid,
+                            if (it.gid == 1L) {
+                                null
+                            } else if (it.gid == 5000L) {
+                                4999
+                            } else {
+                                it.gid - 1
+                            },
+                            latest = 1200,
+                        )
+                    }
+                },
+                fetchCandidates = { gnd((2L..1200L).toList() + if (orphan) listOf(5000L) else emptyList()) },
+            )
+            val observer = launch(Dispatchers.Unconfined) {
+                loader.state.collect { state ->
+                    state.diagnostics.currentStage?.let(stages::add)
+                    problems.addAll(state.diagnostics.issues.map { it.code })
+                }
+            }
+            loader.loadKeys()
+            loader.expand()
+            observer.cancelAndJoin()
+            assertTrue(loader.state.value.traceComplete)
+            assertEquals((1L..1200L).toList(), loader.state.value.orderedGids)
+            assertEquals(orphan, com.hippo.ehviewer.client.data.GalleryVersionStage.PARENT_TRACE in stages)
+            assertFalse(GalleryVersionIssueCode.CANDIDATE_UNLINKED in problems)
+            assertTrue(loader.state.value.diagnostics.issues.isEmpty())
+        }
+    }
+
+    @Test
+    fun aChangedViewedParentCannotValidateAgainstTheOldParentRole() = runBlocking {
+        var viewedCalls = 0
+        val loader = GalleryVersionLoader(
+            GalleryVersionSeed(GalleryVersionNode(ref(3))),
+            fetch = { refs ->
+                refs.map {
+                    if (it.gid == 3L && ++viewedCalls == 1) {
+                        metadata(3, 2, latest = 6).let { row -> row.copy(node = row.node!!.copy(metadataLoaded = false)) }
+                    } else {
+                        metadata(
+                            it.gid,
+                            if (it.gid == 1L) {
+                                null
+                            } else if (it.gid == 3L) {
+                                1
+                            } else {
+                                it.gid - 1
+                            },
+                            latest = 6,
+                        )
+                    }
+                }
+            },
+            fetchCandidates = { gnd(2L..6L) },
+        )
+        loader.loadKeys()
+        loader.expand()
+        assertFalse(loader.state.value.traceComplete)
+        assertTrue(loader.state.value.diagnostics.issues.any { it.code == GalleryVersionIssueCode.ROLE_UNRESOLVED })
+    }
+
+    @Test
+    fun loadStrategyUsesStablePreferenceValuesAndUnknownValuesUseGnd() {
+        assertEquals(0, GalleryVersionLoadStrategy.GND_FIRST.preferenceValue)
+        assertEquals(1, GalleryVersionLoadStrategy.PARENT_WALK_FIRST.preferenceValue)
+        assertEquals(GalleryVersionLoadStrategy.GND_FIRST, GalleryVersionLoadStrategy.fromPreference(0))
+        assertEquals(GalleryVersionLoadStrategy.PARENT_WALK_FIRST, GalleryVersionLoadStrategy.fromPreference(1))
+        assertEquals(GalleryVersionLoadStrategy.GND_FIRST, GalleryVersionLoadStrategy.fromPreference(-1))
+        assertEquals(GalleryVersionLoadStrategy.GND_FIRST, GalleryVersionLoadStrategy.fromPreference(999))
+    }
+
+    @Test
+    fun parentFirstSkipsHtmlAndIgnoresCurrentGndWhileBothStrategiesTraceTheSameMainChain() = runBlocking {
+        for (strategy in GalleryVersionLoadStrategy.entries) {
+            val calls = mutableMapOf<Long, Int>()
+            var html = 0
+            val loader = GalleryVersionLoader(
+                GalleryVersionSeed(GalleryVersionNode(ref(4)), listOf(GalleryVersionNode(ref(999)))),
+                fetch = { refs ->
+                    refs.map {
+                        calls[it.gid] = calls.getOrDefault(it.gid, 0) + 1
+                        metadata(it.gid, if (it.gid == 1L) null else it.gid - 1, latest = 8)
+                    }
+                },
+                fetchCandidates = {
+                    html++
+                    gnd(2L..8L)
+                },
+                strategy = strategy,
+            )
+            loader.loadKeys()
+            loader.expand()
+            assertEquals((1L..8L).toList(), loader.state.value.orderedGids)
+            assertTrue(loader.state.value.isComplete)
+            assertTrue(loader.state.value.diagnostics.issues.isEmpty())
+            if (strategy == GalleryVersionLoadStrategy.PARENT_WALK_FIRST) {
+                assertEquals(0, html)
+                assertFalse(999L in calls)
+                assertFalse(999L in loader.state.value.nodes)
+            } else {
+                assertEquals(1, html)
+                assertEquals(1, calls[999])
+            }
+            val before = calls.toMap()
+            loader.retry(expanded = false)
+            assertEquals(before, calls)
+        }
+    }
+
+    @Test
+    fun bothStrategiesShareBudgetsAndResumeOnlyUnfinishedRequests() = runBlocking {
+        for (strategy in GalleryVersionLoadStrategy.entries) {
+            val counts = mutableMapOf<Long, Int>()
+            var html = 0
+            val loader = GalleryVersionLoader(
+                GalleryVersionSeed(GalleryVersionNode(ref(4))),
+                fetch = { refs ->
+                    refs.map {
+                        counts[it.gid] = counts.getOrDefault(it.gid, 0) + 1
+                        metadata(it.gid, if (it.gid == 1L) null else it.gid - 1, latest = 8)
+                    }
+                },
+                requestBudget = 1,
+                fetchCandidates = {
+                    html++
+                    gnd(2L..8L)
+                },
+                strategy = strategy,
+            )
+            loader.loadKeys()
+            loader.expand()
+            assertFalse(loader.state.value.traceComplete)
+            assertTrue(loader.state.value.diagnostics.issues.any { it.code == GalleryVersionIssueCode.REQUEST_BUDGET_EXHAUSTED })
+            repeat(12) {
+                if (!loader.state.value.isComplete) {
+                    loader.retry(expanded = false)
+                    assertTrue(loader.state.value.diagnostics.requestsUsed <= 1)
+                }
+            }
+            assertTrue(loader.state.value.isComplete)
+            assertEquals((1L..8L).toList(), loader.state.value.orderedGids)
+            assertTrue(counts.values.all { it == 1 })
+            assertEquals(if (strategy == GalleryVersionLoadStrategy.GND_FIRST) 1 else 0, html)
+        }
+    }
+
+    @Test
+    fun cancellingEitherStrategyPreservesSuccessAndDoesNotSwitchLoadingStrategy() = runBlocking {
+        for (strategy in GalleryVersionLoadStrategy.entries) {
+            val started = CompletableDeferred<Unit>()
+            val release = CompletableDeferred<Unit>()
+            var html = 0
+            val calls = mutableMapOf<Long, Int>()
+            val loader = GalleryVersionLoader(
+                GalleryVersionSeed(GalleryVersionNode(ref(4))),
+                fetch = { refs ->
+                    if (refs.any { it.gid == 2L }) {
+                        started.complete(Unit)
+                        release.await()
+                    }
+                    refs.map {
+                        calls[it.gid] = calls.getOrDefault(it.gid, 0) + 1
+                        metadata(it.gid, if (it.gid == 1L) null else it.gid - 1, latest = 8)
+                    }
+                },
+                fetchCandidates = {
+                    html++
+                    gnd(2L..8L)
+                },
+                strategy = strategy,
+            )
+            loader.loadKeys()
+            val job = launch { loader.expand() }
+            withTimeout(5_000) { started.await() }
+            job.cancelAndJoin()
+            assertFalse(loader.state.value.isLoading)
+            assertTrue(loader.state.value.diagnostics.issues.isEmpty())
+            release.complete(Unit)
+            loader.retry(expanded = false)
+            assertTrue(loader.state.value.isComplete)
+            assertTrue(calls.values.all { it == 1 })
+            assertEquals(if (strategy == GalleryVersionLoadStrategy.GND_FIRST) 1 else 0, html)
+        }
+    }
+
+    @Test
+    fun disconnectedCandidatesCannotSupplyUnknownKeyRolesOrTriggerUnrelatedRequests() = runBlocking {
+        val requested = mutableSetOf<Long>()
+        val loader = GalleryVersionLoader(
+            GalleryVersionSeed(GalleryVersionNode(ref(3)), gnd(listOf(50)).items),
+            fetch = { refs ->
+                refs.map {
+                    requested.add(it.gid)
+                    when (it.gid) {
+                        3L -> GalleryVersionMetadata(3, GalleryVersionNode(ref(3), title = "Partial", metadataLoaded = true), rowStatus = GalleryVersionRowStatus.METADATA_MISSING)
+                        50L -> metadata(50, 49, first = 49, latest = 51)
+                        else -> error("A disconnected candidate must not create key requests")
+                    }
+                }
+            },
+            fetchCandidates = { error("Unknown First must not be guessed") },
+        )
+        loader.loadKeys()
+        loader.expand()
+        assertEquals(setOf(3L, 50L), requested)
+        assertFalse(loader.state.value.first.known)
+        assertFalse(loader.state.value.latest.known)
+        assertFalse(loader.state.value.traceComplete)
+        assertEquals(listOf(3L), loader.state.value.orderedGids)
     }
 }

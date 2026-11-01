@@ -137,7 +137,6 @@
     <string name="filter_the_tag">屏蔽标签“%s”？</string>
     <string name="filter_added">已添加屏蔽项</string>
     <string name="newer_version_available">此画廊有新版本可用。</string>
-    <string name="newer_version_title">%1$s, 添加于 %2$s</string>
     <!-- Rating -->
     <string name="rating10">根本把持不住</string>
     <string name="rating9">好极了</string>
@@ -709,4 +708,11 @@
     <string name="gallery_version_show_diagnostics">诊断详情</string>
     <string name="gallery_version_hide_diagnostics">收起详情</string>
     <string name="gallery_version_budget_details">请求预算：%1$d · 已用：%2$d\n待获取元数据：%3$d 个节点</string>
+    <string name="gallery_version_load_strategy">版本链详情加载方式</string>
+    <string name="gallery_version_load_strategy_summary">GND 优先：快速检索候选，验证失败时回退 Parent Walk。\nParent Walk 优先：仅沿 Parent 关系追溯，请求可能更多。</string>
+    <string name="gallery_version_load_gnd_first">GND 优先（首选）</string>
+    <string name="gallery_version_load_parent_first">Parent Walk 优先</string>
+    <string name="gallery_newer_versions">后续版本</string>
+    <string name="gallery_newer_versions_incomplete">后续版本尚未完整加载。</string>
+    <string name="gallery_version_open_gallery">打开画廊</string>
 </resources>

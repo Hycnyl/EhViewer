@@ -140,7 +140,6 @@
     <string name="filter_the_tag">「%s」のタグをブロックしますか？</string>
     <string name="filter_added">ブロックを追加しました</string>
     <string name="newer_version_available">このギャラリーの新しいバージョンが利用可能です。</string>
-    <string name="newer_version_title">%1$s、%2$s を追加しました</string>
     <!-- Rating -->
     <string name="rating10">ものすごくいい</string>
     <string name="rating9">すごくいい</string>

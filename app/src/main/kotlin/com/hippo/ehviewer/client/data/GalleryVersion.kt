@@ -90,6 +90,16 @@ sealed interface ChainValidationResult {
     ) : ChainValidationResult
 }
 
+enum class GalleryVersionLoadStrategy(val preferenceValue: Int) {
+    GND_FIRST(0),
+    PARENT_WALK_FIRST(1),
+    ;
+
+    companion object {
+        fun fromPreference(value: Int) = entries.firstOrNull { it.preferenceValue == value } ?: GND_FIRST
+    }
+}
+
 data class GalleryVersionCandidates(val found: Boolean, val items: List<GalleryVersionNode> = emptyList())
 
 data class GalleryVersionSeed(val viewed: GalleryVersionNode, val newer: List<GalleryVersionNode> = emptyList()) {
@@ -162,13 +172,12 @@ internal fun versionMiddleState(
     parent: GalleryVersionLink,
     latest: GalleryVersionLink,
     nodes: Map<Long, GalleryVersionNode>,
-    newerGids: Set<Long>,
 ): Boolean? {
     val up = when {
         parent.known && parent.ref == null -> false
         first.ref == null || parent.ref == null -> null
         first.ref.gid == parent.ref.gid -> false
-        else -> nodes[parent.ref.gid]?.parent?.let {
+        else -> nodes[parent.ref.gid]?.takeIf { it.parentVerified }?.parent?.let {
             when {
                 !it.known || it.ref == null -> null
                 it.ref.gid == first.ref.gid -> false
@@ -180,7 +189,7 @@ internal fun versionMiddleState(
     val down = when {
         latest.ref == null -> null
         latest.ref.gid == viewedGid -> false
-        else -> nodes[latest.ref.gid]?.parent?.let {
+        else -> nodes[latest.ref.gid]?.takeIf { it.parentVerified }?.parent?.let {
             when {
                 !it.known || it.ref == null -> null
                 it.ref.gid == viewedGid -> false
@@ -189,11 +198,20 @@ internal fun versionMiddleState(
             }
         }
     }
-    val htmlHasMiddle = if (latest.ref != null) newerGids.any { it != viewedGid && it != latest.ref.gid } else newerGids.size > 1
     return when {
-        up == true || down == true || htmlHasMiddle -> true
+        up == true || down == true -> true
         up == false && down == false -> false
         else -> null
+    }
+}
+
+/** Candidate branches are not evidence about the key roles' Parent paths. */
+internal fun relatedGalleryVersionGids(nodes: Map<Long, GalleryVersionNode>, anchors: List<Long>): Set<Long> = buildSet {
+    for (anchor in anchors) {
+        var gid: Long? = anchor
+        while (gid != null && add(gid)) {
+            gid = nodes[gid]?.takeIf { it.parentVerified }?.parent?.ref?.gid
+        }
     }
 }
 
@@ -208,7 +226,7 @@ internal fun orderGalleryVersions(
     val anchors = listOfNotNull(firstGid, parentGid, viewedGid, latestGid).distinct().filter { it in nodes }
     fun parent(gid: Long) = nodes[gid]?.takeIf { it.parentVerified }?.parent?.ref?.gid?.takeIf { it in nodes }
     val checked = mutableSetOf<Long>()
-    for (gid in nodes.keys) {
+    for (gid in anchors) {
         val path = mutableSetOf<Long>()
         var current: Long? = gid
         while (current != null && current !in checked) {

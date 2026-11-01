@@ -45,6 +45,7 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
+import com.hippo.ehviewer.client.data.GalleryVersionLoadStrategy
 import com.hippo.ehviewer.client.data.GalleryVersionLoader
 import com.hippo.ehviewer.client.data.GalleryVersionRef
 import com.hippo.ehviewer.client.data.GalleryVersionSeed
@@ -63,7 +64,7 @@ fun GalleryInfoBottomSheet(detail: GalleryDetail, onNavigate: (String) -> Unit) 
     val loader = remember(detail.gid, detail.token) {
         GalleryVersionLoader(GalleryVersionSeed.from(detail), fetch = { refs ->
             EhEngine.getGalleryVersionMetadata(refs, GalleryVersionRef(detail.gid, detail.token).galleryUrl())
-        }, fetchCandidates = { ref ->
+        }, strategy = GalleryVersionLoadStrategy.fromPreference(Settings.galleryVersionLoadStrategy.value), fetchCandidates = { ref ->
             EhEngine.getGalleryVersionCandidates(ref, GalleryVersionRef(detail.gid, detail.token).galleryUrl())
         })
     }

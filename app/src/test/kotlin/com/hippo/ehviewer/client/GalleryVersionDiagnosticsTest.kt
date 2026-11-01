@@ -89,7 +89,7 @@ class GalleryVersionDiagnosticsTest {
     }
 
     @Test
-    fun collapsedRetryStillFetchesCandidatesWhenThereAreNoMiddleVersions() = runBlocking {
+    fun collapsedRetryDoesNotRefetchIgnoredCandidatesWhenThereAreNoMiddleVersions() = runBlocking {
         var extraRequests = 0
         var html = 0
         val loader = GalleryVersionLoader(
@@ -112,10 +112,11 @@ class GalleryVersionDiagnosticsTest {
         loader.loadKeys()
         loader.expand()
         assertEquals(false, loader.state.value.hasMiddleVersions)
-        assertFalse(loader.state.value.traceComplete)
+        assertTrue(loader.state.value.traceComplete)
+        assertTrue(loader.state.value.diagnostics.issues.isEmpty())
         assertEquals(1, extraRequests)
         loader.retry(expanded = false)
-        assertEquals(2, extraRequests)
+        assertEquals(1, extraRequests)
         assertEquals(1, html)
     }
 
@@ -276,7 +277,6 @@ class GalleryVersionDiagnosticsTest {
         )
         loader.loadKeys()
         loader.expand()
-        assertTrue(has(loader, GalleryVersionStage.CANDIDATE_METADATA, GalleryVersionIssueCode.NETWORK_ERROR))
         assertTrue(has(loader, GalleryVersionStage.PARENT_TRACE, GalleryVersionIssueCode.NETWORK_ERROR))
         assertFalse(has(loader, GalleryVersionStage.CANDIDATE_METADATA, GalleryVersionIssueCode.METADATA_MISSING))
     }
@@ -295,26 +295,28 @@ class GalleryVersionDiagnosticsTest {
 
     @Test
     fun apiRowErrorsAndAbsentRowsHaveDifferentDiagnostics() = runBlocking {
-        val loader = GalleryVersionLoader(
-            GalleryVersionSeed(GalleryVersionNode(ref(3))),
-            fetch = { refs ->
-                refs.map {
-                    if (it.gid == 4L) {
-                        GalleryApiParser.parseVersionMetadata("""{"gmetadata":[{"gid":4,"error":"Gallery unavailable"}]}""").single()
-                    } else if (it.gid == 5L) {
-                        GalleryVersionMetadata(5)
-                    } else {
-                        meta(it.gid)
+        for (apiError in listOf(true, false)) {
+            val loader = GalleryVersionLoader(
+                GalleryVersionSeed(GalleryVersionNode(ref(3))),
+                fetch = { refs ->
+                    refs.map {
+                        if (it.gid != 4L) {
+                            meta(it.gid)
+                        } else if (apiError) {
+                            GalleryApiParser.parseVersionMetadata("""{"gmetadata":[{"gid":4,"error":"Gallery unavailable"}]}""").single()
+                        } else {
+                            GalleryVersionMetadata(4)
+                        }
                     }
-                }
-            },
-            fetchCandidates = { gnd(2L..6L) },
-        )
-        loader.loadKeys()
-        loader.expand()
-        assertTrue(has(loader, GalleryVersionStage.CANDIDATE_METADATA, GalleryVersionIssueCode.API_ROW_ERROR))
-        assertTrue(has(loader, GalleryVersionStage.PARENT_TRACE, GalleryVersionIssueCode.METADATA_MISSING))
-        assertTrue(loader.state.value.diagnostics.issues.none { it.code == GalleryVersionIssueCode.NETWORK_ERROR })
+                },
+                fetchCandidates = { gnd(2L..6L) },
+            )
+            loader.loadKeys()
+            loader.expand()
+            assertTrue(has(loader, GalleryVersionStage.PARENT_TRACE, if (apiError) GalleryVersionIssueCode.API_ROW_ERROR else GalleryVersionIssueCode.METADATA_MISSING))
+            assertFalse(loader.state.value.traceComplete)
+            assertTrue(loader.state.value.diagnostics.issues.none { it.code == GalleryVersionIssueCode.NETWORK_ERROR })
+        }
     }
 
     @Test
@@ -371,15 +373,15 @@ class GalleryVersionDiagnosticsTest {
         assertEquals(1, api - before)
         assertEquals(2, diagnostics.requestBudget)
         assertEquals(2, diagnostics.requestsUsed)
-        assertEquals(31, diagnostics.pendingMetadataCount)
+        assertEquals(1, diagnostics.pendingMetadataCount)
         val stopped = diagnostics.issues.first { it.stage == GalleryVersionStage.CANDIDATE_METADATA && it.code == GalleryVersionIssueCode.REQUEST_BUDGET_EXHAUSTED }
-        assertEquals(31, stopped.affectedGids.size)
+        assertEquals(listOf(59L), stopped.affectedGids)
         assertTrue(stopped.retryable)
         assertTrue(diagnostics.issues.none { it.code == GalleryVersionIssueCode.API_ROW_ERROR || it.code == GalleryVersionIssueCode.METADATA_MISSING || it.code == GalleryVersionIssueCode.NETWORK_ERROR })
     }
 
     @Test
-    fun unlinkedCandidatesAreDiagnosedWithoutQueryingUnrelatedParents() = runBlocking {
+    fun unlinkedCandidatesAreIgnoredWithoutQueryingUnrelatedParents() = runBlocking {
         val queried = mutableListOf<Long>()
         val loader = GalleryVersionLoader(
             GalleryVersionSeed(GalleryVersionNode(ref(3))),
@@ -402,9 +404,8 @@ class GalleryVersionDiagnosticsTest {
         )
         loader.loadKeys()
         loader.expand()
-        val issue = loader.state.value.diagnostics.issues.single { it.stage == GalleryVersionStage.CHAIN_VALIDATION && it.code == GalleryVersionIssueCode.CANDIDATE_UNLINKED }
-        assertEquals(listOf(50L), issue.affectedGids)
-        assertFalse(issue.retryable)
+        assertTrue(loader.state.value.traceComplete)
+        assertTrue(loader.state.value.diagnostics.issues.isEmpty())
         assertFalse(49L in queried)
         assertFalse(50L in loader.state.value.orderedGids)
         assertTrue(loader.state.value.diagnostics.issues.none { it.code == GalleryVersionIssueCode.API_ROW_ERROR || it.code == GalleryVersionIssueCode.METADATA_MISSING })

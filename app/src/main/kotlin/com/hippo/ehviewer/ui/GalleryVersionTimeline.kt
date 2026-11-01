@@ -115,6 +115,7 @@ internal fun GalleryVersionTimelineNode(
     solidAfter: Boolean,
     onNavigate: (String) -> Unit,
     onCopy: (String?) -> Unit,
+    navigateOnCardClick: Boolean = false,
 ) {
     val isViewed = GalleryVersionRole.VIEWED in roles
     val url = node.ref.galleryUrl()
@@ -144,7 +145,9 @@ internal fun GalleryVersionTimelineNode(
             Row(Modifier.fillMaxWidth()) {
                 Spacer(Modifier.width(24.dp))
                 Surface(
-                    modifier = Modifier.weight(1f, fill = false).padding(start = 6.dp, bottom = 8.dp).widthIn(max = columnWidth * 2 + 28.dp),
+                    modifier = Modifier.weight(1f, fill = false).padding(start = 6.dp, bottom = 8.dp).widthIn(max = columnWidth * 2 + 28.dp).then(
+                        if (navigateOnCardClick && url != null) Modifier.clickable(onClickLabel = stringResource(R.string.gallery_version_open_gallery)) { onNavigate(url) } else Modifier,
+                    ),
                     shape = MaterialTheme.shapes.medium,
                     color = if (isViewed) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
                     border = if (isViewed) BorderStroke(1.dp, primary) else null,

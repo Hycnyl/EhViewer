@@ -119,6 +119,7 @@ import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.ktbuilder.executeIn
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.ui.GalleryInfoBottomSheet
+import com.hippo.ehviewer.ui.GalleryNewerVersionsBottomSheet
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.confirmRemoveDownload
 import com.hippo.ehviewer.ui.destinations.GalleryCommentsScreenDestination
@@ -139,7 +140,6 @@ import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
 import com.hippo.ehviewer.ui.tools.awaitResult
 import com.hippo.ehviewer.ui.tools.awaitSelectAction
-import com.hippo.ehviewer.ui.tools.awaitSelectItem
 import com.hippo.ehviewer.ui.tools.dialog
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.getClippedRefreshKey
@@ -453,15 +453,18 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
             }
         }
     }
-    suspend fun showNewerVersionDialog() {
-        val items = galleryDetail.newerVersions.map {
-            string(R.string.newer_version_title, it.title, it.posted)
-        }
-        val selected = awaitSelectItem(items)
-        val info = galleryDetail.newerVersions[selected]
-        withUIContext {
-            // Can't use GalleryInfoArgs as thumbKey is null
-            navigate(info.gid asDstWith info.token)
+    fun showNewerVersions() {
+        launch {
+            dialog { cont ->
+                ModalBottomSheet(
+                    onDismissRequest = { cont.cancel() },
+                    contentWindowInsets = { WindowInsets() },
+                ) {
+                    GalleryNewerVersionsBottomSheet(galleryDetail) { url ->
+                        if (navWithUrl(url)) cont.cancel()
+                    }
+                }
+            }
         }
     }
     val keylineMargin = dimensionResource(com.hippo.ehviewer.R.dimen.keyline_margin)
@@ -469,7 +472,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
     if (galleryDetail.newerVersions.isNotEmpty()) {
         Box(contentAlignment = Alignment.Center) {
             CrystalCard(
-                onClick = { launchIO { showNewerVersionDialog() } },
+                onClick = ::showNewerVersions,
                 modifier = Modifier.fillMaxWidth().height(32.dp),
             ) {
             }

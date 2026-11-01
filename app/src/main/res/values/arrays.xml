@@ -319,4 +319,12 @@
         <item>14</item>
         <item>30</item>
     </integer-array>
+    <string-array name="gallery_version_load_strategy_entries" translatable="false">
+        <item>@string/gallery_version_load_gnd_first</item>
+        <item>@string/gallery_version_load_parent_first</item>
+    </string-array>
+    <integer-array name="gallery_version_load_strategy_entry_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+    </integer-array>
 </resources>
