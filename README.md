@@ -65,6 +65,18 @@
 
 - Function: Allows users to manually delete cached data within a specified time range. **Filtering is based on the last modification time of Coil cache files, rather than when the user last read the gallery.**
 
+### Gallery version history
+
+- Location: Gallery details → Information card to the right of the cover → “Version history”.
+
+- Function: Displays the first version, parent gallery, currently viewed version, and latest version on a timeline. Users can show intermediate versions, tap a title to open that gallery, and view each version’s posting time, page count, and size. If loading is incomplete, users can inspect the cause and retry.
+
+### Version chain loading
+
+- Location: Settings → Advanced → “Version chain loading”.
+
+- Function: Allows users to choose between the default “GND first (recommended)” and “Parent Walk first”. These prioritize retrieving the version list from the first version’s page or tracing parent galleries step by step, respectively, to load and verify intermediate versions.
+
 ## Adjusted
 
 ### Custom reading cache size
@@ -91,13 +103,43 @@
 
 - Function: On the ranking page, the bookmark icon in the upper right has been replaced with a numbered list icon, which better matches its function of switching between rankings.
 
+### Redesigned gallery information panel
+
+- Location: Gallery details → Information card to the right of the cover.
+
+- Function: Replaces the previous row-by-row list with overview and basic information cards, bringing together titles, category, language, rating, and other information. Tap a title, GID, Token, or link to copy it; tap the uploader to search their galleries; long-press the gallery or parent gallery link to open it.
+
+### Updated newer-version prompt
+
+- Location: Gallery details → “There are newer versions of this gallery available.” prompt.
+
+- Function: Replaces the version selection dialog with a bottom sheet showing the current gallery and newer versions on a timeline, including titles, posting times, page counts, and sizes. The currently viewed and latest versions are marked, and tapping a version card or title opens that gallery.
+
+### Improved download filter access and icons
+
+- Location: Download list → Funnel icon in the upper right.
+
+- Function: Moves download filters out of the three-dot menu into a dedicated button that opens the side panel for filtering by artist or label. A two-way arrow icon switches the filter basis, while a download icon with a gear represents the default download label setting.
+
+### Reorganized settings
+
+- Location: Settings → EH, Theme, Download, Privacy, Advanced, and About.
+
+- Function: Groups theme, app language, list appearance, and content display options under a separate “Theme” category, moves “Desktop site” to EH, and adds dividers to organize settings pages. Options such as the black dark theme and thumbnail column count appear only in the applicable modes.
+
+### Reordered gallery details menu
+
+- Location: Gallery details → Three-dot menu in the upper right.
+
+- Function: Moves the browser-opening action to the end of the menu, keeping download and export actions closer together.
+
+### Adjusted edge effects in gallery information and reader settings
+
+- Location: Gallery details → Information card to the right of the cover; Reader → Settings.
+
+- Function: Disables the stretch effect at the ends of the gallery information list and reader settings pager, reducing distortion of content and controls.
+
 ## Other
-
-- Gallery information and version history improved.
-
-- Download filter controls improved.
-
-- Settings categories reorganized.
 
 - Package name: Changed to `moe.hycnyl.ehviewer`;
 
