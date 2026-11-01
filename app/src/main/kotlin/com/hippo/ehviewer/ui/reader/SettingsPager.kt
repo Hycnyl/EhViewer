@@ -50,6 +50,7 @@ fun SettingsPager(isWebtoon: Boolean, modifier: Modifier = Modifier, onPageSelec
         modifier = modifier,
         state = pagerState,
         verticalAlignment = Alignment.Top,
+        overscrollEffect = null,
     ) { page ->
         ProvideTextStyle(value = MaterialTheme.typography.labelLarge) {
             when (page) {

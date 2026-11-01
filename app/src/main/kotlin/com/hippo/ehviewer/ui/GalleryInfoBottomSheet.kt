@@ -96,7 +96,7 @@ fun GalleryInfoBottomSheet(detail: GalleryDetail, onUploaderClick: (String) -> U
     fun copyField(field: GalleryInfoField) = copyValue(field.value.raw, field.isGalleryLink)
     val visibleNodes = chain.visibleNodes(expanded)
     val versionColumnWidth = rememberGalleryVersionColumnWidth(visibleNodes.mapNotNull { it.posted }.maxByOrNull(String::length))
-    LazyColumn(contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues() + PaddingValues(12.dp)) {
+    LazyColumn(contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues() + PaddingValues(12.dp), overscrollEffect = null) {
         item("title") {
             Text(stringResource(R.string.gallery_info), Modifier.fillMaxWidth().padding(bottom = 12.dp), textAlign = TextAlign.Center, style = MaterialTheme.typography.titleMedium)
         }
