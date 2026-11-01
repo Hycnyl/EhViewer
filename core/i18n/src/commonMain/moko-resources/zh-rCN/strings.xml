@@ -167,7 +167,7 @@
     <string name="key_pages">页数</string>
     <string name="key_size">大小</string>
     <string name="key_favorite_count">收藏次数</string>
-    <string name="key_favorited">收藏</string>
+    <string name="key_favorited">云端收藏</string>
     <string name="key_rating_count">评价次数</string>
     <string name="key_rating">评分</string>
     <string name="key_torrents">种子个数</string>
@@ -436,7 +436,7 @@
     <string name="clear_search_history_confirm">要清除搜索记录吗？</string>
     <string name="search_history_cleared">已清除搜索记录</string>
     <string name="download_service">下载服务</string>
-    <string name="favorite_name">收藏画廊</string>
+    <string name="favorite_name">收藏分类</string>
     <string name="black_dark_theme">纯黑深色主题</string>
     <string name="harmonize_category_color">类别颜色适配动态配色</string>
     <string name="backup_before_update">更新前备份数据</string>
@@ -714,4 +714,5 @@
     <string name="gallery_newer_versions">新版本</string>
     <string name="gallery_newer_versions_incomplete">新版本尚未完整加载。</string>
     <string name="gallery_version_open_gallery">打开画廊</string>
+    <string name="gallery_info_search_uploader">搜索上传者</string>
 </resources>

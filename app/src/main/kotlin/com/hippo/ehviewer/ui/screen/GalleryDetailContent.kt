@@ -226,7 +226,13 @@ fun GalleryDetailContent(
                     onDismissRequest = { cont.cancel() },
                     contentWindowInsets = { WindowInsets() },
                 ) {
-                    GalleryInfoBottomSheet(galleryDetail) { url ->
+                    GalleryInfoBottomSheet(
+                        galleryDetail,
+                        onUploaderClick = { uploader ->
+                            navigate(ListUrlBuilder(mode = ListUrlBuilder.MODE_UPLOADER, mKeyword = uploader).asDst())
+                            cont.cancel()
+                        },
+                    ) { url ->
                         if (navWithUrl(url)) cont.cancel()
                     }
                 }

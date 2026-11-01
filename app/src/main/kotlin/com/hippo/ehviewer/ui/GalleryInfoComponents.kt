@@ -4,6 +4,7 @@ import android.text.format.Formatter
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -26,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -33,6 +35,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -82,18 +85,38 @@ internal fun GalleryInfoGrid(columns: Int, columnGap: Dp = 6.dp, content: @Compo
     }
 }
 
-/** The title keeps a two-line viewport; dragging reveals the rest without enlarging the card. */
+/** Read-only fields consume taps so a clickable version card cannot open underneath them. */
+internal fun Modifier.consumeGalleryInfoTaps() = pointerInput(Unit) {
+    detectTapGestures(onTap = {})
+}
+
+/** Current-gallery titles use ellipsis; timeline titles retain their scrollable viewport. */
 @Composable
-internal fun GalleryInfoTitle(label: String, value: GalleryInfoValue, onNavigate: (() -> Unit)?, secondary: Boolean = false) {
+internal fun GalleryInfoTitle(
+    label: String,
+    value: GalleryInfoValue,
+    onClick: (() -> Unit)?,
+    secondary: Boolean = false,
+    scrollable: Boolean = true,
+    onClickLabel: String? = null,
+) {
     val style = if (secondary) MaterialTheme.typography.bodySmall else MaterialTheme.typography.titleSmall
     val maxHeight = with(LocalDensity.current) { style.lineHeight.toDp() * 2 }
     Text(
         value.text,
-        modifier = Modifier.fillMaxWidth().heightIn(max = maxHeight)
-            .verticalScroll(rememberScrollState())
-            .clickable(enabled = onNavigate != null, onClickLabel = stringResource(R.string.gallery_list_search_bar_open_gallery)) { onNavigate?.invoke() }
+        modifier = Modifier.fillMaxWidth()
+            .then(if (scrollable) Modifier.heightIn(max = maxHeight).verticalScroll(rememberScrollState()) else Modifier)
+            .then(
+                if (onClick != null) {
+                    Modifier.clickable(onClickLabel = onClickLabel ?: stringResource(R.string.gallery_list_search_bar_open_gallery), onClick = onClick)
+                } else {
+                    Modifier.consumeGalleryInfoTaps()
+                },
+            )
             .semantics { contentDescription = "$label: ${value.text}" },
         style = style,
+        maxLines = if (scrollable) Int.MAX_VALUE else 2,
+        overflow = if (scrollable) TextOverflow.Clip else TextOverflow.Ellipsis,
         color = if (secondary) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
     )
 }
@@ -102,14 +125,21 @@ internal fun GalleryInfoTitle(label: String, value: GalleryInfoValue, onNavigate
 internal fun GalleryInfoCompactValue(
     label: String,
     value: GalleryInfoValue,
-    onCopy: () -> Unit,
+    onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
+    onClickLabel: String? = null,
 ) {
     val text = value.display()
     Row(
         modifier.clip(MaterialTheme.shapes.extraSmall)
-            .clickable(enabled = value.raw != null, onClickLabel = stringResource(R.string.gallery_info_copy_field, label), onClick = onCopy)
+            .then(
+                if (onClick != null && value.raw != null) {
+                    Modifier.clickable(onClickLabel = onClickLabel ?: stringResource(R.string.gallery_info_copy_field, label), onClick = onClick)
+                } else {
+                    Modifier.consumeGalleryInfoTaps()
+                },
+            )
             .semantics(mergeDescendants = true) { contentDescription = "$label: $text" }
             .heightIn(min = 32.dp).padding(horizontal = 2.dp, vertical = 3.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -125,15 +155,20 @@ internal fun GalleryInfoCompactValue(
 }
 
 @Composable
-internal fun GalleryInfoValueRow(label: String, value: GalleryInfoValue, onCopy: () -> Unit, onNavigate: (() -> Unit)? = null, displayText: String? = null) {
+internal fun GalleryInfoValueRow(label: String, value: GalleryInfoValue, onCopy: (() -> Unit)? = null, onNavigate: (() -> Unit)? = null, displayText: String? = null) {
     Row(
         Modifier.fillMaxWidth().clip(MaterialTheme.shapes.extraSmall)
-            .combinedClickable(
-                enabled = value.raw != null,
-                onClickLabel = stringResource(R.string.gallery_info_copy_field, label),
-                onClick = onCopy,
-                onLongClickLabel = if (onNavigate != null) stringResource(R.string.gallery_list_search_bar_open_gallery) else null,
-                onLongClick = onNavigate,
+            .then(
+                if (onCopy != null && value.raw != null) {
+                    Modifier.combinedClickable(
+                        onClickLabel = stringResource(R.string.gallery_info_copy_field, label),
+                        onClick = onCopy,
+                        onLongClickLabel = if (onNavigate != null) stringResource(R.string.gallery_list_search_bar_open_gallery) else null,
+                        onLongClick = onNavigate,
+                    )
+                } else {
+                    Modifier.consumeGalleryInfoTaps()
+                },
             ).heightIn(min = 36.dp).padding(vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),

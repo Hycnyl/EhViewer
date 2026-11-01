@@ -167,7 +167,7 @@ internal fun GalleryVersionTimelineNode(
                             val expungedLabel = stringResource(R.string.gallery_version_expunged)
                             Text(
                                 expungedLabel + ": " + expunged,
-                                Modifier.clickable(enabled = node.expunged != null, onClickLabel = stringResource(R.string.gallery_info_copy_field, expungedLabel)) { onCopy(expunged) }.padding(horizontal = 4.dp, vertical = 2.dp),
+                                Modifier.consumeGalleryInfoTaps().padding(horizontal = 4.dp, vertical = 2.dp),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -177,11 +177,11 @@ internal fun GalleryVersionTimelineNode(
                             val gid = GalleryInfoValue(node.ref.gid.takeIf { it > 0 }?.toString())
                             GalleryInfoCompactValue(stringResource(R.string.key_gid), gid, { onCopy(gid.raw) })
                             val posted = GalleryInfoValue.text(node.posted)
-                            GalleryInfoCompactValue(stringResource(R.string.key_posted), posted, { onCopy(posted.raw) }, icon = Icons.Default.Schedule)
+                            GalleryInfoCompactValue(stringResource(R.string.key_posted), posted, icon = Icons.Default.Schedule)
                             val pages = GalleryInfoValue.number(node.pages)
-                            GalleryInfoCompactValue(stringResource(R.string.key_pages), pages, { onCopy(pages.raw) }, icon = Icons.AutoMirrored.Default.MenuBook)
+                            GalleryInfoCompactValue(stringResource(R.string.key_pages), pages, icon = Icons.AutoMirrored.Default.MenuBook)
                             val size = node.sizeText?.let(GalleryInfoValue::text) ?: GalleryInfoValue.bytes(node.fileSizeBytes)
-                            GalleryInfoCompactValue(stringResource(R.string.key_size), size, { onCopy(size.raw) }, icon = Icons.Default.DataUsage)
+                            GalleryInfoCompactValue(stringResource(R.string.key_size), size, icon = Icons.Default.DataUsage)
                         }
                     }
                 }

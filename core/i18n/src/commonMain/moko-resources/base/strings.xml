@@ -184,7 +184,7 @@
     <string name="key_pages">Pages</string>
     <string name="key_size">Size</string>
     <string name="key_favorite_count">Favorite count</string>
-    <string name="key_favorited">Favorited</string>
+    <string name="key_favorited">Cloud Favorite</string>
     <string name="key_rating_count">Rating count</string>
     <string name="key_rating">Rating</string>
     <string name="key_torrents">Torrents</string>
@@ -457,7 +457,7 @@
     <string name="clear_search_history_confirm">Clear search history?</string>
     <string name="search_history_cleared">Search history cleared</string>
     <string name="download_service">Download Service</string>
-    <string name="favorite_name">Favorite</string>
+    <string name="favorite_name">Favorite Category</string>
     <string name="dark_theme">Dark theme</string>
     <string name="black_dark_theme">Black dark theme</string>
     <string name="harmonize_category_color">Harmonize category color for Dynamic Color</string>
@@ -732,4 +732,5 @@
     <string name="gallery_newer_versions">Newer versions</string>
     <string name="gallery_newer_versions_incomplete">Newer versions have not finished loading.</string>
     <string name="gallery_version_open_gallery">Open gallery</string>
+    <string name="gallery_info_search_uploader">Search uploader</string>
 </resources>

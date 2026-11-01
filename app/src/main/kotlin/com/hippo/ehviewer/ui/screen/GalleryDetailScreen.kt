@@ -264,13 +264,6 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                             label = clearCache,
                         )
                         clickableItem(
-                            onClick = {
-                                openBrowser(galleryDetailUrl)
-                            },
-                            icon = {},
-                            label = openInBrowser,
-                        )
-                        clickableItem(
                             onClick = { cachedExportInfo = galleryInfo ?: BaseGalleryInfo(gid = gid, token = token) },
                             icon = {},
                             label = exportCachedPages,
@@ -313,6 +306,13 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                             },
                             icon = {},
                             label = exportArchive,
+                        )
+                        clickableItem(
+                            onClick = {
+                                openBrowser(galleryDetailUrl)
+                            },
+                            icon = {},
+                            label = openInBrowser,
                         )
                     }
                 },

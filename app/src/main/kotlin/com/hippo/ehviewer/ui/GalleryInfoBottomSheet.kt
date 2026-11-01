@@ -60,7 +60,7 @@ internal fun GalleryVersionRef.galleryUrl(): String? = if (canRequest) EhUrl.get
 
 @Composable
 context(_: Context)
-fun GalleryInfoBottomSheet(detail: GalleryDetail, onNavigate: (String) -> Unit) {
+fun GalleryInfoBottomSheet(detail: GalleryDetail, onUploaderClick: (String) -> Unit, onNavigate: (String) -> Unit) {
     val loader = remember(detail.gid, detail.token) {
         GalleryVersionLoader(GalleryVersionSeed.from(detail), fetch = { refs ->
             EhEngine.getGalleryVersionMetadata(refs, GalleryVersionRef(detail.gid, detail.token).galleryUrl())
@@ -101,7 +101,7 @@ fun GalleryInfoBottomSheet(detail: GalleryDetail, onNavigate: (String) -> Unit) 
             Text(stringResource(R.string.gallery_info), Modifier.fillMaxWidth().padding(bottom = 12.dp), textAlign = TextAlign.Center, style = MaterialTheme.typography.titleMedium)
         }
         item("overview") {
-            GalleryInfoOverview(fields, ::copyField, links.gallery?.let { { onNavigate(it) } })
+            GalleryInfoOverview(fields, ::copyField, onUploaderClick)
         }
         item("details") {
             GalleryInfoCard(R.string.gallery_info_basic, rowGap = 2.dp) {
@@ -121,7 +121,10 @@ fun GalleryInfoBottomSheet(detail: GalleryDetail, onNavigate: (String) -> Unit) 
                     GalleryInfoValueRow(
                         stringResource(key.label),
                         field.value,
-                        { copyField(field) },
+                        when (key) {
+                            GalleryInfoFieldKey.URL, GalleryInfoFieldKey.PARENT, GalleryInfoFieldKey.THUMB, GalleryInfoFieldKey.TORRENT_URL -> ({ copyField(field) })
+                            else -> null
+                        },
                         url?.let { { onNavigate(it) } },
                         displayText = if (key == GalleryInfoFieldKey.PARENT) field.value.raw?.trimEnd('/') else null,
                     )
@@ -161,10 +164,18 @@ fun GalleryInfoBottomSheet(detail: GalleryDetail, onNavigate: (String) -> Unit) 
 }
 
 @Composable
-private fun GalleryInfoOverview(fields: Map<GalleryInfoFieldKey, GalleryInfoField>, onCopy: (GalleryInfoField) -> Unit, onNavigate: (() -> Unit)?) {
+private fun GalleryInfoOverview(fields: Map<GalleryInfoFieldKey, GalleryInfoField>, onCopy: (GalleryInfoField) -> Unit, onUploaderClick: (String) -> Unit) {
     GalleryInfoCard {
         for (key in listOf(GalleryInfoFieldKey.TITLE, GalleryInfoFieldKey.TITLE_JPN)) {
-            GalleryInfoTitle(stringResource(key.label), fields.getValue(key).value, onNavigate, secondary = key == GalleryInfoFieldKey.TITLE_JPN)
+            val field = fields.getValue(key)
+            GalleryInfoTitle(
+                stringResource(key.label),
+                field.value,
+                field.value.raw?.let { { onCopy(field) } },
+                secondary = key == GalleryInfoFieldKey.TITLE_JPN,
+                scrollable = false,
+                onClickLabel = stringResource(R.string.gallery_info_copy_field, stringResource(key.label)),
+            )
         }
         val rows = listOf(
             listOf(GalleryInfoFieldKey.CATEGORY to Icons.Default.Category, GalleryInfoFieldKey.LANGUAGE to Icons.Default.Language, GalleryInfoFieldKey.RATING to Icons.Default.Star),
@@ -175,7 +186,14 @@ private fun GalleryInfoOverview(fields: Map<GalleryInfoFieldKey, GalleryInfoFiel
             for ((key, icon) in rows.flatten()) {
                 val field = fields.getValue(key)
                 val value = if (key == GalleryInfoFieldKey.CATEGORY) field.value.copy(raw = field.value.raw?.uppercase(Locale.ROOT)) else field.value
-                GalleryInfoCompactValue(stringResource(key.label), value, { onCopy(field) }, icon = icon)
+                val uploader = field.value.raw?.takeIf { key == GalleryInfoFieldKey.UPLOADER && it != "(Disowned)" }
+                GalleryInfoCompactValue(
+                    stringResource(key.label),
+                    value,
+                    uploader?.let { { onUploaderClick(it) } },
+                    icon = icon,
+                    onClickLabel = if (uploader != null) stringResource(R.string.gallery_info_search_uploader) else null,
+                )
             }
         }
         HorizontalDivider()
