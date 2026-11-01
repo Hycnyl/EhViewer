@@ -160,8 +160,8 @@
 
 # スクリーンショット
 
-![screenshots-01](https://github.com/FooIbar/EhViewer-art/blob/master/screenshots-01.webp)
-![screenshots-02](https://github.com/FooIbar/EhViewer-art/blob/master/screenshots-02.webp)
+![screenshots-01](https://raw.githubusercontent.com/Hycnyl/EhViewer-Art/main/Screenshot-01.png)
+![screenshots-02](https://raw.githubusercontent.com/Hycnyl/EhViewer-Art/main/Screenshot-02.png)
 
 # 謝辞
 
@@ -177,7 +177,7 @@
 
 - "Tachiyomi" (https://github.com/tachiyomiorg)：リーダーの実装と関連コードを提供してくださった Tachiyomi のオープンソースコミュニティに感謝します。
 - "EhTagTranslation" (https://github.com/EhTagTranslation/Database)：中国語のタグ翻訳に尽力してくださったプロジェクトのメンテナーと翻訳の貢献者に感謝します。
-- "FooIbar / EhViewer-art" (https://github.com/FooIbar/EhViewer-art)：本プロジェクトの README で参照しているアイコン、スクリーンショット、その他のビジュアル素材を提供しています。
+- "FooIbar / EhViewer-art" (https://github.com/FooIbar/EhViewer-art)：本プロジェクトの README で参照しているアイコンなどのビジュアル素材を提供しています。
 - EhViewer のすべての貢献者：歴代の開発者、翻訳者、問題の報告者、コミュニティメンバーの貢献に感謝します。
 
 ## 主なオープンソースの依存関係

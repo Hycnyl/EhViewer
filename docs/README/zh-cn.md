@@ -160,8 +160,8 @@
 
 # 截图
 
-![screenshots-01](https://github.com/FooIbar/EhViewer-art/blob/master/screenshots-01.webp)
-![screenshots-02](https://github.com/FooIbar/EhViewer-art/blob/master/screenshots-02.webp)
+![screenshots-01](https://raw.githubusercontent.com/Hycnyl/EhViewer-Art/main/Screenshot-01.png)
+![screenshots-02](https://raw.githubusercontent.com/Hycnyl/EhViewer-Art/main/Screenshot-02.png)
 
 # 鸣谢
 
@@ -177,7 +177,7 @@
 
 - "Tachiyomi" (https://github.com/tachiyomiorg)：感谢 Tachiyomi 开源社区提供的阅读器实现与相关代码。
 - "EhTagTranslation" (https://github.com/EhTagTranslation/Database)：感谢项目维护者及翻译贡献者为中文标签翻译所付出的努力。
-- "FooIbar / EhViewer-art" (https://github.com/FooIbar/EhViewer-art)：提供本项目 README 所引用的图标、截图及其他视觉资源。
+- "FooIbar / EhViewer-art" (https://github.com/FooIbar/EhViewer-art)：提供本项目 README 所引用的图标及其他视觉资源。
 - EhViewer 的所有贡献者：感谢历代开发者、翻译人员、问题报告者和社区成员的贡献。
 
 ## 主要开源依赖

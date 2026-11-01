@@ -160,8 +160,8 @@
 
 # Screenshots
 
-![screenshots-01](https://github.com/FooIbar/EhViewer-art/blob/master/screenshots-01.webp)
-![screenshots-02](https://github.com/FooIbar/EhViewer-art/blob/master/screenshots-02.webp)
+![screenshots-01](https://raw.githubusercontent.com/Hycnyl/EhViewer-Art/main/Screenshot-01.png)
+![screenshots-02](https://raw.githubusercontent.com/Hycnyl/EhViewer-Art/main/Screenshot-02.png)
 
 # Acknowledgments
 
@@ -177,7 +177,7 @@
 
 - "Tachiyomi" (https://github.com/tachiyomiorg): Thanks to the Tachiyomi open-source community for the reader implementation and related code.
 - "EhTagTranslation" (https://github.com/EhTagTranslation/Database): Thanks to the project maintainers and translation contributors for their efforts in translating tags into Chinese.
-- "FooIbar / EhViewer-art" (https://github.com/FooIbar/EhViewer-art): Provides the icons, screenshots, and other visual assets referenced in this project’s README.
+- "FooIbar / EhViewer-art" (https://github.com/FooIbar/EhViewer-art): Provides the icons and other visual assets referenced in this project’s README.
 - All EhViewer contributors: Thanks to developers, translators, issue reporters, and community members throughout the project’s history for their contributions.
 
 ## Main Open-Source Dependencies
