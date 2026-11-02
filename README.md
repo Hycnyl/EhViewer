@@ -1,3 +1,5 @@
+# 🚨 P0 WARNING: This software is currently unsafe. Please pause downloads and wait for a fix in a future release!
+
 > The version of EhViewer you are viewing is based on FooIbar’s EhViewer 1.14.6. Based on my own experience using it, I have added some new features and adjusted some existing ones. Please note that I am not a professional developer; all changes were made by GPT-6.1 Sol(Max). I cannot and will not meet every user’s needs, cannot guarantee that I can resolve issues that may arise while the software is running, and may introduce destructive new features at any time. I do not recommend this version of EhViewer to anyone seeking the utmost stability.
 
 > This version of EhViewer uses a different package name and can coexist with the [“FooIbar version”](https://github.com/FooIbar/EhViewer/releases) you may already be using, but this also means you will need to reconfigure some settings.
