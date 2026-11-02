@@ -8,3 +8,14 @@ build
 .idea
 .vscode
 /captures
+
+# SEC-01: signing material belongs outside the checkout.
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pk8
+*.key
+*.lineage
+__pycache__/
+*.pyc

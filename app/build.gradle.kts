@@ -1,3 +1,5 @@
+import com.android.build.api.artifact.SingleArtifact
+import com.ehviewer.RotatedReleaseApksTask
 import com.mikepenz.aboutlibraries.plugin.DuplicateMode
 import com.mikepenz.aboutlibraries.plugin.DuplicateRule
 import java.util.regex.Pattern
@@ -31,15 +33,6 @@ android {
         }
     }
 
-    val signConfig = signingConfigs.create("release") {
-        storeFile = File(projectDir.path + "/keystore/androidkey.jks")
-        storePassword = null // SEC-01: exposed credential removed
-        keyAlias = "key0"
-        keyPassword = null // SEC-01: exposed credential removed
-        enableV3Signing = true
-        enableV4Signing = true
-    }
-
     val commitSha = providers.exec {
         commandLine = "git rev-parse --short=7 HEAD".split(' ')
     }.standardOutput.asText.get().trim()
@@ -52,8 +45,8 @@ android {
 
     defaultConfig {
         applicationId = "moe.hycnyl.ehviewer"
-        versionCode = 180083
-        versionName = "1.17.8"
+        versionCode = 180084
+        versionName = "1.17.9"
         // versionNameSuffix = "-SNAPSHOT"
         buildConfigField("String", "RAW_VERSION_NAME", "\"$versionName${versionNameSuffix.orEmpty()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"$commitSha\"")
@@ -138,7 +131,13 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles("proguard-rules.pro")
-            signingConfig = signConfig
+            // SEC-01: only the APK artifact transform produces signed release artifacts.
+            signingConfig = null
+        }
+        create("unsignedRelease") {
+            initWith(buildTypes.getByName("release"))
+            matchingFallbacks += listOf("release")
+            signingConfig = null
         }
         debug {
             applicationIdSuffix = ".debug"
@@ -158,6 +157,32 @@ android {
     }
 
     namespace = "com.hippo.ehviewer"
+    sourceSets.getByName("unsignedRelease").manifest.srcFile("src/release/AndroidManifest.xml")
+}
+
+// Debug retains its existing SDK levels and signing identity.
+androidComponents {
+    beforeVariants(selector().withBuildType("release")) { variant ->
+        variant.minSdk = 33
+    }
+    beforeVariants(selector().withBuildType("unsignedRelease")) { variant ->
+        variant.minSdk = 33
+    }
+    val androidSdk = sdkComponents.sdkDirectory
+    onVariants(selector().withBuildType("release")) { variant ->
+        val signApks = tasks.register<RotatedReleaseApksTask>("sign${variant.name.replaceFirstChar(Char::uppercaseChar)}WithRotation") {
+            signingScript.set(rootProject.layout.projectDirectory.file("tools/security/sign_release.py"))
+            signingPolicy.set(layout.projectDirectory.file("signing/release.json"))
+            sdkDirectory.set(androidSdk)
+            signingReport.set(layout.buildDirectory.file("outputs/release-signing/${variant.name}.json"))
+        }
+        val request = variant.artifacts.use(signApks)
+            .wiredWithDirectories(RotatedReleaseApksTask::inputApks, RotatedReleaseApksTask::outputApks)
+            .toTransformMany(SingleArtifact.APK)
+        signApks.configure {
+            artifactTransformationRequest.set(request)
+        }
+    }
 }
 
 baselineProfile {

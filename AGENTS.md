@@ -15,3 +15,11 @@ README 不得随版本随意修改。仅允许在各语言 README 的“变更�
 # 局部开发规则
 
 每轮开发与构建都应局部、精确，围绕单一明确目标实施，避免一次性改动涉及应用整体的多个模块行为。无关改动留待后续独立迭代。
+
+# SEC-01 签名规则
+
+正式私钥仅在本开发环境 `/workspace/.ehviewer-signing` 保管。目录为 0700，文件为 0600；禁止输出凭据、提交私钥、上传 GitHub Secrets 或 CI Artifact。新证书指纹固定于 `app/signing/release.json`。密钥缺失时必须恢复原备份，不能生成替代密钥或回退旧密钥。
+
+Actions 先构建 `UnsignedRelease` 并生成 `ci-unsigned-<run-id>` 私有草稿。取回后用 `tools/security/local_signing.py` 在本环境签名。仅将签好的 APK 与公开验证数据通过 GitHub 插件 `create_blob` 传输；512 KiB 分块及请求由 `candidate_release.py plan` 生成，逐块核对 Git blob SHA，再提交 `.github/release-candidate.json`。二进制块不加入 Git 树或源码历史。
+
+`verify-signed-release.yml` 验证签名与 API 33 覆盖安装，全部通过后自动发布正式 Release。发布前不可跳过签名迁移测试。详见 `docs/SEC-01.md`。同机加密备份不是独立离线备份，需向维护者明确说明长期保管限制。

@@ -2,7 +2,7 @@ name: Cache rescue APKs
 on:
   push:
     branches: [main]
-    paths: ['app/**', 'core/**', 'gradle/**', 'build-logic/**', 'rust-toolchain.toml', '*.gradle.kts', '.github/workflows/cache-rescue.yml']
+    paths: ['app/**', 'core/**', 'gradle/**', 'build-logic/**', 'tools/security/**', 'rust-toolchain.toml', '*.gradle.kts', '.github/workflows/cache-rescue.yml']
   workflow_dispatch:
 permissions:
   contents: write
@@ -15,6 +15,14 @@ jobs:
     timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
+      - name: Require completed history cleanup
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          if json.loads(Path('app/signing/release.json').read_text()).get('historySanitized') is not True:
+              raise SystemExit('SEC-01: history cleanup must finish before building the release handoff')
+          PY
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -28,55 +36,36 @@ jobs:
         with:
           workspaces: app/src/main/rust
       - uses: gradle/actions/setup-gradle@v4
-      - name: Read release version
-        id: version
+      - name: Build unsigned release APKs
         run: |
-          python3 - <<'PY'
-          import os, re
-          from pathlib import Path
-          version = re.search(r'^\s*versionName = "([^"]+)"', Path('app/build.gradle.kts').read_text(), re.MULTILINE).group(1)
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
-              print(f'name={version}', file=output)
-          PY
-      - name: Build release APKs
-        env:
-          # Skip tests only for a release explicitly requested without them.
-          SKIP_TESTS: ${{ contains(github.event.head_commit.message, '[skip tests]') }}
+          python3 -m unittest discover -s tools/security -p 'test_*.py' -v
+          ./gradlew :app:testDefaultDebugUnitTest :app:assembleDefaultUnsignedRelease :app:assembleMarshmallowUnsignedRelease \
+            --no-configuration-cache --max-workers=1 -Pkotlin.compiler.execution.strategy=in-process --stacktrace
+      - name: Verify debug builds without release credentials
         run: |
-          release_tasks=(:app:assembleDefaultRelease)
-          if [[ "$SKIP_TESTS" != "true" ]]; then
-            release_tasks=(:app:testDefaultReleaseUnitTest "${release_tasks[@]}")
-          fi
-          ./gradlew "${release_tasks[@]}" --max-workers=1 -Pkotlin.compiler.execution.strategy=in-process --stacktrace
-      - name: Prepare delivery files
-        env:
-          RELEASE_VERSION: ${{ steps.version.outputs.name }}
-        run: |
-          mkdir -p delivery
-          for abi in universal arm64-v8a armeabi-v7a x86_64 x86; do
-            cp "app/build/outputs/apk/default/release/app-default-$abi-release.apk" "delivery/EhViewer-$RELEASE_VERSION-$abi.apk"
-          done
-          cd delivery
-          sha256sum *.apk > SHA256SUMS.txt
+          ./gradlew :app:assembleDefaultDebug :app:assembleMarshmallowDebug \
+            --no-configuration-cache --max-workers=1 -Pkotlin.compiler.execution.strategy=in-process
+          python3 tools/security/verify_debug.py
+      - name: Package unsigned build handoff
+        run: python3 tools/security/package_unsigned.py --source-commit "$GITHUB_SHA"
       - uses: actions/upload-artifact@v4
         with:
-          name: EhViewer-${{ steps.version.outputs.name }}-apks
-          path: delivery/*
-          retention-days: 30
+          name: unsigned-release-apks
+          path: handoff/*
+          retention-days: 7
+      - name: Create private build handoff
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "ci-unsigned-$GITHUB_RUN_ID" handoff/* \
+            --draft --target "$GITHUB_SHA" \
+            --title "Unsigned build $GITHUB_RUN_ID" \
+            --notes "SEC-01 unsigned APK handoff for local signing."
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: validation-results
           path: |
-            app/build/test-results/testDefaultReleaseUnitTest/
-            app/build/reports/tests/testDefaultReleaseUnitTest/
-            app/build/outputs/mapping/defaultRelease/mapping.txt
-      - name: Publish release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RELEASE_VERSION: ${{ steps.version.outputs.name }}
-        run: |
-          gh release create "v$RELEASE_VERSION" delivery/* \
-            --target "$GITHUB_SHA" --latest \
-            --title "EhViewer $RELEASE_VERSION" \
-            --notes-file "docs/DELIVERY-$RELEASE_VERSION.md"
+            app/build/test-results/testDefaultDebugUnitTest/
+            app/build/reports/tests/testDefaultDebugUnitTest/
+            app/build/outputs/mapping/defaultUnsignedRelease/mapping.txt

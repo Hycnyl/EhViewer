@@ -1,0 +1,36 @@
+name: SEC-01 sanitize public history
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/sec01-history-clean.yml']
+permissions:
+  contents: write
+jobs:
+  sanitize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install history cleanup tool
+        run: python3 -m pip install git-filter-repo==2.47.0
+      - name: Rewrite branches and tags with leases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh auth setup-git
+          for tag in $(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" --jq '.[] | select(.draft and (.tag_name | startswith("sec01-transfer-probe-"))) | .tag_name'); do
+            gh release delete "$tag" --yes --cleanup-tag
+          done
+          git clone --mirror "https://github.com/$GITHUB_REPOSITORY.git" "$RUNNER_TEMP/sec01-history.git"
+          python3 tools/security/sanitize_history.py --mirror "$RUNNER_TEMP/sec01-history.git" \
+            --report "$RUNNER_TEMP/sec01-history-report.json" --push
+      - name: Record cleanup result
+        run: |
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          r = json.loads((Path(os.environ['RUNNER_TEMP'])/'sec01-history-report.json').read_text())
+          print('Refs sanitized:', r['refCount'])
+          print('Old key path reachable:', r['legacyPathReachable'])
+          for ref in r['refs']:
+              print(ref['ref'], ref['before'], ref['after'])
+          PY
