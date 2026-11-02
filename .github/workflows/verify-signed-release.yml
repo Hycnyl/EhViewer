@@ -81,4 +81,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           UNSIGNED_RUN_ID: ${{ needs.verify.outputs.buildRunId }}
-        run: gh release delete "ci-unsigned-$UNSIGNED_RUN_ID" --yes --cleanup-tag
+        run: gh release delete "ci-unsigned-$UNSIGNED_RUN_ID" --yes
