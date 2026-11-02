@@ -2,7 +2,7 @@ name: SEC-01 sanitize public history
 on:
   push:
     branches: [main]
-    paths: ['.github/workflows/sec01-history-clean.yml']
+    paths: ['.github/workflows/sec01-history-clean.yml', 'tools/security/sanitize_history.py']
 permissions:
   contents: write
 jobs:

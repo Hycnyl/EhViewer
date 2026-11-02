@@ -54,7 +54,7 @@ def clean(mirror, push, report):
     if push:
         remotes = git("remote").splitlines()
         subprocess.run(["git", "remote", "set-url" if "origin" in remotes else "add", "origin", origin], check=True)
-        commands = ["git", "push", "--atomic", "origin"]
+        commands = ["git", "-c", "remote.origin.mirror=false", "push", "--atomic", "origin"]
         for ref in sorted(before):
             commands.append(f"--force-with-lease={ref}:{before[ref]}")
         commands.extend(f"{after[ref]}:{ref}" for ref in sorted(after))
