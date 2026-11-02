@@ -2,5 +2,5 @@
   "minimumSdk": 33,
   "legacyCertificateSha256": "5d91dff13b6489a9cfadbb197b3e795eefc8c39f849c4543f32c160720fb40a6",
   "certificateSha256": "67afb9dab5d2234ed83bc3dd8c13faaeadf4940be0a6749e0aafb9ae9e8e143f",
-  "historySanitized": false
+  "historySanitized": true
 }
