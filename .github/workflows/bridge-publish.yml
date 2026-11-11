@@ -35,7 +35,7 @@ jobs:
           import json, subprocess
           from pathlib import Path
           def api(path):
-              return subprocess.check_output(['gh', 'api', 'repos/Hycnyl/EhViewer/' + path], text=True)
+              return subprocess.check_output(['gh', 'api', '--allow-escape-sequences', 'repos/Hycnyl/EhViewer/' + path], text=True)
           job = json.loads(api('actions/jobs/130320171428'))
           run = json.loads(api('actions/runs/42958803820'))
           assert job['run_id'] == 42958803820 and job['status'] == 'completed'
