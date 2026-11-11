@@ -45,8 +45,8 @@ android {
 
     defaultConfig {
         applicationId = "moe.hycnyl.ehviewer"
-        versionCode = 180084
-        versionName = "1.17.9"
+        versionCode = 180085
+        versionName = "1.17.10"
         // versionNameSuffix = "-SNAPSHOT"
         buildConfigField("String", "RAW_VERSION_NAME", "\"$versionName${versionNameSuffix.orEmpty()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"$commitSha\"")
@@ -163,10 +163,10 @@ android {
 // Debug retains its existing SDK levels and signing identity.
 androidComponents {
     beforeVariants(selector().withBuildType("release")) { variant ->
-        variant.minSdk = 33
+        variant.minSdk = 28
     }
     beforeVariants(selector().withBuildType("unsignedRelease")) { variant ->
-        variant.minSdk = 33
+        variant.minSdk = 28
     }
     val androidSdk = sdkComponents.sdkDirectory
     onVariants(selector().withBuildType("release")) { variant ->

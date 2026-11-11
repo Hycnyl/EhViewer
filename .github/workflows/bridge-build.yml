@@ -1,0 +1,35 @@
+name: Build Android 9 signature bridge
+on:
+  push:
+    branches: [release/1.17.10-bridge]
+    paths: ['app/**', 'tools/security/signature_bridge.py', 'tools/security/sign_release.py', '.github/workflows/bridge-build.yml']
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools build-tools;36.0.0
+      - run: rustup show
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: app/src/main/rust
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build only the five unsigned bridge APKs
+        run: ./gradlew :app:assembleDefaultUnsignedRelease --no-configuration-cache --max-workers=1 -Pkotlin.compiler.execution.strategy=in-process
+      - name: Prepare local signing handoff
+        run: python3 tools/security/signature_bridge.py package
+      - name: Create unsigned handoff draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "ci-bridge-$GITHUB_RUN_ID" bridge-handoff/* --draft --target "$GITHUB_SHA" \
+            --title "Unsigned signature bridge $GITHUB_RUN_ID" --notes "Unsigned APKs for local signing."

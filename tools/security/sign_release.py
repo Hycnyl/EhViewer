@@ -58,8 +58,9 @@ def sign_artifacts(input_dir, output_dir, sdk_dir, policy_path, report_path):
     legacy = policy["legacyCertificateSha256"]
     if not isinstance(expected, str) or not re.fullmatch(r"[0-9a-f]{64}", expected) or expected == legacy:
         raise RuntimeError("SEC-01: initialize and pin the new release certificate first")
-    if policy["minimumSdk"] != 33:
-        raise RuntimeError("SEC-01 requires Android 13 or later")
+    minimum = policy["minimumSdk"]
+    if minimum != 33 and not (minimum == 28 and policy.get("purpose") == "signature-bridge"):
+        raise RuntimeError("Release requires API 33, or the explicit API 28 signature bridge policy")
     tools = sdk_dir / "build-tools" / "36.0.0"
     apksigner = tools / "apksigner"
     keystore = Path(os.environ["RELEASE_KEYSTORE_FILE"]).resolve()
@@ -90,8 +91,8 @@ def sign_artifacts(input_dir, output_dir, sdk_dir, policy_path, report_path):
             raise RuntimeError("Invalid APK artifact path")
         target = output_dir / source.name.replace("-unsigned.apk", ".apk")
         badging = run([str(tools / "aapt"), "dump", "badging", str(source)])
-        if "sdkVersion:'33'" not in badging or "application-debuggable" in badging:
-            raise RuntimeError("Release APK must be non-debuggable and require Android 13")
+        if f"sdkVersion:'{minimum}'" not in badging or "application-debuggable" in badging:
+            raise RuntimeError("Release APK must be non-debuggable and match the signing policy SDK")
         permissions = run([str(tools / "aapt"), "dump", "permissions", str(source)])
         if ".DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" in permissions:
             raise RuntimeError("Release must not redeclare the legacy AndroidX signature permission")
@@ -113,7 +114,7 @@ def sign_artifacts(input_dir, output_dir, sdk_dir, policy_path, report_path):
         validate_lineage(apksigner, target, legacy, expected)
         run([str(tools / "zipalign"), "-c", "-P", "16", "4", str(target)])
         element["outputFile"] = target.name
-        reports.append({"path": str(target.resolve()), "file": target.name, "filters": element["filters"], "versionCode": element["versionCode"], "versionName": element["versionName"], "sha256": digest(target), "certificateSha256": expected, "minimumSdk": 33})
+        reports.append({"path": str(target.resolve()), "file": target.name, "filters": element["filters"], "versionCode": element["versionCode"], "versionName": element["versionName"], "sha256": digest(target), "certificateSha256": expected, "minimumSdk": minimum})
     (output_dir / "output-metadata.json").write_text(json.dumps(metadata, indent=2) + "\n")
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps({"applicationId": metadata["applicationId"], "variant": metadata["variantName"], "artifacts": reports}, indent=2) + "\n")

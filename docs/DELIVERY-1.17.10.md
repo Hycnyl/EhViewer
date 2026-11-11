@@ -1,0 +1,3 @@
+- Android 9（API 28）起可用的签名迁移桥接版，沿用 1.17.9 的新密钥和密钥链。
+- 安装本版后，直接覆盖安装 [EhViewer Revived](https://github.com/Hycnyl/EhViewer-Revived/releases/latest)，保留原有应用数据。本版用于迁移，不作为日常使用版本。
+- Android 8.x 不支持密钥轮换，无法通过此桥接包换钥。

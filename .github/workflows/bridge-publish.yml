@@ -1,0 +1,46 @@
+name: Verify and publish Android 9 signature bridge
+on:
+  push:
+    branches: [release/1.17.10-bridge]
+    paths: ['.github/bridge-candidate.json']
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools build-tools;36.0.0
+      - name: Receive signed APKs and verify the signing chains
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 tools/security/signature_bridge.py receive
+      - name: Enable emulator acceleration
+        run: sudo chmod 666 /dev/kvm
+      - name: Verify old app to bridge to Revived on Android 9
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 28
+          target: default
+          arch: x86_64
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: python3 tools/security/signature_bridge.py migration
+      - name: Publish the bridge release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          SOURCE=$(python3 -c 'import json; print(json.load(open(".github/bridge-candidate.json"))["sourceCommit"])')
+          gh release create v1.17.10 bridge-delivery/* --target "$SOURCE" --latest \
+            --title "EhViewer 1.17.10 · Android 9+ 迁移桥接版" --notes-file docs/DELIVERY-1.17.10.md
+          BUILD_RUN=$(python3 -c 'import json; print(json.load(open(".github/bridge-candidate.json"))["buildRunId"])')
+          gh release delete "ci-bridge-$BUILD_RUN" --yes

@@ -2,9 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Release requires API 33: ContextCompat uses RECEIVER_NOT_EXPORTED natively.
-         Removing the pre-33 backport permission avoids trusting the leaked signer
-         to redeclare this signature permission during a key-rotation update. -->
+    <!-- Keep the retired signature permission removed during the API 28+
+         bridge update. This release transfers the signing identity; users
+         continue to Revived instead of relying on pre-33 receiver backports. -->
     <permission
         android:name="${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
         tools:node="remove" />
