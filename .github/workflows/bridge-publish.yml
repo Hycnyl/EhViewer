@@ -13,6 +13,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # Reuse the exact signed source/candidate while retrying emulator setup.
+          ref: 8e6a8430552385ed1a044c84018b3c5b960f8698
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -30,10 +32,12 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 28
+          emulator-build: 12038310
+          emulator-boot-timeout: 180
           target: default
           arch: x86_64
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -feature -Vulkan
           script: python3 tools/security/signature_bridge.py migration
       - name: Publish the bridge release
         env:
